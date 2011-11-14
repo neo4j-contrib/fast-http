@@ -25,4 +25,8 @@ public class Database
     public GraphDatabaseService getGraphDB() {
         return graph;
     }
+
+    public String getStoreDirectory() {
+        return databaseStoreDirectory;
+    }
 }
