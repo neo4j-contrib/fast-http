@@ -19,9 +19,8 @@
  */
 package org.neo4j.server.rest.service;
 
-import com.lmax.disruptor.ExceptionHandler;
-import com.lmax.disruptor.RingBuffer;
 import org.apache.log4j.Logger;
+import org.neo4j.server.annotations.Transactional;
 import org.neo4j.server.database.Database;
 import org.neo4j.server.smack.PathVariables;
 import org.neo4j.server.smack.core.ExecutionHandler;
@@ -29,6 +28,9 @@ import org.neo4j.server.smack.core.RequestEvent;
 import org.neo4j.server.smack.core.ResponseEvent;
 import org.neo4j.server.smack.core.WorkExceptionHandler;
 import org.neo4j.server.transaction.TransactionRegistry;
+
+import com.lmax.disruptor.ExceptionHandler;
+import com.lmax.disruptor.RingBuffer;
 
 public class DatabaseWorkerPool implements ExecutionHandler {
 
@@ -89,7 +91,8 @@ public class DatabaseWorkerPool implements ExecutionHandler {
     @Override
     public void onEvent(RequestEvent event) {
         try {
-            
+
+            boolean transactional = event.getEndpoint().hasAnnotation(Transactional.class);
             
             boolean usesTxAPI = true;
             final PathVariables pathVariables = event.getPathVariables();
@@ -98,9 +101,6 @@ public class DatabaseWorkerPool implements ExecutionHandler {
                 txId = txIds++;
                 usesTxAPI = false;
             }
-            
-            Object transactionalParam = event.getEndpoint().getParameter("transactional");
-            boolean transactional = transactionalParam!=null && transactionalParam.equals("true");
 
             // Pick worker
             int workerId = (int) (txId % NUM_DATABASE_WORK_EXECUTORS);

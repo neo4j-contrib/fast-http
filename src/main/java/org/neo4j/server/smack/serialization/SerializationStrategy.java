@@ -21,4 +21,8 @@ package org.neo4j.server.smack.serialization;
 
 public interface SerializationStrategy<T> {
 
+    public static SerializationStrategy<Object> NO_OP = new SerializationStrategy<Object>(){
+        
+    };
+    
 }

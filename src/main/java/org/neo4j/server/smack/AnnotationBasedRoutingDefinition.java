@@ -19,18 +19,20 @@
  */
 package org.neo4j.server.smack;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+
 import org.neo4j.server.smack.annotations.DeserializeWith;
-import org.neo4j.server.smack.annotations.Parameters;
 import org.neo4j.server.smack.annotations.SerializeWith;
 import org.neo4j.server.smack.serialization.DeserializationStrategy;
-import org.neo4j.server.smack.serialization.NoOpDeserializationStrategy;
-import org.neo4j.server.smack.serialization.NoOpSerializationStrategy;
 import org.neo4j.server.smack.serialization.SerializationStrategy;
-
-import javax.ws.rs.*;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
 
@@ -41,18 +43,16 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
         private final Object underlyingObject;
         private final Method method;
         private final InvocationVerb verb;
-        private final Map<Object, Object> parameters;
         private final SerializationStrategy<?> serializationStrategy;
         private final DeserializationStrategy<?> deserializationStrategy;
 
         public MethodInvokingEndpoint(InvocationVerb verb, Method method,
-                Object underlyingObject, Map<Object, Object> parameters,
+                Object underlyingObject, 
                 SerializationStrategy<?> serializationStrategy,
                 DeserializationStrategy<?> deserializationStrategy) {
             this.verb = verb;
             this.method = method;
             this.underlyingObject = underlyingObject;
-            this.parameters = parameters;
             this.serializationStrategy = serializationStrategy;
             this.deserializationStrategy = deserializationStrategy;
         }
@@ -72,12 +72,9 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
             return verb;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
-        public <T> T getParameter(Object key) {
-            if (parameters.containsKey(key))
-                return (T) parameters.get(key);
-            return null;
+        public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
+            return method.isAnnotationPresent(annotationClass);
         }
 
         @Override
@@ -114,33 +111,24 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
                 addRoute(m, InvocationVerb.DELETE);
             }
 
+            if (m.isAnnotationPresent(HEAD.class)) {
+                addRoute(m, InvocationVerb.HEAD);
+            }
+
         }
     }
 
     private void addRoute(final Method method, final InvocationVerb verb) {
-        String path = null;
+        
+        String path = "";
+        SerializationStrategy<?> serializationStrategy = SerializationStrategy.NO_OP;
+        DeserializationStrategy<?> deserializationStrategy = DeserializationStrategy.NO_OP;
+        
         try {
-            path = "";
+            
             if (method.isAnnotationPresent(Path.class)) {
                 path = method.getAnnotation(Path.class).value();
             }
-
-            Map<Object, Object> parameters = new HashMap<Object, Object>();
-            if (method.isAnnotationPresent(Parameters.class)) {
-                for (String paramDef : method.getAnnotation(Parameters.class)
-                        .value()) {
-                    String[] parts = paramDef.split(":");
-                    if (parts.length != 2) {
-                        throw new RuntimeException(
-                                "Invalid parameter definition,'" + paramDef
-                                        + "', expected 'key:value'.");
-                    }
-                    parameters.put(parts[0], parts[1]);
-                }
-            }
-
-            SerializationStrategy<?> serializationStrategy = new NoOpSerializationStrategy();
-            DeserializationStrategy<?> deserializationStrategy = new NoOpDeserializationStrategy();
                 
             if (method.isAnnotationPresent(SerializeWith.class)) {
                 serializationStrategy = (SerializationStrategy<?>) method
@@ -154,9 +142,11 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
                         .getConstructor().newInstance();
             }
 
-            addRoute(path, new MethodInvokingEndpoint(verb, method,
-                    underlyingObject, parameters, serializationStrategy,
-                    deserializationStrategy));
+            Endpoint endpoint = new MethodInvokingEndpoint(verb, method,
+                    underlyingObject, serializationStrategy,
+                    deserializationStrategy);
+            
+            addRoute(path, endpoint);
             
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(

@@ -19,6 +19,8 @@
  */
 package org.neo4j.server.smack;
 
+import java.lang.annotation.Annotation;
+
 import org.neo4j.server.smack.serialization.DeserializationStrategy;
 import org.neo4j.server.smack.serialization.SerializationStrategy;
 
@@ -26,8 +28,9 @@ public interface Endpoint {
 
     public void invoke(InvocationRequest ctx, InvocationResponse response) throws Exception;
     public InvocationVerb getVerb();
-    public <T> T getParameter(Object key);
     public DeserializationStrategy<?> getDeserializationStrategy();
     public SerializationStrategy<?> getSerializationStrategy();
+    
+    public boolean hasAnnotation(Class<? extends Annotation> annotationClass);
     
 }

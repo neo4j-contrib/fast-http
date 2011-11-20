@@ -19,18 +19,19 @@
  */
 package org.neo4j.server.rest.service;
 
+import java.util.Map;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+
 import org.neo4j.kernel.AbstractGraphDatabase;
+import org.neo4j.server.annotations.Transactional;
 import org.neo4j.server.database.Database;
 import org.neo4j.server.serialization.PropertyMapDeserializationStrategy;
 import org.neo4j.server.smack.InvocationRequest;
 import org.neo4j.server.smack.InvocationResponse;
 import org.neo4j.server.smack.annotations.DeserializeWith;
-import org.neo4j.server.smack.annotations.Parameters;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import java.util.Map;
 
 public class CoreService {
 
@@ -44,6 +45,7 @@ public class CoreService {
         // TODO gdb.getConfig().getParams().toString()
         res.setOk();
     }
+    
     //
     // NODES
     //
@@ -51,7 +53,7 @@ public class CoreService {
     @POST
     @Path("/node")
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @Parameters({"transactional:true"})
+    @Transactional
     public void createNode(InvocationRequest req, InvocationResponse res) throws Exception {
         Database db = req.getCtx(ContextKeys.DATABASE);
         Map<String, Object> properties = req.getDeserializedContent();
