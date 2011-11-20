@@ -22,12 +22,9 @@ package org.neo4j.server.smack;
 import java.util.ArrayList;
 import java.util.List;
 
-
-public abstract class RoutingDefinition {
+public class RoutingDefinition {
     
     protected List<RouteDefinitionEntry> entries = new ArrayList<RouteDefinitionEntry>();
-    
-    public abstract void setupRoutes();
     
     public void addRoute(String route, Object target) {
         addRoute(route, new AnnotationBasedRoutingDefinition(target));

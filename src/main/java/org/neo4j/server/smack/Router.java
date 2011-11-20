@@ -33,8 +33,6 @@ public class Router extends RoutingDefinition {
 
     private RouteEntry [] routes;
     private static final Logger logger=Logger.getLogger(Router.class);
-
-    public void setupRoutes() { }
     
     public Endpoint route(RequestEvent event)
     {
@@ -72,7 +70,7 @@ public class Router extends RoutingDefinition {
             RouteEntry route = routeMap.get(routeDef.getPath());
             route.setEndpoint(routeDef.getEndpoint().getVerb(), routeDef.getEndpoint());
         }
-       
+        
         routes = new RouteEntry[routeMap.size()];
         int i = 0;
         for(String path : routeMap.keySet()) {

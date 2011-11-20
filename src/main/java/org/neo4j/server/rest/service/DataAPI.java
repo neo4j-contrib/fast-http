@@ -22,7 +22,8 @@ package org.neo4j.server.rest.service;
 import org.neo4j.server.smack.RoutingDefinition;
 
 public class DataAPI extends RoutingDefinition {
-    public void setupRoutes() {
+    
+    public DataAPI() {
         addRoute("/tx",               new TransactionService());
         
         addRoute("",                  new CoreService());
@@ -31,4 +32,5 @@ public class DataAPI extends RoutingDefinition {
         addRoute("/tx/{tx_id}",       new CoreService());
         addRoute("/tx/{tx_id}/index", new IndexService());
     }
+    
 }

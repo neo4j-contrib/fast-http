@@ -90,9 +90,10 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
 
     public AnnotationBasedRoutingDefinition(Object obj) {
         this.underlyingObject = obj;
+        setupRoutes();
     }
 
-    public void setupRoutes() {
+    private void setupRoutes() {
         for (Method m : underlyingObject.getClass().getMethods()) {
 
             if (m.isAnnotationPresent(GET.class)) {

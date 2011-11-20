@@ -43,7 +43,6 @@ public class TestAnnotationBasedRoutingDefinition {
         };
         
         AnnotationBasedRoutingDefinition rd = new AnnotationBasedRoutingDefinition(annotatedObject);
-        rd.setupRoutes();
         
         List<RouteDefinitionEntry> entries = rd.getRouteDefinitionEntries();
         
@@ -61,7 +60,6 @@ public class TestAnnotationBasedRoutingDefinition {
         };
         
         AnnotationBasedRoutingDefinition rd = new AnnotationBasedRoutingDefinition(annotatedObject);
-        rd.setupRoutes();
         
         List<RouteDefinitionEntry> entries = rd.getRouteDefinitionEntries();
         
@@ -81,7 +79,6 @@ public class TestAnnotationBasedRoutingDefinition {
         };
         
         AnnotationBasedRoutingDefinition rd = new AnnotationBasedRoutingDefinition(annotatedObject);
-        rd.setupRoutes();
         
         Endpoint p = rd.getRouteDefinitionEntries().get(0).getEndpoint();
         
