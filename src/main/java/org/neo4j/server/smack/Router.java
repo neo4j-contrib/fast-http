@@ -36,7 +36,7 @@ public class Router extends RoutingDefinition {
 
     public void setupRoutes() { }
     
-    public Endpoint route(RequestEvent event) throws Exception
+    public Endpoint route(RequestEvent event)
     {
         String path = event.getPath();
         for(RouteEntry route : routes)

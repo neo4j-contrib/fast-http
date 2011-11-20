@@ -19,7 +19,7 @@
  */
 package org.neo4j.server.smack;
 
-public class ResourceNotFoundException extends Exception {
+public class ResourceNotFoundException extends RuntimeException {
 
     public ResourceNotFoundException(String string) {
         super(string);
