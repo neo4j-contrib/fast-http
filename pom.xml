@@ -13,7 +13,7 @@
   <properties>
     <license-text.header>GPL-3-header.txt</license-text.header>
     <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
-    <neo4j.version>1.5</neo4j.version>
+    <neo4j.version>1.6.M01</neo4j.version>
   </properties>
 
   <scm>

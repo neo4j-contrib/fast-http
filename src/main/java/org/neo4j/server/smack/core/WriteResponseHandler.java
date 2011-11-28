@@ -17,20 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.server.smack;
+package org.neo4j.server.smack.core;
 
-import java.lang.annotation.Annotation;
+import com.lmax.disruptor.WorkHandler;
+import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.handler.codec.http.HttpResponse;
 
-import org.neo4j.server.smack.serialization.DeserializationStrategy;
-import org.neo4j.server.smack.serialization.SerializationStrategy;
+public class WriteResponseHandler implements WorkHandler<ResponseEvent> {
 
-public interface Endpoint {
+    public void onEvent(final ResponseEvent event) throws Exception {
 
-    public void invoke(InvocationRequest ctx, InvocationResult result) throws Exception;
-    public InvocationVerb getVerb();
-    public DeserializationStrategy<?> getDeserializationStrategy();
-    public SerializationStrategy<?> getSerializationStrategy();
-    
-    public boolean hasAnnotation(Class<? extends Annotation> annotationClass);
-    
+        HttpResponse response = event.getHttpResponse();
+        event.getContext().getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+    }
 }

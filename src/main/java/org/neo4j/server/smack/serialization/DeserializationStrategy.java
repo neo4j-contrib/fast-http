@@ -29,6 +29,5 @@ public interface DeserializationStrategy<T> {
         }
     };
     
-    public T deserialize(Deserializer in) throws DeserializationException;
-    
+    T deserialize(Deserializer in) throws DeserializationException;
 }

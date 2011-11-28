@@ -19,19 +19,9 @@
  */
 package org.neo4j.server.smack.http;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
+import com.lmax.disruptor.RingBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.*;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpRequest;
@@ -41,7 +31,11 @@ import org.jboss.netty.util.CharsetUtil;
 import org.neo4j.server.smack.InvocationVerb;
 import org.neo4j.server.smack.core.RequestEvent;
 
-import com.lmax.disruptor.RingBuffer;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class NettyHttpHandler extends SimpleChannelHandler {
 
@@ -63,11 +57,12 @@ public class NettyHttpHandler extends SimpleChannelHandler {
         event.setPath(httpRequest.getUri());
         event.setIsPersistentConnection(isKeepAlive(httpRequest));
         event.setContent(httpRequest.getContent());
-        event.setOutputChannel(e.getChannel());
-        
+        event.setContext(ctx);
+
         workBuffer.publish(sequenceNo);
     }
-    
+
+    // todo use output buffer for exception handling
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
             throws Exception {
@@ -87,8 +82,7 @@ public class NettyHttpHandler extends SimpleChannelHandler {
     private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
         response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
-        response.setContent(ChannelBuffers.copiedBuffer(
-                "Failure: " + status.toString() + "\r\n", CharsetUtil.UTF_8));
+        response.setContent(ChannelBuffers.copiedBuffer("Failure: " + status.toString() + "\r\n", CharsetUtil.UTF_8));
 
         // Close the connection as soon as the error message is sent.
         ctx.getChannel().write(response)

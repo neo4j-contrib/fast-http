@@ -19,15 +19,15 @@
  */
 package org.neo4j.server.smack;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.regex.MatchResult;
-
+import com.sun.jersey.server.impl.uri.PathPattern;
+import com.sun.jersey.server.impl.uri.PathTemplate;
 import org.apache.log4j.Logger;
 import org.neo4j.server.smack.core.RequestEvent;
 
-import com.sun.jersey.server.impl.uri.PathPattern;
-import com.sun.jersey.server.impl.uri.PathTemplate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.MatchResult;
 
 public class Router extends RoutingDefinition {
 
@@ -37,15 +37,15 @@ public class Router extends RoutingDefinition {
     public Endpoint route(RequestEvent event)
     {
         String path = event.getPath();
-        for(RouteEntry route : routes)
+        for(RouteEntry route : routes) // todo parallelize routing ?? (overhead ?)
         {
             MatchResult matchResult = route.pattern.match(path);
             if(matchResult != null)
             {
-                event.setPathVariables(new PathVariables(matchResult, route.pattern));
                 Endpoint endpoint = route.getEndpoint(event.getVerb());
                 if(endpoint != null) {
-                    return endpoint;   
+                    event.setPathVariables(new PathVariables(matchResult, route.pattern));
+                    return endpoint;
                 }
                 throw new ResourceNotFoundException("Path '" + path + "' does not support '"+event.getVerb()+"'." );
             }
@@ -56,26 +56,25 @@ public class Router extends RoutingDefinition {
     public void compileRoutes() {
         Map<String, RouteEntry> routeMap = new LinkedHashMap<String, RouteEntry>();
 
-        for(RouteDefinitionEntry routeDef : getRouteDefinitionEntries())
+        for(RouteDefinitionEntry definition : getRouteDefinitionEntries())
         {
-            if(!routeMap.containsKey(routeDef.getPath()))
+            if(!routeMap.containsKey(definition.getPath()))
             {
-                RouteEntry route = new RouteEntry();
-                final PathTemplate template = new PathTemplate(routeDef.getPath());
-                route.pattern = new PathPattern(template,"");
-                routeMap.put(routeDef.getPath(), route);
+                routeMap.put(definition.getPath(), createRoute(definition));
             }
-            logger.debug("Adding Route: "+routeDef.getEndpoint().getVerb() +" to: "+ routeDef.getPath());
+            logger.debug("Adding Route: "+definition.getEndpoint().getVerb() +" to: "+ definition.getPath());
             
-            RouteEntry route = routeMap.get(routeDef.getPath());
-            route.setEndpoint(routeDef.getEndpoint().getVerb(), routeDef.getEndpoint());
+            RouteEntry route = routeMap.get(definition.getPath());
+            route.setEndpoint(definition.getEndpoint().getVerb(), definition.getEndpoint());
+            // todo what happens if multiple paths have differnt verbs?
         }
-        
-        routes = new RouteEntry[routeMap.size()];
-        int i = 0;
-        for(String path : routeMap.keySet()) {
-            routes[i] = routeMap.get(path);
-            i++;
-        }
+        routes = routeMap.values().toArray(new RouteEntry[routeMap.size()]);
+    }
+
+    private RouteEntry createRoute(RouteDefinitionEntry definition) {
+        RouteEntry route = new RouteEntry();
+        final PathTemplate template = new PathTemplate(definition.getPath());
+        route.pattern = new PathPattern(template,"");
+        return route;
     }
 }

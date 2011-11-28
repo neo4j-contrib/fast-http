@@ -24,13 +24,14 @@ import java.util.Map;
 public interface Deserializer {
 
     long readLong() throws DeserializationException;
-    
+
     String readString() throws DeserializationException;
 
     long readInt() throws DeserializationException;
 
-    <T> T readEnum(
-            IdentifiableEnumDeserializer<T> deserializer) throws DeserializationException;
+    <T> T readEnum(IdentifiableEnumDeserializer<T> deserializer) throws DeserializationException;
 
     Map<String, Object> readMap() throws DeserializationException;
+
+    String readObject() throws DeserializationException;
 }

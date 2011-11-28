@@ -20,10 +20,18 @@
 package org.neo4j.server.smack.serialization;
 
 
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+
+import java.util.Map;
+
 public interface Serializer {
 
-    void putEnum(Enum en);
+    void putEnum(Enum en) throws SerializationException;
 
-    void putString(String string);
+    void putString(String string) throws SerializationException;
 
+    void putMap(Map<String,Object> data) throws SerializationException;
+    void putNode(Node node) throws SerializationException;
+    void putRelationship(Relationship rel) throws SerializationException;
 }

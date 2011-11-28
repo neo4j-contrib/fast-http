@@ -19,19 +19,21 @@
  */
 package org.neo4j.server.rest.service;
 
-import java.util.Map;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-
+import org.neo4j.graphdb.Node;
 import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.server.annotations.Transactional;
 import org.neo4j.server.database.Database;
 import org.neo4j.server.serialization.PropertyMapDeserializationStrategy;
 import org.neo4j.server.smack.InvocationRequest;
-import org.neo4j.server.smack.InvocationResponse;
+import org.neo4j.server.smack.InvocationResult;
 import org.neo4j.server.smack.annotations.DeserializeWith;
+import org.neo4j.server.smack.annotations.SerializeWith;
+import org.neo4j.server.smack.serialization.NodeSerializationStrategy;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import java.util.Map;
 
 public class CoreService {
 
@@ -39,7 +41,7 @@ public class CoreService {
 
     @Path("/info")
     @GET
-    public void databaseInfo(InvocationRequest req, InvocationResponse res) throws Exception {
+    public void databaseInfo(InvocationRequest req, InvocationResult res) throws Exception {
         Database db = req.getCtx(ContextKeys.DATABASE);
         final AbstractGraphDatabase gdb = (AbstractGraphDatabase) db.getGraphDB();
         // TODO gdb.getConfig().getParams().toString()
@@ -54,7 +56,7 @@ public class CoreService {
     @Path("/node")
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
     @Transactional
-    public void createNode(InvocationRequest req, InvocationResponse res) throws Exception {
+    public void createNode(InvocationRequest req, InvocationResult res) throws Exception {
         Database db = req.getCtx(ContextKeys.DATABASE);
         Map<String, Object> properties = req.getDeserializedContent();
         System.out.println("properties = " + properties);
@@ -62,18 +64,14 @@ public class CoreService {
         
         res.setCreated("/node/" + id);
     }
-    /* TODO
+
     @GET
     @Path("/node/{id}")
-    // @SerializeWith(PropertyMapSerializationStrategy.class)
-    public void readNode(InvocationRequest req, InvocationResponse res, Long id) throws Exception {
+    @SerializeWith(NodeSerializationStrategy.class)
+    public void readNode(InvocationRequest req, InvocationResult res) throws Exception {
         Database db = req.getCtx(ContextKeys.DATABASE);
-        Map<String, Object> properties = req.getDeserializedContent();
-        System.out.println("properties = " + properties);
+        Long id = req.getPathVariables().getParamAsLong("id");
         Node node = actions.getNode(db,id);
-
-        res.setCreated("/node/" + node.getId()); // todo props + rels
+        res.setOk(node);
     }
-    */
-
 }

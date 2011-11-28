@@ -36,8 +36,8 @@ public class SmackServer {
     private String host;
     private Router router = new Router();
     private ServerBootstrap netty;
-    private OutputPipelineBootstrap outputPipeline;
-    private InputPipelineBootstrap inputPipeline;
+    private PipelineBootstrap<ResponseEvent> outputPipeline;
+    private PipelineBootstrap<RequestEvent> inputPipeline;
     private ExecutionHandler executionHandler;
     private ServerSocketChannelFactory channelFactory;
     private ChannelGroup openChannels = new DefaultChannelGroup("SmackServer");
@@ -52,20 +52,16 @@ public class SmackServer {
         router.compileRoutes();
         
         // OUTPUT PIPELINE
-        
-        SerializationHandler serializationHandler = new SerializationHandler();
-        outputPipeline = new OutputPipelineBootstrap(serializationHandler);
+
+        outputPipeline = new PipelineBootstrap<ResponseEvent>(ResponseEvent.FACTORY, new CreateResponseHandler(), new SerializationHandler(), new WriteResponseHandler());
         outputPipeline.start();
-        
+
         executionHandler.setOutputBuffer(outputPipeline.getRingBuffer());
         executionHandler.start();
 
         // INPUT PIPELINE
-        
-        RoutingHandler routingHandler = new RoutingHandler(router);
-        DeserializationHandler deserializationHandler = new DeserializationHandler();
-        
-        inputPipeline = new InputPipelineBootstrap(routingHandler, deserializationHandler, executionHandler);
+
+        inputPipeline = new PipelineBootstrap<RequestEvent>(RequestEvent.FACTORY, new RoutingHandler(router), new DeserializationHandler(), executionHandler);
         inputPipeline.start();
 
         

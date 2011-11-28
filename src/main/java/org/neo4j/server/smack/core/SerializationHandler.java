@@ -20,29 +20,27 @@
 package org.neo4j.server.smack.core;
 
 import com.lmax.disruptor.WorkHandler;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.buffer.DynamicChannelBuffer;
+import org.neo4j.server.smack.serialization.SerializationFactory;
+import org.neo4j.server.smack.serialization.SerializationStrategy;
+import org.neo4j.server.smack.serialization.Serializer;
 
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class SerializationHandler implements WorkHandler<ResponseEvent> {
-    
-    public void onEvent(final ResponseEvent event)
-            throws Exception {
-        Channel out = event.getOutputChannel();
-        
-        HttpResponseStatus status = event.getInvocationResponse().getStatus();
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
-        
-        if(status == HttpResponseStatus.CREATED) {
-            response.addHeader(HttpHeaders.Names.LOCATION, event.getInvocationResponse().getLocation());
-        }
-        
-        response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, 0);
 
-        out.write(response);
+    SerializationFactory serializationFactory = new SerializationFactory();
+
+    @Override
+    public void onEvent(ResponseEvent event) throws Exception {
+        final Object data = event.getInvocationResult().getData();
+        if (data==null) return;
+        @SuppressWarnings("unchecked") final SerializationStrategy<Object> serializationStrategy = (SerializationStrategy<Object>) event.getSerializationStrategy();
+        final DynamicChannelBuffer content = new DynamicChannelBuffer(1000); // todo
+
+        Serializer serializer = serializationFactory.getSerializer(content);
+        serializationStrategy.serialize(data, serializer, null);
+
+        event.getHttpResponse().setContent(content);
     }
+
 }

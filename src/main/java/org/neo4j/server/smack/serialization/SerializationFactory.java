@@ -19,26 +19,19 @@
  */
 package org.neo4j.server.smack.serialization;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.netty.buffer.ChannelBuffer;
 
+public class SerializationFactory {
 
-public class InputStreamWrappedChannelBuffer extends InputStream {
+    JsonFactory jsonFactory = new JsonFactory(new ObjectMapper());
+    
+    public Deserializer getDeserializer(ChannelBuffer input) throws DeserializationException {
+        return new JsonDeserializer(jsonFactory, input);
+    }
+    public Serializer getSerializer(ChannelBuffer output) throws SerializationException {
+        return new JsonSerializer(jsonFactory, output);
+    }
 
-    ChannelBuffer buf;
-    
-    public InputStreamWrappedChannelBuffer(ChannelBuffer buf) {
-        this.buf = buf;
-    }
-    
-    public int read() throws IOException {
-        try {
-            return buf.readByte();
-        } catch(IndexOutOfBoundsException e) {
-            return -1;
-        }
-        
-    }
 }

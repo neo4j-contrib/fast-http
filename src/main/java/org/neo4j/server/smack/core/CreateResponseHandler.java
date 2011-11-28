@@ -19,20 +19,22 @@
  */
 package org.neo4j.server.smack.core;
 
-import org.neo4j.server.smack.serialization.SerializationFactory;
-import org.neo4j.server.smack.serialization.Deserializer;
-
 import com.lmax.disruptor.WorkHandler;
+import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpResponse;
+import org.neo4j.server.smack.InvocationResult;
 
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-public class DeserializationHandler implements WorkHandler<RequestEvent> {
+public class CreateResponseHandler implements WorkHandler<ResponseEvent> {
 
-    SerializationFactory serializationFactory = new SerializationFactory();
-    
-    public void onEvent(final RequestEvent event)
-            throws Exception {
-        Deserializer d = serializationFactory.getDeserializer(event.getContent());
-        event.setDeserializedContent(event.getEndpoint().getDeserializationStrategy().deserialize(d));
+    public void onEvent(final ResponseEvent event) throws Exception {
+        final InvocationResult result = event.getInvocationResult();
+        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, result.getStatus());
+        if (result.getLocation()!=null) {
+            response.addHeader(HttpHeaders.Names.LOCATION, result.getLocation());
+        }
+        event.setHttpResponse(response);
     }
-
 }

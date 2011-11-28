@@ -20,15 +20,18 @@
 package org.neo4j.server.smack;
 
 
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 
-public class InvocationResponse {
+public class InvocationResult {
     
     private String location;
     private HttpResponseStatus status;
+    private Object data;
+    private ChannelHandlerContext context;
 
     public void setCreated(String location) {
         setStatus(CREATED);
@@ -37,6 +40,15 @@ public class InvocationResponse {
     
     public void setOk(){
         setStatus(OK);
+    }
+
+    public void setOk(Object value) {
+        setOk();
+        this.data = value;
+    }
+
+    public Object getData() {
+        return data;
     }
 
     public void setStatus(HttpResponseStatus status) {
@@ -53,5 +65,17 @@ public class InvocationResponse {
 
     public String getLocation() {
         return location;
+    }
+
+    public void setContext(ChannelHandlerContext outputChannel) {
+        this.context = outputChannel;
+    }
+
+    public ChannelHandlerContext getContext() {
+        return context;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
     }
 }

@@ -20,9 +20,9 @@
 package org.neo4j.server.smack.serialization;
 
 public interface SerializationStrategy<T> {
-
     public static SerializationStrategy<Object> NO_OP = new SerializationStrategy<Object>(){
-        
+        public void serialize(Object value, Serializer out, SerializationModifier modifier) throws SerializationException { }
     };
     
+    void serialize(T value, Serializer out, SerializationModifier modifier) throws SerializationException;
 }

@@ -20,7 +20,7 @@
 package org.neo4j.server.smack.core;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.neo4j.server.smack.Endpoint;
 import org.neo4j.server.smack.InvocationVerb;
 import org.neo4j.server.smack.PathVariables;
@@ -35,7 +35,6 @@ public class RequestEvent {
     private boolean isPersistentConnection;
     private PathVariables pathVariables;
     private Endpoint endpoint;
-    private Channel outputChannel;
     private Object deserializedContent;
     
     public static EventFactory<RequestEvent> FACTORY = new EventFactory<RequestEvent>() {
@@ -43,6 +42,7 @@ public class RequestEvent {
             return new RequestEvent();
         }
     };
+    private ChannelHandlerContext context;
 
     public void setVerb(InvocationVerb verb) {
         this.verb = verb;
@@ -80,14 +80,6 @@ public class RequestEvent {
         return endpoint;
     }
 
-    public void setOutputChannel(Channel channel) {
-        this.outputChannel = channel;
-    }
-
-    public Channel getOutputChannel() {
-        return outputChannel;
-    }
-
     public PathVariables getPathVariables() {
         return pathVariables;
     }
@@ -103,6 +95,13 @@ public class RequestEvent {
     public Object getDeserializedContent() {
         return deserializedContent;
     }
-    
-    
+
+
+    public void setContext(ChannelHandlerContext context) {
+        this.context = context;
+    }
+
+    public ChannelHandlerContext getContext() {
+        return context;
+    }
 }

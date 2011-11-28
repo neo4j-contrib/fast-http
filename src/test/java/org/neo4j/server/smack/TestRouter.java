@@ -1,13 +1,13 @@
 package org.neo4j.server.smack;
 
-import static org.junit.Assert.assertNotNull;
-
-import java.lang.annotation.Annotation;
-
 import org.junit.Test;
 import org.neo4j.server.smack.core.RequestEvent;
 import org.neo4j.server.smack.serialization.DeserializationStrategy;
 import org.neo4j.server.smack.serialization.SerializationStrategy;
+
+import java.lang.annotation.Annotation;
+
+import static org.junit.Assert.assertNotNull;
 
 public class TestRouter  {
 
@@ -16,8 +16,7 @@ public class TestRouter  {
        Endpoint e = new Endpoint() {
 
             @Override
-            public void invoke(InvocationRequest ctx,
-                    InvocationResponse response) throws Exception { }
+            public void invoke(InvocationRequest ctx, InvocationResult result) throws Exception { }
 
             @Override
             public InvocationVerb getVerb() {
@@ -69,7 +68,7 @@ public class TestRouter  {
 
             @Override
             public void invoke(InvocationRequest ctx,
-                    InvocationResponse response) throws Exception { }
+                    InvocationResult response) throws Exception { }
 
             @Override
             public InvocationVerb getVerb() {

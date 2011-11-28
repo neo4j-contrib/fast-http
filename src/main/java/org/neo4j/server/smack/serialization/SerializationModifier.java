@@ -25,5 +25,4 @@ package org.neo4j.server.smack.serialization;
  * output version, as well as a compact data-only output.
  */
 public interface SerializationModifier {
-
 }

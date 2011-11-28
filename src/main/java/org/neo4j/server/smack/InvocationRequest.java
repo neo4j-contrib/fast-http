@@ -19,17 +19,14 @@
  */
 package org.neo4j.server.smack;
 
-import org.jboss.netty.channel.Channel;
-
 import java.util.HashMap;
 import java.util.Map;
 
 public class InvocationRequest {
 
-    private Map<String, Object> ctxObjects = new HashMap<String, Object>();
+    private final Map<String, Object> ctxObjects = new HashMap<String, Object>();
     private PathVariables pathVariables;
     private Object deserializedContent;
-    private Channel outputChannel;
 
     public InvocationRequest() {
     }
@@ -63,13 +60,5 @@ public class InvocationRequest {
 
     public void setDeserializedContent(Object deserializedContent) {
         this.deserializedContent = deserializedContent;
-    }
-
-    public void setOutputChannel(Channel outputChannel) {
-        this.outputChannel = outputChannel;
-    }
-
-    public Channel getOutputChannel() {
-        return outputChannel;
     }
 }

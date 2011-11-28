@@ -35,11 +35,10 @@ public class DatabaseWorkerThread extends BufferedWorkExecutor<DatabaseWork> {
         InvocationRequest request = work.request;
         request.setPathVariables(event.getPathVariables());
         request.setDeserializedContent(event.getDeserializedContent());
-        request.setOutputChannel(event.getOutputChannel());
         request.putCtx(ContextKeys.TX_REGISTRY, txs);
         request.putCtx(ContextKeys.TX_ID, txId);
         request.putCtx(ContextKeys.DATABASE, database);
-        
+        work.result.setContext(event.getContext());   // TODO contexthandler
         workBuffer.publish(sequenceId);
     }
 

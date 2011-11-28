@@ -24,9 +24,8 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBufferInputStream;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,12 +35,7 @@ public class JsonDeserializer implements Deserializer {
 
     public JsonDeserializer(JsonFactory factory, ChannelBuffer stream) throws DeserializationException {
         try {
-            final InputStreamWrappedChannelBuffer inputStream = new InputStreamWrappedChannelBuffer(stream);
-            final DataInputStream dis = new DataInputStream(inputStream);
-            final byte[] buffer = new byte[10 * 1024];
-            dis.read(buffer);
-            System.out.println("serialized data: "+new String(buffer));
-            this.parser = factory.createJsonParser(new ByteArrayInputStream(buffer));
+            this.parser = factory.createJsonParser(new ChannelBufferInputStream(stream));
         } catch (JsonParseException e) {
             throw new DeserializationException("Unable to instantiate JSON parser.", e);
         } catch (IOException e) {
@@ -85,6 +79,19 @@ public class JsonDeserializer implements Deserializer {
             throw new DeserializationException("Unable to read expected String value.", e);
         }
     }
+
+    @Override
+    public String readObject() throws DeserializationException {
+        try {
+            parser.readValueAs(Object.class);
+            return parser.getText();
+        } catch (JsonParseException e) {
+            throw new DeserializationException("Invalid JSON format, expected String.", e);
+        } catch (IOException e) {
+            throw new DeserializationException("Unable to read expected String value.", e);
+        }
+    }
+
 
     @Override
     public Map<String, Object> readMap() throws DeserializationException {

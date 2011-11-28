@@ -19,10 +19,11 @@
  */
 package org.neo4j.server.smack.core;
 
-import org.jboss.netty.channel.Channel;
-import org.neo4j.server.smack.InvocationResponse;
-
 import com.lmax.disruptor.EventFactory;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.handler.codec.http.HttpResponse;
+import org.neo4j.server.smack.InvocationResult;
+import org.neo4j.server.smack.serialization.SerializationStrategy;
 
 public class ResponseEvent {
     
@@ -32,23 +33,35 @@ public class ResponseEvent {
         }
     };
     
-    private Channel outputChannel;
+    private InvocationResult result;
+    private HttpResponse httpResponse;
+    private SerializationStrategy<?> serializationStrategy = SerializationStrategy.NO_OP;
 
-    private InvocationResponse response;
-
-    public void setInvocationResponse(InvocationResponse response) {
-        this.response = response;
+    public void setInvocationResult(InvocationResult result) {
+        this.result = result;
     }
     
-    public InvocationResponse getInvocationResponse() {
-        return response;
+    public InvocationResult getInvocationResult() {
+        return result;
     }
 
-    public void setOutputChannel(Channel outputChannel) {
-        this.outputChannel = outputChannel;
+    public HttpResponse getHttpResponse() {
+        return httpResponse;
     }
 
-    public Channel getOutputChannel() {
-        return outputChannel;
+    public void setHttpResponse(HttpResponse httpResponse) {
+        this.httpResponse = httpResponse;
+    }
+
+    public void setSerializationStrategy(SerializationStrategy<?> serializationStrategy) {
+        this.serializationStrategy = serializationStrategy;
+    }
+
+    public SerializationStrategy<?> getSerializationStrategy() {
+        return serializationStrategy;
+    }
+
+    public ChannelHandlerContext getContext() {
+        return result.getContext(); // todo
     }
 }

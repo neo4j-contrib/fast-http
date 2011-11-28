@@ -58,8 +58,8 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
         }
 
         public void invoke(InvocationRequest request,
-                InvocationResponse response) throws Exception {
-            method.invoke(underlyingObject, request, response);
+                InvocationResult result) throws Exception {
+            method.invoke(underlyingObject, request, result);
         }
 
         @Override

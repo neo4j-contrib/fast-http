@@ -20,38 +20,56 @@
 package org.neo4j.server.smack.serialization;
 
 
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
+import java.io.IOException;
 import java.util.Map;
 
-public class ToStringSerializer implements Serializer {
-    StringBuilder buffer = new StringBuilder();
+public class JsonSerializer implements Serializer {
+
+    private final JsonGenerator generator;
+
+    public JsonSerializer(JsonFactory jsonFactory, ChannelBuffer output) throws SerializationException {
+        try {
+            this.generator = jsonFactory.createJsonGenerator(new ChannelBufferOutputStream(output));
+        } catch (IOException e) {
+            throw new SerializationException("Error creating generator",e);
+        }
+    }
 
     @Override
-    public void putEnum(Enum en) {
+    public void putEnum(Enum en) throws SerializationException {
         
     }
 
     @Override
-    public void putString(String string) {
-        buffer.append(string);
+    public void putString(String string) throws SerializationException {
+        try {
+            generator.writeString(string);
+        } catch (IOException e) {
+            throw new SerializationException("Could node serialize String "+string,e);
+        }
     }
     
-    public String toString() {
-        return buffer.toString();
-    }
-
     @Override
-    public void putMap(Map<String, Object> data) {
-        buffer.append(data);
+    public void putMap(Map<String, Object> data) throws SerializationException {
+        try {
+            generator.writeObject(data);
+        } catch (IOException e) {
+            throw new SerializationException("Could not serialize map "+data,e);
+        }
     }
 
     @Override
     public void putNode(Node node) throws SerializationException {
+        // todo output elements one by one to json reduce overhead
         putMap(GraphElementSerializer.toNodeMap(node));
     }
-
 
     @Override
     public void putRelationship(Relationship rel) throws SerializationException {

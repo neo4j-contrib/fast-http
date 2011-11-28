@@ -19,19 +19,16 @@
  */
 package org.neo4j.server.serialization;
 
-import org.neo4j.server.smack.serialization.DeserializationStrategy;
-import org.neo4j.server.smack.serialization.Deserializer;
-import org.neo4j.server.smack.serialization.SerializationModifier;
-import org.neo4j.server.smack.serialization.Serializer;
+import org.neo4j.server.smack.serialization.*;
 
-public class TxLocationSerializationStrategy implements DeserializationStrategy<Long> {
+public class TxLocationSerializationStrategy implements DeserializationStrategy<Long>, SerializationStrategy<Long> {
 
-    public void serialize(Long txId, Serializer out, SerializationModifier modifier) {
+    public void serialize(Long txId, Serializer out, SerializationModifier modifier) throws SerializationException {
         out.putString("/db/data/tx/" + txId);
     }
 
-    public Long deserialize(Deserializer out) {
-        return null;
+    public Long deserialize(Deserializer in) throws DeserializationException {
+        return in.readLong();
     }
     
 }
