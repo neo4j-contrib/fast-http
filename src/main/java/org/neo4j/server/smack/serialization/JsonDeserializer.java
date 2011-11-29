@@ -19,23 +19,22 @@
  */
 package org.neo4j.server.smack.serialization;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBufferInputStream;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 public class JsonDeserializer implements Deserializer {
 
     private JsonParser parser;
 
-    public JsonDeserializer(JsonFactory factory, ChannelBuffer stream) throws DeserializationException {
+    public JsonDeserializer(JsonFactory factory, InputStream stream) throws DeserializationException {
         try {
-            this.parser = factory.createJsonParser(new ChannelBufferInputStream(stream));
+            this.parser = factory.createJsonParser(stream);
         } catch (JsonParseException e) {
             throw new DeserializationException("Unable to instantiate JSON parser.", e);
         } catch (IOException e) {
@@ -106,8 +105,7 @@ public class JsonDeserializer implements Deserializer {
                 while( (token = parser.nextToken()) != JsonToken.END_OBJECT && token != null) {
                     field = parser.getText();
                     token = parser.nextToken();
-                    final Object value = parser.readValueAs(Object.class);
-                    map.put(field, value);
+                    map.put(field, parser.readValueAs(Object.class));
                 }
             } else {
                 throw new DeserializationException("Invalid JSON, expected map.");

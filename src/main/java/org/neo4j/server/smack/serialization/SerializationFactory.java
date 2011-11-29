@@ -22,14 +22,16 @@ package org.neo4j.server.smack.serialization;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBufferInputStream;
 
 public class SerializationFactory {
 
     JsonFactory jsonFactory = new JsonFactory(new ObjectMapper());
     
     public Deserializer getDeserializer(ChannelBuffer input) throws DeserializationException {
-        return new JsonDeserializer(jsonFactory, input);
+        return new JsonDeserializer(jsonFactory, new ChannelBufferInputStream(input));
     }
+    
     public Serializer getSerializer(ChannelBuffer output) throws SerializationException {
         return new JsonSerializer(jsonFactory, output);
     }

@@ -29,12 +29,12 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.server.annotations.Transactional;
 import org.neo4j.server.database.Database;
+import org.neo4j.server.serialization.NodeSerializationStrategy;
 import org.neo4j.server.serialization.PropertyMapDeserializationStrategy;
 import org.neo4j.server.smack.Invocation;
 import org.neo4j.server.smack.Result;
 import org.neo4j.server.smack.annotations.DeserializeWith;
 import org.neo4j.server.smack.annotations.SerializeWith;
-import org.neo4j.server.smack.serialization.NodeSerializationStrategy;
 
 public class CoreService {
 

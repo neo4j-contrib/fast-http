@@ -1,6 +1,10 @@
-package org.neo4j.server.smack.serialization;
+package org.neo4j.server.serialization;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.server.smack.serialization.SerializationException;
+import org.neo4j.server.smack.serialization.SerializationModifier;
+import org.neo4j.server.smack.serialization.SerializationStrategy;
+import org.neo4j.server.smack.serialization.Serializer;
 
 /**
  * @author mh
