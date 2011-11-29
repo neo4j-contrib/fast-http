@@ -1,8 +1,13 @@
 package org.neo4j.server.smack;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Map;
+
+import javax.ws.rs.core.MediaType;
+
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.AfterClass;
@@ -13,15 +18,11 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.server.database.Database;
 import org.neo4j.server.rest.service.DataAPI;
-import org.neo4j.server.rest.service.DatabaseWorkerPool;
 import org.neo4j.test.ImpermanentGraphDatabase;
 
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 
 /**
  * @author mh
@@ -43,7 +44,7 @@ public class SmackServerTest {
         gds.getReferenceNode().setProperty("name","test");
         tx.success();
         tx.finish();
-        server = new SmackServer(HOST, PORT,new DatabaseWorkerPool(new Database(gds)));
+        server = new SmackServer(HOST, PORT, new Database(gds));
         server.addRoute("",new DataAPI());
         server.start();
     }

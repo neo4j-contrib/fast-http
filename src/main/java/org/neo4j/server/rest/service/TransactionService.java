@@ -46,8 +46,8 @@ public class TransactionService {
     @POST
     @Path("")
     public void createTransaction(InvocationRequest req, InvocationResult res) {
-        TransactionRegistry txs = req.getCtx(ContextKeys.TX_REGISTRY);
-        Long txId = req.getCtx(ContextKeys.TX_ID);
+        TransactionRegistry txs = req.getTxRegistry();
+        Long txId = req.getTxId();
         
         actions.createTransaction(txs, txId);
         
@@ -59,8 +59,8 @@ public class TransactionService {
     @DeserializeWith(TxStateDeserializationStrategy.class)
     @Transactional
     public void setTransactionState(InvocationRequest req, InvocationResult res) throws Exception {
-        TransactionRegistry database = req.getCtx(ContextKeys.TX_REGISTRY);
-        Long txId = req.getCtx(ContextKeys.TX_ID);
+        TransactionRegistry database = req.getTxRegistry();
+        Long txId = req.getTxId();
         
         actions.setTransactionState(database, txId, (TransactionState)req.getDeserializedContent());
         

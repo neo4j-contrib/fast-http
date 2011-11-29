@@ -1,9 +1,10 @@
 package org.neo4j.server.rest.service;
 
-import com.lmax.disruptor.EventFactory;
 import org.neo4j.server.smack.Endpoint;
 import org.neo4j.server.smack.InvocationRequest;
 import org.neo4j.server.smack.InvocationResult;
+
+import com.lmax.disruptor.EventFactory;
 
 public class DatabaseWork {
     
@@ -14,7 +15,6 @@ public class DatabaseWork {
     };
     
     public boolean isTransactional = false;
-    public long txId = -1l;
     
     public InvocationRequest request = new InvocationRequest();
     public InvocationResult result = new InvocationResult();

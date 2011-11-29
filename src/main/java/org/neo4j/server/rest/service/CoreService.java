@@ -19,6 +19,12 @@
  */
 package org.neo4j.server.rest.service;
 
+import java.util.Map;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+
 import org.neo4j.graphdb.Node;
 import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.server.annotations.Transactional;
@@ -30,11 +36,6 @@ import org.neo4j.server.smack.annotations.DeserializeWith;
 import org.neo4j.server.smack.annotations.SerializeWith;
 import org.neo4j.server.smack.serialization.NodeSerializationStrategy;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import java.util.Map;
-
 public class CoreService {
 
     private CoreServiceActions actions = new CoreServiceActions();
@@ -42,7 +43,7 @@ public class CoreService {
     @Path("/info")
     @GET
     public void databaseInfo(InvocationRequest req, InvocationResult res) throws Exception {
-        Database db = req.getCtx(ContextKeys.DATABASE);
+        Database db = req.getDatabase();
         final AbstractGraphDatabase gdb = (AbstractGraphDatabase) db.getGraphDB();
         // TODO gdb.getConfig().getParams().toString()
         res.setOk();
@@ -54,10 +55,10 @@ public class CoreService {
     
     @POST
     @Path("/node")
-    @DeserializeWith(PropertyMapDeserializationStrategy.class)
     @Transactional
+    @DeserializeWith(PropertyMapDeserializationStrategy.class)
     public void createNode(InvocationRequest req, InvocationResult res) throws Exception {
-        Database db = req.getCtx(ContextKeys.DATABASE);
+        Database db = req.getDatabase();
         Map<String, Object> properties = req.getDeserializedContent();
         System.out.println("properties = " + properties);
         Long id = actions.createNode(db, properties);
@@ -69,7 +70,7 @@ public class CoreService {
     @Path("/node/{id}")
     @SerializeWith(NodeSerializationStrategy.class)
     public void readNode(InvocationRequest req, InvocationResult res) throws Exception {
-        Database db = req.getCtx(ContextKeys.DATABASE);
+        Database db = req.getDatabase();
         Long id = req.getPathVariables().getParamAsLong("id");
         Node node = actions.getNode(db,id);
         res.setOk(node);

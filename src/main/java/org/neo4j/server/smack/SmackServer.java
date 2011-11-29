@@ -19,16 +19,25 @@
  */
 package org.neo4j.server.smack;
 
+import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
-import org.neo4j.server.smack.core.*;
+import org.neo4j.server.database.Database;
+import org.neo4j.server.smack.core.CreateResponseHandler;
+import org.neo4j.server.smack.core.DeserializationHandler;
+import org.neo4j.server.smack.core.ExecutionHandler;
+import org.neo4j.server.smack.core.PipelineBootstrap;
+import org.neo4j.server.smack.core.RequestEvent;
+import org.neo4j.server.smack.core.ResponseEvent;
+import org.neo4j.server.smack.core.RoutingHandler;
+import org.neo4j.server.smack.core.SerializationHandler;
+import org.neo4j.server.smack.core.WriteResponseHandler;
 import org.neo4j.server.smack.http.NettyHttpPipelineFactory;
-
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
 
 public class SmackServer {
 
@@ -38,16 +47,18 @@ public class SmackServer {
     private ServerBootstrap netty;
     private PipelineBootstrap<ResponseEvent> outputPipeline;
     private PipelineBootstrap<RequestEvent> inputPipeline;
-    private ExecutionHandler executionHandler;
     private ServerSocketChannelFactory channelFactory;
     private ChannelGroup openChannels = new DefaultChannelGroup("SmackServer");
+    private Database database;
+    private ExecutionHandler executionHandler;
 
-    public SmackServer(String host, int port, ExecutionHandler executionHandler) {
+    public SmackServer(String host, int port, Database db) {
         this.host = host;
         this.port = port;
-        this.executionHandler = executionHandler;
+        this.database = db;
     }
     
+    @SuppressWarnings("unchecked")
     public void start() {
         router.compileRoutes();
         
@@ -56,11 +67,9 @@ public class SmackServer {
         outputPipeline = new PipelineBootstrap<ResponseEvent>(ResponseEvent.FACTORY, new CreateResponseHandler(), new SerializationHandler(), new WriteResponseHandler());
         outputPipeline.start();
 
-        executionHandler.setOutputBuffer(outputPipeline.getRingBuffer());
-        executionHandler.start();
-
         // INPUT PIPELINE
 
+        executionHandler = new ExecutionHandler(database, outputPipeline.getRingBuffer());
         inputPipeline = new PipelineBootstrap<RequestEvent>(RequestEvent.FACTORY, new RoutingHandler(router), new DeserializationHandler(), executionHandler);
         inputPipeline.start();
 
@@ -69,7 +78,7 @@ public class SmackServer {
         
         // Potential config setting: Pick between old-fashioned or async sockets
         // OioServerSocketChannelFactory vs NioServerSocketChannelFactory
-        // Old sockets are superior when handling < 1000 clients
+        // Old sockets are supposedly superior when handling < 1000 clients
         channelFactory = 
             new OioServerSocketChannelFactory(
                     Executors.newCachedThreadPool(),
@@ -102,11 +111,6 @@ public class SmackServer {
     
     public void addRoute(String route, Object target) {
         router.addRoute(route, target);
-    }
-
-    public void setMaxThreads(int maxThreads) {
-        // TODO Auto-generated method stub
-        
     }
     
 }

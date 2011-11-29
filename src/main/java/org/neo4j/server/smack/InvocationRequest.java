@@ -19,46 +19,57 @@
  */
 package org.neo4j.server.smack;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.neo4j.server.database.Database;
+import org.neo4j.server.transaction.TransactionRegistry;
+
 
 public class InvocationRequest {
 
-    private final Map<String, Object> ctxObjects = new HashMap<String, Object>();
     private PathVariables pathVariables;
     private Object deserializedContent;
-
-    public InvocationRequest() {
-    }
     
+    private Database database;
+    private TransactionRegistry txRegistry;
+    private long txId = -1l;
     
-    public void putCtx(String key, Object obj) {
-        ctxObjects.put(key, obj);
-    }
-    
-    @SuppressWarnings("unchecked")
-    public <T> T getCtx(String key) {
-        return (T)ctxObjects.get(key);
-    }
-
-
     public PathVariables getPathVariables() {
         return pathVariables;
     }
-
-
+    
     public void setPathVariables(PathVariables pathVariables) {
         this.pathVariables = pathVariables;
     }
-
 
     @SuppressWarnings("unchecked")
     public <T> T getDeserializedContent() {
         return (T)deserializedContent;
     }
 
-
     public void setDeserializedContent(Object deserializedContent) {
         this.deserializedContent = deserializedContent;
+    }
+
+    public void setDatabase(Database database) {
+        this.database = database;
+    }
+
+    public Database getDatabase() {
+        return database;
+    }
+
+    public void setTxRegistry(TransactionRegistry txRegistry) {
+        this.txRegistry = txRegistry;
+    }
+
+    public TransactionRegistry getTxRegistry() {
+        return txRegistry;
+    }
+
+    public void setTxId(long txId) {
+        this.txId = txId;
+    }
+
+    public long getTxId() {
+        return txId;
     }
 }

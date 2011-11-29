@@ -26,14 +26,14 @@ public class DatabaseWorkHandler implements WorkHandler<DatabaseWork> {
 
     @Override
     public void onEvent(DatabaseWork work) throws Exception {
-        if(work.txId != currentTxId)
+        if(work.request.getTxId() != currentTxId)
         {
             txs.suspendCurrentTransaction();
             
             if(work.usesTxAPI)
             {
-                currentTxId = work.txId;
-                txs.associateWithCurrentThread(work.txId);
+                txs.associateWithCurrentThread(work.request.getTxId());
+                currentTxId = work.request.getTxId();
             } 
             else if(work.isTransactional)
             {   
