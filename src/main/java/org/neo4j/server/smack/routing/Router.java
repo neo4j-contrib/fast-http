@@ -17,11 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.server.smack;
+package org.neo4j.server.smack.routing;
 
 import com.sun.jersey.server.impl.uri.PathPattern;
 import com.sun.jersey.server.impl.uri.PathTemplate;
 import org.apache.log4j.Logger;
+import org.neo4j.server.smack.Endpoint;
 import org.neo4j.server.smack.core.RequestEvent;
 
 import java.util.LinkedHashMap;

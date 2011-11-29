@@ -19,7 +19,7 @@
  */
 package org.neo4j.server.smack.core;
 
-import org.neo4j.server.smack.Router;
+import org.neo4j.server.smack.routing.Router;
 
 import com.lmax.disruptor.WorkHandler;
 

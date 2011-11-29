@@ -20,10 +20,11 @@
 package org.neo4j.server.smack;
 
 import org.neo4j.server.database.Database;
+import org.neo4j.server.smack.routing.PathVariables;
 import org.neo4j.server.transaction.TransactionRegistry;
 
 
-public class InvocationRequest {
+public class Invocation {
 
     private PathVariables pathVariables;
     private Object deserializedContent;

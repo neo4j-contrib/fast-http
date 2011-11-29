@@ -22,8 +22,8 @@ package org.neo4j.server.smack.core;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.neo4j.server.smack.Endpoint;
-import org.neo4j.server.smack.InvocationVerb;
-import org.neo4j.server.smack.PathVariables;
+import org.neo4j.server.smack.routing.InvocationVerb;
+import org.neo4j.server.smack.routing.PathVariables;
 
 import com.lmax.disruptor.EventFactory;
 

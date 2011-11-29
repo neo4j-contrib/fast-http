@@ -38,6 +38,8 @@ import org.neo4j.server.smack.core.RoutingHandler;
 import org.neo4j.server.smack.core.SerializationHandler;
 import org.neo4j.server.smack.core.WriteResponseHandler;
 import org.neo4j.server.smack.http.NettyHttpPipelineFactory;
+import org.neo4j.server.smack.routing.Router;
+import org.neo4j.server.smack.routing.RoutingDefinition;
 
 public class SmackServer {
 
@@ -60,6 +62,7 @@ public class SmackServer {
     
     @SuppressWarnings("unchecked")
     public void start() {
+        
         router.compileRoutes();
         
         // OUTPUT PIPELINE
@@ -73,7 +76,6 @@ public class SmackServer {
         inputPipeline = new PipelineBootstrap<RequestEvent>(RequestEvent.FACTORY, new RoutingHandler(router), new DeserializationHandler(), executionHandler);
         inputPipeline.start();
 
-        
         // NETTY 
         
         // Potential config setting: Pick between old-fashioned or async sockets

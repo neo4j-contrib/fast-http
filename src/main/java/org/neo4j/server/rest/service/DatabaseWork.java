@@ -1,8 +1,8 @@
 package org.neo4j.server.rest.service;
 
 import org.neo4j.server.smack.Endpoint;
-import org.neo4j.server.smack.InvocationRequest;
-import org.neo4j.server.smack.InvocationResult;
+import org.neo4j.server.smack.Invocation;
+import org.neo4j.server.smack.Result;
 
 import com.lmax.disruptor.EventFactory;
 
@@ -16,8 +16,8 @@ public class DatabaseWork {
     
     public boolean isTransactional = false;
     
-    public InvocationRequest request = new InvocationRequest();
-    public InvocationResult result = new InvocationResult();
+    public Invocation request = new Invocation();
+    public Result result = new Result();
 
     public Endpoint endpoint;
 

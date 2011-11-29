@@ -23,14 +23,14 @@ import com.lmax.disruptor.WorkHandler;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.neo4j.server.smack.InvocationResult;
+import org.neo4j.server.smack.Result;
 
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class CreateResponseHandler implements WorkHandler<ResponseEvent> {
 
     public void onEvent(final ResponseEvent event) throws Exception {
-        final InvocationResult result = event.getInvocationResult();
+        final Result result = event.getInvocationResult();
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, result.getStatus());
         if (result.getLocation()!=null) {
             response.addHeader(HttpHeaders.Names.LOCATION, result.getLocation());

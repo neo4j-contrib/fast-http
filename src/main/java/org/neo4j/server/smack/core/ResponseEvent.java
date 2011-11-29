@@ -22,7 +22,7 @@ package org.neo4j.server.smack.core;
 import com.lmax.disruptor.EventFactory;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.neo4j.server.smack.InvocationResult;
+import org.neo4j.server.smack.Result;
 import org.neo4j.server.smack.serialization.SerializationStrategy;
 
 public class ResponseEvent {
@@ -33,15 +33,15 @@ public class ResponseEvent {
         }
     };
     
-    private InvocationResult result;
+    private Result result;
     private HttpResponse httpResponse;
     private SerializationStrategy<?> serializationStrategy = SerializationStrategy.NO_OP;
 
-    public void setInvocationResult(InvocationResult result) {
+    public void setInvocationResult(Result result) {
         this.result = result;
     }
     
-    public InvocationResult getInvocationResult() {
+    public Result getInvocationResult() {
         return result;
     }
 

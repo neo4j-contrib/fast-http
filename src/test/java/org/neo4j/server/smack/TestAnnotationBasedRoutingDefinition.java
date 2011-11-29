@@ -14,6 +14,8 @@ import javax.ws.rs.Path;
 
 import org.junit.Test;
 import org.neo4j.server.annotations.Transactional;
+import org.neo4j.server.smack.routing.AnnotationBasedRoutingDefinition;
+import org.neo4j.server.smack.routing.RouteDefinitionEntry;
 
 public class TestAnnotationBasedRoutingDefinition {
 

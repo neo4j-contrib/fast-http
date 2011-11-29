@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.server.smack;
+package org.neo4j.server.smack.routing;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -29,6 +29,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
+import org.neo4j.server.smack.Endpoint;
+import org.neo4j.server.smack.Invocation;
+import org.neo4j.server.smack.Result;
 import org.neo4j.server.smack.annotations.DeserializeWith;
 import org.neo4j.server.smack.annotations.SerializeWith;
 import org.neo4j.server.smack.serialization.DeserializationStrategy;
@@ -57,8 +60,8 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
             this.deserializationStrategy = deserializationStrategy;
         }
 
-        public void invoke(InvocationRequest request,
-                InvocationResult result) throws Exception {
+        public void invoke(Invocation request,
+                Result result) throws Exception {
             method.invoke(underlyingObject, request, result);
         }
 

@@ -30,8 +30,8 @@ import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.server.annotations.Transactional;
 import org.neo4j.server.database.Database;
 import org.neo4j.server.serialization.PropertyMapDeserializationStrategy;
-import org.neo4j.server.smack.InvocationRequest;
-import org.neo4j.server.smack.InvocationResult;
+import org.neo4j.server.smack.Invocation;
+import org.neo4j.server.smack.Result;
 import org.neo4j.server.smack.annotations.DeserializeWith;
 import org.neo4j.server.smack.annotations.SerializeWith;
 import org.neo4j.server.smack.serialization.NodeSerializationStrategy;
@@ -42,7 +42,7 @@ public class CoreService {
 
     @Path("/info")
     @GET
-    public void databaseInfo(InvocationRequest req, InvocationResult res) throws Exception {
+    public void databaseInfo(Invocation req, Result res) throws Exception {
         Database db = req.getDatabase();
         final AbstractGraphDatabase gdb = (AbstractGraphDatabase) db.getGraphDB();
         // TODO gdb.getConfig().getParams().toString()
@@ -57,7 +57,7 @@ public class CoreService {
     @Path("/node")
     @Transactional
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    public void createNode(InvocationRequest req, InvocationResult res) throws Exception {
+    public void createNode(Invocation req, Result res) throws Exception {
         Database db = req.getDatabase();
         Map<String, Object> properties = req.getDeserializedContent();
         System.out.println("properties = " + properties);
@@ -69,7 +69,7 @@ public class CoreService {
     @GET
     @Path("/node/{id}")
     @SerializeWith(NodeSerializationStrategy.class)
-    public void readNode(InvocationRequest req, InvocationResult res) throws Exception {
+    public void readNode(Invocation req, Result res) throws Exception {
         Database db = req.getDatabase();
         Long id = req.getPathVariables().getParamAsLong("id");
         Node node = actions.getNode(db,id);

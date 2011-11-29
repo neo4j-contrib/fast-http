@@ -26,7 +26,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 
-public class InvocationResult {
+public class Result {
     
     private String location;
     private HttpResponseStatus status;

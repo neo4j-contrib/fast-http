@@ -25,7 +25,7 @@ public interface DeserializationStrategy<T> {
     public static final DeserializationStrategy<Object> NO_OP = new DeserializationStrategy<Object>() {
         @Override
         public Object deserialize(Deserializer in) throws DeserializationException {
-            return null;
+            return "";
         }
     };
     

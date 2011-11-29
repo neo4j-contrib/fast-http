@@ -26,8 +26,8 @@ import javax.ws.rs.Path;
 import org.neo4j.server.annotations.Transactional;
 import org.neo4j.server.rest.repr.TransactionState;
 import org.neo4j.server.serialization.TxStateDeserializationStrategy;
-import org.neo4j.server.smack.InvocationRequest;
-import org.neo4j.server.smack.InvocationResult;
+import org.neo4j.server.smack.Invocation;
+import org.neo4j.server.smack.Result;
 import org.neo4j.server.smack.annotations.DeserializeWith;
 import org.neo4j.server.transaction.TransactionRegistry;
 
@@ -45,7 +45,7 @@ public class TransactionService {
     
     @POST
     @Path("")
-    public void createTransaction(InvocationRequest req, InvocationResult res) {
+    public void createTransaction(Invocation req, Result res) {
         TransactionRegistry txs = req.getTxRegistry();
         Long txId = req.getTxId();
         
@@ -58,7 +58,7 @@ public class TransactionService {
     @Path("/{tx_id}/state")
     @DeserializeWith(TxStateDeserializationStrategy.class)
     @Transactional
-    public void setTransactionState(InvocationRequest req, InvocationResult res) throws Exception {
+    public void setTransactionState(Invocation req, Result res) throws Exception {
         TransactionRegistry database = req.getTxRegistry();
         Long txId = req.getTxId();
         

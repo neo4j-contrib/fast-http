@@ -19,7 +19,7 @@
  */
 package org.neo4j.server.rest.service;
 
-import org.neo4j.server.smack.RoutingDefinition;
+import org.neo4j.server.smack.routing.RoutingDefinition;
 
 public class DataAPI extends RoutingDefinition {
     

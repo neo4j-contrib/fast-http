@@ -21,12 +21,13 @@ package org.neo4j.server.smack;
 
 import java.lang.annotation.Annotation;
 
+import org.neo4j.server.smack.routing.InvocationVerb;
 import org.neo4j.server.smack.serialization.DeserializationStrategy;
 import org.neo4j.server.smack.serialization.SerializationStrategy;
 
 public interface Endpoint {
 
-    public void invoke(InvocationRequest ctx, InvocationResult result) throws Exception;
+    public void invoke(Invocation ctx, Result result) throws Exception;
     public InvocationVerb getVerb();
     public DeserializationStrategy<?> getDeserializationStrategy();
     public SerializationStrategy<?> getSerializationStrategy();

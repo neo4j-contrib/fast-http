@@ -17,30 +17,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.server.smack;
+package org.neo4j.server.smack.routing;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.neo4j.server.smack.Endpoint;
 
-public class RoutingDefinition {
-    
-    protected List<RouteDefinitionEntry> entries = new ArrayList<RouteDefinitionEntry>();
-    
-    public void addRoute(String route, Object target) {
-        addRoute(route, new AnnotationBasedRoutingDefinition(target));
+public class RouteDefinitionEntry {
+
+    private final String path;
+    private final Endpoint endpoint;
+
+    public RouteDefinitionEntry(String path, Endpoint endpoint) {
+        this.path = path;
+        this.endpoint = endpoint;
     }
-    
-    public void addRoute(String route, RoutingDefinition target) {
-        for(RouteDefinitionEntry subRoute : target.getRouteDefinitionEntries()) {
-            addRoute(route + subRoute.getPath(), subRoute.getEndpoint());
-        }
+
+    public String getPath() {
+        return path;
     }
-    
-    public void addRoute(String route, Endpoint target) {
-        entries.add(new RouteDefinitionEntry(route, target));
+
+    public Endpoint getEndpoint() {
+        return endpoint;
     }
-    
-    public List<RouteDefinitionEntry> getRouteDefinitionEntries() {
-        return entries;
+
+    @Override
+    public String toString() {
+        return String.format("RouteDefinitionEntry{path='%s', endpoint=%s}", path, endpoint);
     }
 }

@@ -17,28 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.server.smack;
+package org.neo4j.server.smack.routing;
 
-public class RouteDefinitionEntry {
+public class ResourceNotFoundException extends RuntimeException {
 
-    private final String path;
-    private final Endpoint endpoint;
-
-    public RouteDefinitionEntry(String path, Endpoint endpoint) {
-        this.path = path;
-        this.endpoint = endpoint;
+    public ResourceNotFoundException(String string) {
+        super(string);
     }
 
-    public String getPath() {
-        return path;
-    }
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -2095648980547335471L;
 
-    public Endpoint getEndpoint() {
-        return endpoint;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("RouteDefinitionEntry{path='%s', endpoint=%s}", path, endpoint);
-    }
 }
