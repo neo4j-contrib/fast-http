@@ -40,8 +40,8 @@ public class CoreService {
 
     private CoreServiceActions actions = new CoreServiceActions();
 
-    @Path("/info")
     @GET
+    @Path("/info")
     public void databaseInfo(Invocation req, Result res) throws Exception {
         Database db = req.getDatabase();
         final AbstractGraphDatabase gdb = (AbstractGraphDatabase) db.getGraphDB();
@@ -60,10 +60,7 @@ public class CoreService {
     public void createNode(Invocation req, Result res) throws Exception {
         Database db = req.getDatabase();
         Map<String, Object> properties = req.getDeserializedContent();
-        System.out.println("properties = " + properties);
-        Long id = actions.createNode(db, properties);
-        
-        res.setCreated("/node/" + id);
+        res.setCreated("/node/" + actions.createNode(db, properties));
     }
 
     @GET

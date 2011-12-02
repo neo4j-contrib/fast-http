@@ -56,6 +56,13 @@ the relevant Commercial Agreement.
     </dependency>
 
     <dependency>
+        <groupId>org.neo4j</groupId>
+        <artifactId>neo4j-graphviz</artifactId>
+        <version>${neo4j.version}</version>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.6.1</version>

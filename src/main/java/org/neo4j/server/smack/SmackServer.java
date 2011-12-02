@@ -115,4 +115,8 @@ public class SmackServer {
         router.addRoute(route, target);
     }
     
+    public Database getDatabase() {
+        return database;
+    }
+    
 }

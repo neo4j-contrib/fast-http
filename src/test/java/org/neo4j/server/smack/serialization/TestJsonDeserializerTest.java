@@ -15,7 +15,6 @@ public class TestJsonDeserializerTest {
 
     @Test
     public void testReadingMap() throws Exception {
-        
         InputStream in = new ByteArrayInputStream("{\"firstkey\":1,\"secondkey\":2}".getBytes("UTF-8"));
         
         JsonDeserializer d = new JsonDeserializer(new JsonFactory(new ObjectMapper()), in);
@@ -27,8 +26,6 @@ public class TestJsonDeserializerTest {
         
         assertThat((Integer)deserialized.get("firstkey"), is(1));
         assertThat((Integer)deserialized.get("secondkey"), is(2));
-        
-        
     }
     
 }
