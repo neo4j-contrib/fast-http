@@ -29,6 +29,7 @@ import org.jboss.netty.channel.socket.ServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import org.neo4j.server.database.Database;
 import org.neo4j.server.smack.core.CreateResponseHandler;
+import org.neo4j.server.smack.core.DaemonThreadFactory;
 import org.neo4j.server.smack.core.DeserializationHandler;
 import org.neo4j.server.smack.core.ExecutionHandler;
 import org.neo4j.server.smack.core.PipelineBootstrap;
@@ -78,13 +79,10 @@ public class SmackServer {
 
         // NETTY 
         
-        // Potential config setting: Pick between old-fashioned or async sockets
-        // OioServerSocketChannelFactory vs NioServerSocketChannelFactory
-        // Old sockets are supposedly superior when handling < 1000 clients
         channelFactory = 
             new OioServerSocketChannelFactory(
-                    Executors.newCachedThreadPool(),
-                    Executors.newCachedThreadPool());
+                    Executors.newCachedThreadPool(new DaemonThreadFactory()),
+                    Executors.newCachedThreadPool(new DaemonThreadFactory()));
         netty = new ServerBootstrap(channelFactory);
 
         // Set up the event pipeline factory.

@@ -17,18 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.server.smack.core;
+package org.neo4j.smack.api;
 
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.handler.codec.http.HttpResponse;
+import static org.junit.Assert.assertEquals;
 
-import com.lmax.disruptor.WorkHandler;
+import org.junit.Test;
+import org.neo4j.smack.test.utils.AbstractRestFunctionalTestBase;
+import org.neo4j.smack.test.utils.JaxRsResponse;
+import org.neo4j.smack.test.utils.RestRequest;
 
-public class WriteResponseHandler implements WorkHandler<ResponseEvent> {
-
-    public void onEvent(final ResponseEvent event) throws Exception 
+public class ErrorHandlingTest extends AbstractRestFunctionalTestBase
+{
+    
+    @Test
+    public void shouldReturn404OnMissingResource() throws Exception
     {
-        HttpResponse response = event.getHttpResponse();
-        event.getContext().getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        JaxRsResponse response = RestRequest.req().post( getDataUri() + "some/bs/resource123/lol", "[]" );
+        assertEquals( 404, response.getStatus() );
+        response.close();
     }
 }

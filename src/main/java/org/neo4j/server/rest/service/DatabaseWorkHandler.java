@@ -47,12 +47,13 @@ public class DatabaseWorkHandler implements WorkHandler<DatabaseWork> {
                 } finally {
                     dumpDb(database.graph);
                     tx.finish();
-                    publishResults(sequenceId);
+                    publishResults(sequenceId);   
                 }
             }
-        } 
-       
+        }
+        
         publishResults(perform(work));
+        
     }
 
     private void publishResults(long sequenceId) {
@@ -70,12 +71,16 @@ public class DatabaseWorkHandler implements WorkHandler<DatabaseWork> {
         }
     }
 
-    public long perform(DatabaseWork work) throws Exception {
+    public long perform(DatabaseWork work) throws Exception 
+    {
         work.endpoint.invoke(work.request, work.result);
         long sequenceId = output.next();
         ResponseEvent ev = output.get(sequenceId);
+        
+        ev.setFailure(null);
         ev.setSerializationStrategy(work.endpoint.getSerializationStrategy()); // todo
         ev.setInvocationResult(work.result);
+        
         return sequenceId;
     }
 

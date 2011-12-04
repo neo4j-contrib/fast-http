@@ -69,7 +69,9 @@ public class DatabaseWorkerThread {
         work.request.setDatabase(database);
         work.request.setTxRegistry(txs);
         
-        work.result.setContext(event.getContext());   // TODO contexthandler
+        work.setFailure(null);
+        
+        work.setContext(event.getContext());   // TODO contexthandler
         workBuffer.publish(sequenceId);
     }
 

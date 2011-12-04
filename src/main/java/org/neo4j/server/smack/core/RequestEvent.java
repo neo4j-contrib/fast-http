@@ -27,22 +27,31 @@ import org.neo4j.server.smack.routing.PathVariables;
 
 import com.lmax.disruptor.EventFactory;
 
-public class RequestEvent {
-
-    private InvocationVerb verb;
-    private String path;
-    private ChannelBuffer content;
-    private boolean isPersistentConnection;
-    private PathVariables pathVariables;
-    private Endpoint endpoint;
-    private Object deserializedContent;
-    
+public class RequestEvent implements Fallible {
+   
     public static EventFactory<RequestEvent> FACTORY = new EventFactory<RequestEvent>() {
         public RequestEvent newInstance() {
             return new RequestEvent();
         }
     };
+
+    private InvocationVerb verb;
+    
+    private String path;
+    
+    private ChannelBuffer content;
+    
+    private PathVariables pathVariables;
+    
+    private Endpoint endpoint;
+    
+    private Object deserializedContent;
+    
     private ChannelHandlerContext context;
+
+    private boolean isPersistentConnection;
+
+    private Throwable failure;
 
     public void setVerb(InvocationVerb verb) {
         this.verb = verb;
@@ -96,12 +105,26 @@ public class RequestEvent {
         return deserializedContent;
     }
 
-
     public void setContext(ChannelHandlerContext context) {
         this.context = context;
     }
 
     public ChannelHandlerContext getContext() {
         return context;
+    }
+
+    @Override
+    public void setFailure(Throwable e) {
+        this.failure = e;        
+    }
+
+    @Override
+    public Throwable getFailure() {
+        return failure;
+    }
+
+    @Override
+    public boolean hasFailed() {
+        return failure != null;
     }
 }

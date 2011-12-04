@@ -19,8 +19,8 @@
  */
 package org.neo4j.server.smack.core;
 
-import org.neo4j.server.smack.serialization.SerializationFactory;
 import org.neo4j.server.smack.serialization.Deserializer;
+import org.neo4j.server.smack.serialization.SerializationFactory;
 
 import com.lmax.disruptor.WorkHandler;
 
@@ -31,8 +31,9 @@ public class DeserializationHandler implements WorkHandler<RequestEvent> {
     
     public void onEvent(final RequestEvent event)
             throws Exception {
-        Deserializer d = serializationFactory.getDeserializer(event.getContent());
-        event.setDeserializedContent(event.getEndpoint().getDeserializationStrategy().deserialize(d));
+        if(!event.hasFailed()) {
+            Deserializer d = serializationFactory.getDeserializer(event.getContent());
+            event.setDeserializedContent(event.getEndpoint().getDeserializationStrategy().deserialize(d));
+        }
     }
-
 }

@@ -39,67 +39,91 @@ public class ExecutionHandler implements WorkHandler<RequestEvent> {
     private Database database;
     private long txIds = 0l;    
     private DatabaseWorkerThread [] workers = new DatabaseWorkerThread[NUM_DATABASE_WORK_EXECUTORS];
-    private ExceptionHandler exceptionHandler;
+    private ExceptionHandler exceptionHandler = new WorkExceptionHandler();
 
-    public ExecutionHandler(Database database, RingBuffer<ResponseEvent> output) {
+    public ExecutionHandler(Database database, RingBuffer<ResponseEvent> output) 
+    {
         this.database = database;
         this.output = output;
-        
-        // TODO: Exception handling
-        this.exceptionHandler = new WorkExceptionHandler();
-        
         start();
     }
     
-    public void stop() {
-        for(DatabaseWorkerThread worker : workers) {
+    public void stop() 
+    {
+        for(DatabaseWorkerThread worker : workers) 
+        {
             stopWorker(worker);
         }
     }
     
-    private void start() {
-        // Set up workers
-        for(int i=0; i<NUM_DATABASE_WORK_EXECUTORS;i++) {
+    private void start()
+    {
+        for(int i=0; i<NUM_DATABASE_WORK_EXECUTORS;i++) 
+        {
             DatabaseWorkerThread worker = new DatabaseWorkerThread(database, new TransactionRegistry(database.getGraphDB()), output, exceptionHandler);
             workers[i] = worker;
             worker.start();
         }
     }
 
-    private void stopWorker(DatabaseWorkerThread worker) {
-        try {
-            if (worker==null) {
+    private void stopWorker(DatabaseWorkerThread worker) 
+    {
+        try 
+        {
+            if (worker==null) 
+            {
                 logger.warn("Worker is null");
                 return;
             }
             worker.stop();
-        } catch(Exception e) {
+        } 
+        catch(Exception e) 
+        {
             logger.error("Error stopping worker", e);
         }
     }
 
     @Override
-    public void onEvent(RequestEvent event) {
-        try {
-
-            boolean transactional = event.getEndpoint().hasAnnotation(Transactional.class);
-            
-            boolean usesTxAPI = true;
-            
-            // Did client supply a transaction id?
-            Long txId = event.getPathVariables().getParamAsLong("tx_id");
-            if(txId == null) {
-                // Nope, generate one
-                txId = txIds++;
-                usesTxAPI = false;
+    public void onEvent(RequestEvent event)
+    {
+        try
+        {
+            if(!event.hasFailed())
+            {
+                boolean transactional = event.getEndpoint().hasAnnotation(Transactional.class);
+                
+                boolean usesTxAPI = true;
+                
+                // Did client supply a transaction id?
+                Long txId = event.getPathVariables().getParamAsLong("tx_id");
+                if(txId == null) {
+                    // Nope, generate one
+                    txId = txIds++;
+                    usesTxAPI = false;
+                }
+    
+                // Pick worker
+                int workerId = (int) (txId % NUM_DATABASE_WORK_EXECUTORS);
+                workers[workerId].addWork(event, txId, transactional, usesTxAPI);
+            } 
+            else
+            {
+                publishFailedResposeEvent(event);
             }
-
-            // Pick worker
-            int workerId = (int) (txId % NUM_DATABASE_WORK_EXECUTORS);
-            workers[workerId].addWork(event, txId, transactional, usesTxAPI);
-            
-        } catch(Exception e) {
-            logger.error("onEvent "+event,e);
         }
+        catch(Exception e)
+        {
+            event.setFailure(e);
+            publishFailedResposeEvent(event);
+        }
+    }
+    
+    private void publishFailedResposeEvent(RequestEvent req) 
+    {
+        long next = output.next();
+        ResponseEvent e = output.get(next);
+        e.setContext(req.getContext());
+        e.setFailure(req.getFailure());
+        output.publish(next);
     }
 }

@@ -19,22 +19,65 @@
  */
 package org.neo4j.server.smack.core;
 
-import com.lmax.disruptor.WorkHandler;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponse;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.neo4j.server.smack.Result;
+import org.neo4j.server.smack.routing.ResourceNotFoundException;
 
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import com.lmax.disruptor.WorkHandler;
 
 public class CreateResponseHandler implements WorkHandler<ResponseEvent> {
 
-    public void onEvent(final ResponseEvent event) throws Exception {
-        final Result result = event.getInvocationResult();
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, result.getStatus());
-        if (result.getLocation()!=null) {
-            response.addHeader(HttpHeaders.Names.LOCATION, result.getLocation());
+    private Map<Class<? extends Throwable>, HttpResponseStatus> exceptionToStatusMap = new HashMap<Class<? extends Throwable>, HttpResponseStatus>();
+    
+    public void onEvent(final ResponseEvent event) throws Exception 
+    {    
+        HttpResponse response;
+        
+        if(!event.hasFailed()) 
+        {
+            final Result result = event.getInvocationResult();
+            response = new DefaultHttpResponse(HTTP_1_1, result.getStatus());
+            if (result.getLocation() != null) 
+            {
+                response.addHeader(HttpHeaders.Names.LOCATION, result.getLocation());
+            }
+        } 
+        else 
+        {
+            response = createFailureResponse(event);
         }
+        
         event.setHttpResponse(response);
     }
+    
+    private HttpResponse createFailureResponse(ResponseEvent event) 
+    {
+        if(exceptionToStatusMap.containsKey(event.getFailure().getClass())) 
+        {
+            return new DefaultHttpResponse(HTTP_1_1, exceptionToStatusMap.get(event.getFailure().getClass()));
+        } 
+        else 
+        {
+            return new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    private void mapException(Class<? extends Throwable> ex, HttpResponseStatus status) 
+    {
+        exceptionToStatusMap.put(ex, status);
+    }
+    
+    {
+        mapException(ResourceNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+    }
+    
+    
 }

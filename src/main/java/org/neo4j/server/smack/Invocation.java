@@ -23,7 +23,6 @@ import org.neo4j.server.database.Database;
 import org.neo4j.server.smack.routing.PathVariables;
 import org.neo4j.server.transaction.TransactionRegistry;
 
-
 public class Invocation {
 
     private PathVariables pathVariables;

@@ -8,19 +8,13 @@ import org.neo4j.server.smack.SmackServer;
 
 
 public class SharedSmackServerTestBase {
+
+    private static SmackServer server;
     
     protected static final SmackServer server()
     {
         return server;
     }
-
-
-    protected final void cleanDatabase()
-    {
-        ServerHelper.cleanTheDatabase( server );
-    }
-
-    private static SmackServer server;
 
     @BeforeClass
     public static void allocateServer() throws IOException
@@ -28,8 +22,6 @@ public class SharedSmackServerTestBase {
         server = ServerHolder.allocate();
     }
     
-    
-
     @AfterClass
     public static final void releaseServer()
     {
@@ -41,5 +33,10 @@ public class SharedSmackServerTestBase {
         {
             server = null;
         }
+    }
+
+    protected final void cleanDatabase()
+    {
+        ServerHelper.cleanTheDatabase( server );
     }
 }

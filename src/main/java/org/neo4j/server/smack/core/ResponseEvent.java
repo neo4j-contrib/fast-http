@@ -19,13 +19,14 @@
  */
 package org.neo4j.server.smack.core;
 
-import com.lmax.disruptor.EventFactory;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.neo4j.server.smack.Result;
 import org.neo4j.server.smack.serialization.SerializationStrategy;
 
-public class ResponseEvent {
+import com.lmax.disruptor.EventFactory;
+
+public class ResponseEvent implements Fallible {
     
     public static EventFactory<ResponseEvent> FACTORY = new EventFactory<ResponseEvent>() {
         public ResponseEvent newInstance() {
@@ -34,8 +35,14 @@ public class ResponseEvent {
     };
     
     private Result result;
+    
     private HttpResponse httpResponse;
+    
     private SerializationStrategy<?> serializationStrategy = SerializationStrategy.NO_OP;
+
+    private Throwable failure;
+
+    private ChannelHandlerContext context;
 
     public void setInvocationResult(Result result) {
         this.result = result;
@@ -61,7 +68,26 @@ public class ResponseEvent {
         return serializationStrategy;
     }
 
+    public void setContext(ChannelHandlerContext outputChannel) {
+        this.context = outputChannel;
+    }
+
     public ChannelHandlerContext getContext() {
-        return result.getContext(); // todo
+        return context;
+    } 
+    
+    @Override
+    public void setFailure(Throwable e) {
+        this.failure = e;        
+    }
+
+    @Override
+    public Throwable getFailure() {
+        return failure;
+    }
+
+    @Override
+    public boolean hasFailed() {
+        return failure != null;
     }
 }
