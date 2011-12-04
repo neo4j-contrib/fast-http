@@ -1,4 +1,4 @@
-package org.neo4j.smack.api;
+package org.neo4j.smack.test.integration;
 /**
  * Copyright (c) 2002-2011 "Neo Technology,"
  * Network Engine for Objects in Lund AB [http://neotechnology.com]
@@ -31,14 +31,14 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.kernel.Version;
 import org.neo4j.kernel.impl.annotations.Documented;
-import org.neo4j.smack.test.utils.AbstractRestFunctionalTestBase;
-import org.neo4j.smack.test.utils.JaxRsResponse;
-import org.neo4j.smack.test.utils.JsonHelper;
-import org.neo4j.smack.test.utils.RestRequest;
+import org.neo4j.smack.test.util.AbstractRestFunctionalTestBase;
+import org.neo4j.smack.test.util.JaxRsResponse;
+import org.neo4j.smack.test.util.JsonHelper;
+import org.neo4j.smack.test.util.RestRequest;
 import org.neo4j.test.GraphDescription.Graph;
 import org.neo4j.test.TestData;
 
-public class GetOnRootFunctionalTest extends AbstractRestFunctionalTestBase
+public class GetOnRootIT extends AbstractRestFunctionalTestBase
 {
     /**
      * The service root is your starting point to discover the REST API.

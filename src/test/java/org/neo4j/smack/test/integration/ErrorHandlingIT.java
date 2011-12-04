@@ -17,16 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.smack.api;
+package org.neo4j.smack.test.integration;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.neo4j.smack.test.utils.AbstractRestFunctionalTestBase;
-import org.neo4j.smack.test.utils.JaxRsResponse;
-import org.neo4j.smack.test.utils.RestRequest;
+import org.neo4j.smack.test.util.AbstractRestFunctionalTestBase;
+import org.neo4j.smack.test.util.JaxRsResponse;
+import org.neo4j.smack.test.util.RestRequest;
 
-public class ErrorHandlingTest extends AbstractRestFunctionalTestBase
+public class ErrorHandlingIT extends AbstractRestFunctionalTestBase
 {
     
     @Test

@@ -1,4 +1,4 @@
-package org.neo4j.smack.test.utils;
+package org.neo4j.smack.test.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

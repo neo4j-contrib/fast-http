@@ -1,4 +1,4 @@
-package org.neo4j.smack.test.utils;
+package org.neo4j.smack.test.util;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
