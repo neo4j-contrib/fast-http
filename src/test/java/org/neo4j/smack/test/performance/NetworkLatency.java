@@ -17,7 +17,16 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource.Builder;
 
-public class LatencyPerformance {
+/**
+ * This is meant as a source of feedback for experimenting
+ * with improving network latency.
+ * 
+ * Suggested things to try:
+ *   - Make sure we re use TCP connections
+ *   - Drop the Jersey HTTP client, use a Netty based client instead
+ *   - Look into adjusting TCP packet ACK rate from Java
+ */
+public class NetworkLatency {
     
     private static final String NO_SERIALIZATION_AND_NO_DESERIALIZATION = "/noserialnodeserial";
     
@@ -34,7 +43,7 @@ public class LatencyPerformance {
     private SmackServer server;
     
     public static void main(String [] args) {
-        LatencyPerformance latency = new LatencyPerformance();
+        NetworkLatency latency = new NetworkLatency();
         System.out.println("Running tests.. (this may take a while)");
         double avgLatency = latency.test();
         System.out.println("Average latency: " + avgLatency + "ms");
