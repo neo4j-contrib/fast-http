@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.neo4j.server.smack.SmackServer;
+import org.neo4j.smack.SmackServer;
 
 
 public class SharedSmackServerTestBase {

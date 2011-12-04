@@ -2,9 +2,9 @@ package org.neo4j.smack.test.utils;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.server.database.Database;
-import org.neo4j.server.rest.service.DataAPI;
-import org.neo4j.server.smack.SmackServer;
+import org.neo4j.smack.Database;
+import org.neo4j.smack.SmackServer;
+import org.neo4j.smack.api.DataAPI;
 import org.neo4j.test.ImpermanentGraphDatabase;
 import org.neo4j.tooling.GlobalGraphOperations;
 

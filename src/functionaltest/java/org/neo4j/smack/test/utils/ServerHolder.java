@@ -2,7 +2,7 @@ package org.neo4j.smack.test.utils;
 
 import java.io.IOException;
 
-import org.neo4j.server.smack.SmackServer;
+import org.neo4j.smack.SmackServer;
 
 public class ServerHolder extends Thread
 {
