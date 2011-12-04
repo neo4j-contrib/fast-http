@@ -10,7 +10,6 @@ import org.neo4j.smack.handler.DatabaseWorkHandler;
 import com.lmax.disruptor.ClaimStrategy;
 import com.lmax.disruptor.ExceptionHandler;
 import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.Sequence;
 import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.Sequencer;
 import com.lmax.disruptor.WaitStrategy;
@@ -38,8 +37,8 @@ public class DatabaseWorkerThread {
                 WaitStrategy.Option.YIELDING);
         
         SequenceBarrier serializationBarrier = workBuffer.newBarrier();
-        workBuffer.setGatingSequences(new Sequence()); // TODO
         processor = new WorkProcessor<DatabaseInvocationEvent>(workBuffer, serializationBarrier, new DatabaseWorkHandler(database, txs, output), exceptionHandler, new AtomicLong(Sequencer.INITIAL_CURSOR_VALUE));
+        workBuffer.setGatingSequences(processor.getSequence());
     }
     
     public void start() {
@@ -55,9 +54,10 @@ public class DatabaseWorkerThread {
     }
     
     public void addWork(RequestEvent event, Long txId, boolean transactional, boolean usesTxAPI) {
-        
+
         long sequenceId = workBuffer.next();
         DatabaseInvocationEvent work = workBuffer.get(sequenceId);
+
         
         work.isTransactional = transactional;
         work.endpoint = event.getEndpoint();

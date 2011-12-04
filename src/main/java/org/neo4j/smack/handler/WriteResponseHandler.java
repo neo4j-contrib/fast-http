@@ -30,6 +30,8 @@ public class WriteResponseHandler implements WorkHandler<ResponseEvent> {
     public void onEvent(final ResponseEvent event) throws Exception 
     {
         HttpResponse response = event.getHttpResponse();
+        // TODO: We shouldn't close the channel unless we really have to,
+        // preferably, there should be one TCP connection needed per client.
         event.getContext().getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
     }
 }

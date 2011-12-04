@@ -23,7 +23,7 @@ import org.neo4j.smack.routing.RoutingDefinition;
 
 public class DataAPI extends RoutingDefinition {
     
-    public DataAPI() {
+    {
         addRoute("/tx",               new TransactionService());
         
         addRoute("",                  new CoreService());

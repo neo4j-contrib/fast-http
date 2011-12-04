@@ -27,6 +27,7 @@ public class DatabaseWorkHandler implements WorkHandler<DatabaseInvocationEvent>
 
     @Override
     public void onEvent(DatabaseInvocationEvent work) throws Exception {
+        
         if(work.invocation.getTxId() != currentTxId)
         {
             txs.suspendCurrentTransaction();
@@ -81,6 +82,7 @@ public class DatabaseWorkHandler implements WorkHandler<DatabaseInvocationEvent>
         ev.setFailure(null);
         ev.setSerializationStrategy(work.endpoint.getSerializationStrategy()); // todo
         ev.setInvocationResult(work.result);
+        ev.setContext(work.getContext());
         
         return sequenceId;
     }

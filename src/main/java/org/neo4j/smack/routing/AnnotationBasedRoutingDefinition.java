@@ -129,6 +129,8 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
         
         try {
             
+            method.setAccessible(true);
+            
             if (method.isAnnotationPresent(Path.class)) {
                 path = method.getAnnotation(Path.class).value();
             }

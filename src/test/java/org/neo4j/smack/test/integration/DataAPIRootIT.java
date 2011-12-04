@@ -19,7 +19,6 @@ package org.neo4j.smack.test.integration;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,7 +37,7 @@ import org.neo4j.smack.test.util.RestRequest;
 import org.neo4j.test.GraphDescription.Graph;
 import org.neo4j.test.TestData;
 
-public class GetOnRootIT extends AbstractRestFunctionalTestBase
+public class DataAPIRootIT extends AbstractRestFunctionalTestBase
 {
     /**
      * The service root is your starting point to discover the REST API.

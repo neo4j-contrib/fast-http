@@ -27,6 +27,7 @@ public class WorkExceptionHandler implements ExceptionHandler
 {
     public void handle(Exception e, long arg0, Object event) 
     {
+        e.printStackTrace();
         if( event instanceof Fallible ) 
         {
             ((Fallible)event).setFailure(e);
