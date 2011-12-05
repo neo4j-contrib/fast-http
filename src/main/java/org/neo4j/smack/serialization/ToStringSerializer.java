@@ -57,4 +57,9 @@ public class ToStringSerializer implements Serializer {
     public void putRelationship(Relationship rel) throws SerializationException {
         putMap(GraphElementSerializer.toRelationshipMap(rel));
     }
+
+    @Override
+    public void putRaw(String value) {
+        putString(value);
+    }
 }

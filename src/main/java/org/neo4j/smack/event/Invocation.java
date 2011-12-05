@@ -31,7 +31,8 @@ public class Invocation {
     private Database database;
     private TransactionRegistry txRegistry;
     private long txId = -1l;
-    
+    private String path;
+
     public PathVariables getPathVariables() {
         return pathVariables;
     }
@@ -71,5 +72,13 @@ public class Invocation {
 
     public long getTxId() {
         return txId;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getPath() {
+        return path;
     }
 }

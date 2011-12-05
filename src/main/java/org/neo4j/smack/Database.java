@@ -1,7 +1,6 @@
 package org.neo4j.smack;
 
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.AbstractGraphDatabase;
 
 /**
@@ -22,7 +21,7 @@ public class Database
         graph = db;
     }
 
-    public GraphDatabaseService getGraphDB() {
+    public AbstractGraphDatabase getGraphDB() {
         return graph;
     }
 

@@ -56,6 +56,7 @@ public class DatabaseWorkerThread {
         work.endpoint = event.getEndpoint();
         work.usesTxAPI = usesTxAPI;
 
+        work.invocation.setPath(event.getPath());
         work.invocation.setTxId(txId);
         work.invocation.setPathVariables(event.getPathVariables());
         work.invocation.setDeserializedContent(event.getDeserializedContent());

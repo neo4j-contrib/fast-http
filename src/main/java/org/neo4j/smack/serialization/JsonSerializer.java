@@ -33,18 +33,20 @@ import java.util.Map;
 public class JsonSerializer implements Serializer {
 
     private final JsonGenerator generator;
+    private final ChannelBufferOutputStream out;
 
     public JsonSerializer(JsonFactory jsonFactory, ChannelBuffer output) throws SerializationException {
         try {
-            this.generator = jsonFactory.createJsonGenerator(new ChannelBufferOutputStream(output));
+            out = new ChannelBufferOutputStream(output);
+            this.generator = jsonFactory.createJsonGenerator(out);
         } catch (IOException e) {
-            throw new SerializationException("Error creating generator",e);
+            throw new SerializationException("Error creating generator", e);
         }
     }
 
     @Override
     public void putEnum(Enum en) throws SerializationException {
-        
+
     }
 
     @Override
@@ -52,16 +54,16 @@ public class JsonSerializer implements Serializer {
         try {
             generator.writeString(string);
         } catch (IOException e) {
-            throw new SerializationException("Could node serialize String "+string,e);
+            throw new SerializationException("Could node serialize String " + string, e);
         }
     }
-    
+
     @Override
     public void putMap(Map<String, Object> data) throws SerializationException {
         try {
             generator.writeObject(data);
         } catch (IOException e) {
-            throw new SerializationException("Could not serialize map "+data,e);
+            throw new SerializationException("Could not serialize map " + data, e);
         }
     }
 
@@ -74,5 +76,14 @@ public class JsonSerializer implements Serializer {
     @Override
     public void putRelationship(Relationship rel) throws SerializationException {
         putMap(GraphElementSerializer.toRelationshipMap(rel));
+    }
+
+    @Override
+    public void putRaw(String data) throws SerializationException {
+        try {
+            out.writeBytes(data);
+        } catch (IOException e) {
+            throw new SerializationException("Could not serialize string to bytes " + data, e);
+        }
     }
 }

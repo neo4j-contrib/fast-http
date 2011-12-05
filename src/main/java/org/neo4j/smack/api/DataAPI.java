@@ -31,6 +31,7 @@ public class DataAPI extends RoutingDefinition {
         
         addRoute("/tx/{tx_id}",       new CoreService());
         addRoute("/tx/{tx_id}/index", new IndexService());
+        addRoute("/db/data", new RestDatabaseService());
     }
     
 }

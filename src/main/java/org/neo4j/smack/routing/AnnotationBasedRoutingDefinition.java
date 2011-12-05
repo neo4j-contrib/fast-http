@@ -144,9 +144,13 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
             Endpoint endpoint = new MethodInvokingEndpoint(verb, method,
                     underlyingObject, serializationStrategy,
                     deserializationStrategy);
-            
-            addRoute(path, endpoint);
-            
+
+            if (path.isEmpty() || path.startsWith("/")) {
+                addRoute(path, endpoint);
+            } else {
+                addRoute("/"+path, endpoint);
+            }
+
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(
                     "Serialization/deserialization strategies must implement no-arg constructor.", e);

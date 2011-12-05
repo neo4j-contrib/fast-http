@@ -34,4 +34,6 @@ public interface Serializer {
     void putMap(Map<String,Object> data) throws SerializationException;
     void putNode(Node node) throws SerializationException;
     void putRelationship(Relationship rel) throws SerializationException;
+
+    void putRaw(String value) throws SerializationException;
 }
