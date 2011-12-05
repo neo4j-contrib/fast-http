@@ -1,13 +1,8 @@
 package org.neo4j.smack;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.Map;
-
-import javax.ws.rs.core.MediaType;
-
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.AfterClass;
@@ -16,14 +11,15 @@ import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.AbstractGraphDatabase;
-import org.neo4j.smack.Database;
-import org.neo4j.smack.SmackServer;
 import org.neo4j.smack.api.DataAPI;
 import org.neo4j.test.ImpermanentGraphDatabase;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author mh
@@ -42,11 +38,11 @@ public class TestSmackServer {
     public static void setUp() throws Exception {
         gds = new ImpermanentGraphDatabase();
         final Transaction tx = gds.beginTx();
-        gds.getReferenceNode().setProperty("name","test");
+        gds.getReferenceNode().setProperty("name", "test");
         tx.success();
         tx.finish();
         server = new SmackServer(HOST, PORT, new Database(gds));
-        server.addRoute("",new DataAPI());
+        server.addRoute("", new DataAPI());
         server.start();
     }
 
@@ -58,7 +54,7 @@ public class TestSmackServer {
 
     @Test
     public void testGetInfo() throws Exception {
-        final String uri = BASE_URI+ "info";
+        final String uri = BASE_URI + "info";
         WebResource resource = Client.create().resource(uri);
         ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
                 .type(MediaType.APPLICATION_JSON)
@@ -68,18 +64,48 @@ public class TestSmackServer {
         System.out.printf("GET to [%s], status code [%d], returned data: %n%s",
                 uri, status, response.getEntity(String.class));
         response.close();
-        assertEquals("info returned 200",200,status);
+        assertEquals("info returned 200", 200, status);
+    }
+
+    @Test
+    public void testGetWrongUriReturnsError() throws Exception {
+        final String uri = BASE_URI + "wrong_uri";
+        WebResource resource = Client.create().resource(uri);
+        ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .get(ClientResponse.class);
+
+        final int status = response.getStatus();
+        System.out.printf("GET to [%s], status code [%d], returned data: %n%s",
+                uri, status, response.getEntity(String.class));
+        response.close();
+        assertEquals("wrong uri returned 404", 404, status);
+    }
+
+    @Test
+    public void testWrongMethodReturnsError() throws Exception {
+        final String uri = BASE_URI + "wrong_uri";
+        WebResource resource = Client.create().resource(uri);
+        ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .post(ClientResponse.class);
+
+        final int status = response.getStatus();
+        System.out.printf("POST to [%s], status code [%d], returned data: %n%s",
+                uri, status, response.getEntity(String.class));
+        response.close();
+        assertEquals("wrong method returned 404", 404, status);
     }
 
     @Test
     public void testCreateNode() throws Exception {
-        final String uri = BASE_URI+"node";
+        final String uri = BASE_URI + "node";
         WebResource resource = Client.create().resource(uri);
         String data = "{\"name\":\"john\",\"age\":10}";
-        ClientResponse response = resource.accept( MediaType.APPLICATION_JSON )
-                .type( MediaType.APPLICATION_JSON )
-                .entity( data )
-                .post( ClientResponse.class );
+        ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .entity(data)
+                .post(ClientResponse.class);
 
         final int status = response.getStatus();
         final URI location = response.getLocation();
@@ -92,15 +118,33 @@ public class TestSmackServer {
         for (Node node : gds.getAllNodes()) {
             System.out.println("node = " + node);
             for (String prop : node.getPropertyKeys()) {
-                System.out.println(prop + ": "+node.getProperty(prop));
+                System.out.println(prop + ": " + node.getProperty(prop));
             }
         }
-        assertEquals("john",gds.getNodeById(1).getProperty("name"));
-        assertEquals(10,gds.getNodeById(1).getProperty("age"));
+        assertEquals("john", gds.getNodeById(1).getProperty("name"));
+        assertEquals(10, gds.getNodeById(1).getProperty("age"));
     }
+
+    @Test
+    public void testWrongPayloadReturnsError() throws Exception {
+        final String uri = BASE_URI + "node";
+        WebResource resource = Client.create().resource(uri);
+        String data = "123";
+        ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .entity(data)
+                .post(ClientResponse.class);
+
+        final int status = response.getStatus();
+        System.out.printf("POST [%s] to [%s], status code [%d] location: %s, returned data: %n%s",
+                data, uri, status, response.getLocation(), response.getEntity(String.class));
+        response.close();
+        assertEquals("info returned 500", 500, status);
+    }
+
     @Test
     public void testGetNode() throws Exception {
-        final String uri = BASE_URI+"node/"+ ROOT_NODE_ID;
+        final String uri = BASE_URI + "node/" + ROOT_NODE_ID;
         WebResource resource = Client.create().resource(uri);
         ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
                 .type(MediaType.APPLICATION_JSON)

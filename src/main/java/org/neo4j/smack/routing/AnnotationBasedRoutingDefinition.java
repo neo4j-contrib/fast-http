@@ -19,22 +19,16 @@
  */
 package org.neo4j.smack.routing;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-
 import org.neo4j.smack.annotation.DeserializeWith;
 import org.neo4j.smack.annotation.SerializeWith;
 import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.Result;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.SerializationStrategy;
+
+import javax.ws.rs.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
 public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
 

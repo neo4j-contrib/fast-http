@@ -19,19 +19,9 @@
  */
 package org.neo4j.smack;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
+import com.lmax.disruptor.RingBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.*;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpRequest;
@@ -41,7 +31,11 @@ import org.jboss.netty.util.CharsetUtil;
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.routing.InvocationVerb;
 
-import com.lmax.disruptor.RingBuffer;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class NettyHttpHandler extends SimpleChannelHandler {
 
@@ -59,7 +53,6 @@ public class NettyHttpHandler extends SimpleChannelHandler {
         long sequenceNo = workBuffer.next();
         RequestEvent event = workBuffer.get(sequenceNo);
         
-        event.setFailure(null);
         event.setVerb(InvocationVerb.valueOf(httpRequest.getMethod().getName().toUpperCase()));
         event.setPath(httpRequest.getUri());
         event.setIsPersistentConnection(isKeepAlive(httpRequest));

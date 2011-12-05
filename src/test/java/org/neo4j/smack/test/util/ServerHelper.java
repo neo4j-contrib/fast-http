@@ -11,7 +11,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 public class ServerHelper {
 
     public static SmackServer createServer() {
-        SmackServer server = new SmackServer("localhost", 7474, new Database(new ImpermanentGraphDatabase()));
+        SmackServer server = new SmackServer("localhost", 7473, new Database(new ImpermanentGraphDatabase()));
         server.addRoute("",new DataAPI());
         return server;
     }

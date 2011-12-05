@@ -33,6 +33,7 @@ public class SerializationHandler implements WorkHandler<ResponseEvent> {
 
     @Override
     public void onEvent(ResponseEvent event) throws Exception {
+        if (event.hasFailed()) return;
         final Object data = event.getInvocationResult().getData();
         if (data==null) return;
         @SuppressWarnings("unchecked") final SerializationStrategy<Object> serializationStrategy = (SerializationStrategy<Object>) event.getSerializationStrategy();

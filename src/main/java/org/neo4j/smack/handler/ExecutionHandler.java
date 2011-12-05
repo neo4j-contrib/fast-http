@@ -19,6 +19,9 @@
  */
 package org.neo4j.smack.handler;
 
+import com.lmax.disruptor.ExceptionHandler;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.WorkHandler;
 import org.apache.log4j.Logger;
 import org.neo4j.smack.Database;
 import org.neo4j.smack.DatabaseWorkerThread;
@@ -27,105 +30,69 @@ import org.neo4j.smack.annotation.Transactional;
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.event.ResponseEvent;
 
-import com.lmax.disruptor.ExceptionHandler;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.WorkHandler;
-
 public class ExecutionHandler implements WorkHandler<RequestEvent> {
 
     private final static Logger logger = Logger.getLogger(ExecutionHandler.class);
 
     private static final int NUM_DATABASE_WORK_EXECUTORS = 4;
-    
-    private RingBuffer<ResponseEvent> output;
-    private Database database;
-    private long txIds = 0l;    
-    private DatabaseWorkerThread [] workers = new DatabaseWorkerThread[NUM_DATABASE_WORK_EXECUTORS];
-    private ExceptionHandler exceptionHandler = new WorkExceptionHandler();
 
-    public ExecutionHandler(Database database, RingBuffer<ResponseEvent> output) 
-    {
+    private final RingBuffer<ResponseEvent> output;
+    private final Database database;
+    private long txIds = 0l;
+    private final DatabaseWorkerThread[] workers = new DatabaseWorkerThread[NUM_DATABASE_WORK_EXECUTORS];
+    private final ExceptionHandler exceptionHandler;
+
+    public ExecutionHandler(Database database, RingBuffer<ResponseEvent> output, ExceptionHandler exceptionHandler) {
         this.database = database;
         this.output = output;
+        this.exceptionHandler = exceptionHandler;
         start();
     }
-    
-    public void stop() 
-    {
-        for(DatabaseWorkerThread worker : workers) 
-        {
+
+    public void stop() {
+        for (DatabaseWorkerThread worker : workers) {
             stopWorker(worker);
         }
     }
-    
-    private void start()
-    {
-        for(int i=0; i<NUM_DATABASE_WORK_EXECUTORS;i++) 
-        {
+
+    private void start() {
+        for (int i = 0; i < NUM_DATABASE_WORK_EXECUTORS; i++) {
             DatabaseWorkerThread worker = new DatabaseWorkerThread(database, new TransactionRegistry(database.getGraphDB()), output, exceptionHandler);
             workers[i] = worker;
             worker.start();
         }
     }
 
-    private void stopWorker(DatabaseWorkerThread worker) 
-    {
-        try 
-        {
-            if (worker==null) 
-            {
+    private void stopWorker(DatabaseWorkerThread worker) {
+        try {
+            if (worker == null) {
                 logger.warn("Worker is null");
                 return;
             }
             worker.stop();
-        } 
-        catch(Exception e) 
-        {
+        } catch (Exception e) {
             logger.error("Error stopping worker", e);
         }
     }
 
     @Override
-    public void onEvent(RequestEvent event)
-    {
-        try
-        {
-            if(!event.hasFailed())
-            {
-                boolean transactional = event.getEndpoint().hasAnnotation(Transactional.class);
-                
-                boolean usesTxAPI = true;
-                
-                // Did client supply a transaction id?
-                Long txId = event.getPathVariables().getParamAsLong("tx_id");
-                if(txId == null) {
-                    // Nope, generate one
-                    txId = txIds++;
-                    usesTxAPI = false;
-                }
-    
-                // Pick worker
-                int workerId = (int) (txId % NUM_DATABASE_WORK_EXECUTORS);
-                workers[workerId].addWork(event, txId, transactional, usesTxAPI);
-            } 
-            else
-            {
-                publishFailedResposeEvent(event);
-            }
+    public void onEvent(RequestEvent event) {
+        if (event.hasFailed()) return;
+        boolean transactional = event.getEndpoint().hasAnnotation(Transactional.class);
+
+        boolean usesTxAPI = true;
+
+        // Did client supply a transaction id?
+        Long txId = event.getPathVariables().getParamAsLong("tx_id");
+        if (txId == null) {
+            // Nope, generate one
+            txId = txIds++;
+            usesTxAPI = false;
         }
-        catch(Exception e)
-        {
-            event.setFailure(e);
-            publishFailedResposeEvent(event);
-        }
+
+        // Pick worker
+        int workerId = (int) (txId % NUM_DATABASE_WORK_EXECUTORS);
+        workers[workerId].addWork(event, txId, transactional, usesTxAPI);
     }
-    
-    private void publishFailedResposeEvent(RequestEvent req) 
-    {
-        long next = output.next();
-        ResponseEvent e = output.get(next);
-        e.setContext(req.getContext());
-        e.setFailure(req.getFailure());
-        output.publish(next);
-    }
+
 }

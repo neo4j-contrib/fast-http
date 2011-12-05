@@ -19,21 +19,21 @@
  */
 package org.neo4j.smack.test.integration;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
+import org.neo4j.smack.event.RequestEvent;
+import org.neo4j.smack.routing.Endpoint;
 import org.neo4j.smack.test.util.AbstractRestFunctionalTestBase;
 import org.neo4j.smack.test.util.JaxRsResponse;
 import org.neo4j.smack.test.util.RestRequest;
 
-public class ErrorHandlingIT extends AbstractRestFunctionalTestBase
-{
-    
+import static org.junit.Assert.assertEquals;
+
+public class ErrorHandlingIT extends AbstractRestFunctionalTestBase {
+
     @Test
-    public void shouldReturn404OnMissingResource() throws Exception
-    {
-        JaxRsResponse response = RestRequest.req().post( getDataUri() + "some/bs/resource123/lol", "[]" );
-        assertEquals( 404, response.getStatus() );
+    public void shouldReturn404OnMissingResource() throws Exception {
+        JaxRsResponse response = RestRequest.req().post(getDataUri() + "some/bs/resource123/lol", "[]");
+        assertEquals(404, response.getStatus());
         response.close();
     }
 }

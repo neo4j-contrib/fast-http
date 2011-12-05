@@ -17,28 +17,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.smack.handler;
+package org.neo4j.server.smack.core;
 
 import com.lmax.disruptor.WorkHandler;
+import org.jboss.netty.buffer.ChannelBufferOutputStream;
+import org.jboss.netty.buffer.DynamicChannelBuffer;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.neo4j.smack.event.ResponseEvent;
-import org.neo4j.smack.event.Result;
+
+import java.io.PrintStream;
 
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-public class CreateResponseHandler implements WorkHandler<ResponseEvent> {
+public class CreateErrorResponseHandler implements WorkHandler<ResponseEvent> {
 
     public void onEvent(final ResponseEvent event) throws Exception {
-        if (event.hasFailed()) return;
-
-        final Result result = event.getInvocationResult();
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, result.getStatus());
-        if (result.getLocation() != null) {
-            response.addHeader(HttpHeaders.Names.LOCATION, result.getLocation());
-        }
-
+        if (!event.hasFailed()) throw new IllegalStateException("Error result has no error flag set " + event);
+        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, event.getInvocationResult().getStatus());
+        final Object data = event.getInvocationResult().getData();
+        addException(response, data);
         event.setHttpResponse(response);
+    }
+
+    private void addException(HttpResponse response, Object data) {
+        if (data instanceof Throwable) {
+            final Throwable error = (Throwable) data;
+            final DynamicChannelBuffer content = new DynamicChannelBuffer(1000); // todo
+            error.printStackTrace(new PrintStream(new ChannelBufferOutputStream(content)));
+            response.setContent(content);
+        }
     }
 }

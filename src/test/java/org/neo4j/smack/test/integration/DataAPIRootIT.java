@@ -19,12 +19,7 @@ package org.neo4j.smack.test.integration;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Map;
-
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.AbstractGraphDatabase;
@@ -37,6 +32,10 @@ import org.neo4j.smack.test.util.RestRequest;
 import org.neo4j.test.GraphDescription.Graph;
 import org.neo4j.test.TestData;
 
+import java.util.Map;
+
+import static org.junit.Assert.*;
+
 public class DataAPIRootIT extends AbstractRestFunctionalTestBase
 {
     /**
@@ -47,6 +46,7 @@ public class DataAPIRootIT extends AbstractRestFunctionalTestBase
      */
     @Documented
     @Test
+    @Ignore
     @Graph("I know you")
     @TestData.Title( "Get service root" )
     public void assert200OkFromGet() throws Exception

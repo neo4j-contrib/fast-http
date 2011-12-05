@@ -48,10 +48,9 @@ public class RequestEvent implements Fallible {
     private Object deserializedContent;
     
     private ChannelHandlerContext context;
+    private boolean failed;
 
     private boolean isPersistentConnection;
-
-    private Throwable failure;
 
     public void setVerb(InvocationVerb verb) {
         this.verb = verb;
@@ -107,24 +106,17 @@ public class RequestEvent implements Fallible {
 
     public void setContext(ChannelHandlerContext context) {
         this.context = context;
+        this.failed = false;
     }
 
     public ChannelHandlerContext getContext() {
         return context;
     }
 
-    @Override
-    public void setFailure(Throwable e) {
-        this.failure = e;        
+    public void setFailed() {
+        this.failed =true;
     }
-
-    @Override
-    public Throwable getFailure() {
-        return failure;
-    }
-
-    @Override
     public boolean hasFailed() {
-        return failure != null;
+        return failed;
     }
 }

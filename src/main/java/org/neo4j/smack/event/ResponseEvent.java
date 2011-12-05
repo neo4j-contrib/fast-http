@@ -39,8 +39,6 @@ public class ResponseEvent implements Fallible {
     
     private SerializationStrategy<?> serializationStrategy = SerializationStrategy.NO_OP;
 
-    private Throwable failure;
-
     private ChannelHandlerContext context;
 
     public void setInvocationResult(Result result) {
@@ -74,19 +72,12 @@ public class ResponseEvent implements Fallible {
     public ChannelHandlerContext getContext() {
         return context;
     } 
-    
-    @Override
-    public void setFailure(Throwable e) {
-        this.failure = e;        
+
+    public void setFailed() {
+        this.result.setFailed();
     }
 
-    @Override
-    public Throwable getFailure() {
-        return failure;
-    }
-
-    @Override
     public boolean hasFailed() {
-        return failure != null;
+        return result.hasFailed();
     }
 }

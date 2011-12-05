@@ -79,7 +79,6 @@ public class DatabaseWorkHandler implements WorkHandler<DatabaseInvocationEvent>
         long sequenceId = output.next();
         ResponseEvent ev = output.get(sequenceId);
         
-        ev.setFailure(null);
         ev.setSerializationStrategy(work.endpoint.getSerializationStrategy()); // todo
         ev.setInvocationResult(work.result);
         ev.setContext(work.getContext());

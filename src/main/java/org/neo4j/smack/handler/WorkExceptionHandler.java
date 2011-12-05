@@ -19,21 +19,15 @@
  */
 package org.neo4j.smack.handler;
 
+import com.lmax.disruptor.ExceptionHandler;
 import org.neo4j.smack.event.Fallible;
 
-import com.lmax.disruptor.ExceptionHandler;
-
-public class WorkExceptionHandler implements ExceptionHandler 
-{
-    public void handle(Exception e, long arg0, Object event) 
-    {
+public class WorkExceptionHandler implements ExceptionHandler {
+    public void handle(Exception e, long arg0, Object event) {
         e.printStackTrace();
-        if( event instanceof Fallible ) 
-        {
-            ((Fallible)event).setFailure(e);
-        } 
-        else 
-        {
+        if (event instanceof Fallible) {
+            ((Fallible) event).setFailed();
+        } else {
             throw new RuntimeException("FATAL: Executing an event failed, but the event does not implement the Fallible interface, unable to recover.", e);
         }
     }

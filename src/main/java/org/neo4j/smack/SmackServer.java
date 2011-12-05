@@ -19,25 +19,25 @@
  */
 package org.neo4j.smack;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
-
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
+import org.neo4j.kernel.AbstractGraphDatabase;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.server.smack.core.CreateErrorResponseHandler;
+import org.neo4j.server.smack.core.PublishingExceptionHandler;
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.event.ResponseEvent;
-import org.neo4j.smack.handler.CreateResponseHandler;
-import org.neo4j.smack.handler.DeserializationHandler;
-import org.neo4j.smack.handler.ExecutionHandler;
-import org.neo4j.smack.handler.RoutingHandler;
-import org.neo4j.smack.handler.SerializationHandler;
-import org.neo4j.smack.handler.WriteResponseHandler;
+import org.neo4j.smack.handler.*;
 import org.neo4j.smack.routing.Endpoint;
 import org.neo4j.smack.routing.Router;
 import org.neo4j.smack.routing.RoutingDefinition;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
 
 public class SmackServer {
 
@@ -46,6 +46,7 @@ public class SmackServer {
     private Router router = new Router();
     private ServerBootstrap netty;
     private PipelineBootstrap<ResponseEvent> outputPipeline;
+    private PipelineBootstrap<ResponseEvent> errorPipeline;
     private PipelineBootstrap<RequestEvent> inputPipeline;
     private ServerSocketChannelFactory channelFactory;
     private ChannelGroup openChannels = new DefaultChannelGroup("SmackServer");
@@ -57,6 +58,17 @@ public class SmackServer {
         this.port = port;
         this.database = db;
     }
+
+    public static void main(String[] args) throws IOException {
+        final SmackServer smackServer = new SmackServer(args[0], Integer.parseInt(args[1]), new EmbeddedGraphDatabase(args[2]));
+        smackServer.start();
+        System.in.read();
+        smackServer.stop();
+    }
+
+    public SmackServer(String host, int port, AbstractGraphDatabase graphDatabaseService) {
+        this(host,port,new Database(graphDatabaseService));
+    }
     
     @SuppressWarnings("unchecked")
     public void start() {
@@ -65,13 +77,18 @@ public class SmackServer {
         
         // OUTPUT PIPELINE
 
-        outputPipeline = new PipelineBootstrap<ResponseEvent>(ResponseEvent.FACTORY, new CreateResponseHandler(), new SerializationHandler(), new WriteResponseHandler());
+        errorPipeline = new PipelineBootstrap<ResponseEvent>(ResponseEvent.FACTORY, new WorkExceptionHandler(), new CreateErrorResponseHandler(), new WriteResponseHandler());
+        errorPipeline.start();
+
+        final PublishingExceptionHandler exceptionHandler = new PublishingExceptionHandler(errorPipeline.getRingBuffer());
+
+        outputPipeline = new PipelineBootstrap<ResponseEvent>(ResponseEvent.FACTORY, exceptionHandler, new CreateResponseHandler(), new SerializationHandler(), new WriteResponseHandler());
         outputPipeline.start();
 
+        executionHandler = new ExecutionHandler(database, outputPipeline.getRingBuffer(), exceptionHandler);
         // INPUT PIPELINE
 
-        executionHandler = new ExecutionHandler(database, outputPipeline.getRingBuffer());
-        inputPipeline = new PipelineBootstrap<RequestEvent>(RequestEvent.FACTORY, new RoutingHandler(router), new DeserializationHandler(), executionHandler);
+        inputPipeline = new PipelineBootstrap<RequestEvent>(RequestEvent.FACTORY, exceptionHandler, new RoutingHandler(router), new DeserializationHandler(), executionHandler);
         inputPipeline.start();
 
         // NETTY 
@@ -96,6 +113,7 @@ public class SmackServer {
         if (executionHandler!=null) executionHandler.stop();
         if (inputPipeline!=null) inputPipeline.stop();
         if (outputPipeline!=null) outputPipeline.stop();
+        if (errorPipeline!=null) errorPipeline.stop();
     }
     
     public void addRoute(String route, RoutingDefinition target) {

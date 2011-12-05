@@ -20,10 +20,11 @@
 package org.neo4j.smack.event;
 
 
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
-
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
 public class Result {
     
@@ -32,6 +33,8 @@ public class Result {
     private HttpResponseStatus status;
     
     private Object data;
+    private ChannelHandlerContext context;
+    private boolean failed =false;
 
     public void setCreated(String location) {
         setStatus(CREATED);
@@ -67,7 +70,23 @@ public class Result {
         return location;
     }
 
+    public void setContext(ChannelHandlerContext outputChannel) {
+        this.context = outputChannel;
+        this.failed = false;
+    }
+
+    public ChannelHandlerContext getContext() {
+        return context;
+    }
+
     public void setData(Object data) {
         this.data = data;
+    }
+
+    public void setFailed() {
+        this.failed =true;
+    }
+    public boolean hasFailed() {
+        return failed;
     }
 }

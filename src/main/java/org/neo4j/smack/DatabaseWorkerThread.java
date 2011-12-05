@@ -1,19 +1,12 @@
 package org.neo4j.smack;
 
-import java.util.concurrent.atomic.AtomicLong;
-
+import com.lmax.disruptor.*;
 import org.neo4j.smack.event.DatabaseInvocationEvent;
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.event.ResponseEvent;
 import org.neo4j.smack.handler.DatabaseWorkHandler;
 
-import com.lmax.disruptor.ClaimStrategy;
-import com.lmax.disruptor.ExceptionHandler;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.SequenceBarrier;
-import com.lmax.disruptor.Sequencer;
-import com.lmax.disruptor.WaitStrategy;
-import com.lmax.disruptor.WorkProcessor;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DatabaseWorkerThread {
 
@@ -68,8 +61,6 @@ public class DatabaseWorkerThread {
         work.invocation.setDeserializedContent(event.getDeserializedContent());
         work.invocation.setDatabase(database);
         work.invocation.setTxRegistry(txs);
-        
-        work.setFailure(null);
         
         work.setContext(event.getContext());   // TODO contexthandler
         workBuffer.publish(sequenceId);

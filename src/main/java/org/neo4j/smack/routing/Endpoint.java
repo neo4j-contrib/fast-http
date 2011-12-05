@@ -19,15 +19,18 @@
  */
 package org.neo4j.smack.routing;
 
-import java.lang.annotation.Annotation;
-
 import org.neo4j.smack.event.Invocation;
+import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.event.Result;
 import org.neo4j.smack.serialization.DeserializationStrategy;
+import org.neo4j.smack.serialization.Deserializer;
 import org.neo4j.smack.serialization.SerializationStrategy;
+
+import java.lang.annotation.Annotation;
 
 public interface Endpoint {
 
+    // todo java7 use method-handle
     public void invoke(Invocation ctx, Result result) throws Exception;
     public InvocationVerb getVerb();
     public DeserializationStrategy<?> getDeserializationStrategy();

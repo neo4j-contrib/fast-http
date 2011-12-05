@@ -4,7 +4,8 @@ package org.neo4j.smack;
  * @author mh
  * @since 27.11.11
  */
-import static java.util.Arrays.asList;
+
+import com.lmax.disruptor.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,21 +13,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.neo4j.smack.handler.WorkExceptionHandler;
-
-import com.lmax.disruptor.ClaimStrategy;
-import com.lmax.disruptor.EventFactory;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.SequenceBarrier;
-import com.lmax.disruptor.Sequencer;
-import com.lmax.disruptor.WaitStrategy;
-import com.lmax.disruptor.WorkHandler;
-import com.lmax.disruptor.WorkProcessor;
+import static java.util.Arrays.asList;
 
 
 public class PipelineBootstrap<E> {
 
-    private final WorkExceptionHandler exceptionHandler = new WorkExceptionHandler();
+    private final ExceptionHandler exceptionHandler;
 
     private RingBuffer<E> ringBuffer;
 
@@ -38,9 +30,10 @@ public class PipelineBootstrap<E> {
     
     private final EventFactory<E> eventFactory;
 
-    public PipelineBootstrap(final EventFactory<E> eventFactory, WorkHandler<E>... handlers) {
-        this.handlers = asList(handlers);
+    public PipelineBootstrap(final EventFactory<E> eventFactory, final ExceptionHandler exceptionHandler, WorkHandler<E>... handlers) {
+        this.handlers=asList(handlers);
         this.eventFactory = eventFactory;
+        this.exceptionHandler = exceptionHandler;
     }
 
     public void start() {

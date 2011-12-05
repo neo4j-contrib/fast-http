@@ -1,11 +1,8 @@
 package org.neo4j.smack.test.performance;
 
-import java.util.Date;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.MediaType;
-
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource.Builder;
 import org.neo4j.smack.Database;
 import org.neo4j.smack.SmackServer;
 import org.neo4j.smack.event.Invocation;
@@ -13,9 +10,10 @@ import org.neo4j.smack.event.Result;
 import org.neo4j.smack.routing.RoutingDefinition;
 import org.neo4j.test.ImpermanentGraphDatabase;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource.Builder;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.MediaType;
+import java.util.Date;
 
 /**
  * This is meant as a source of feedback for experimenting
@@ -57,7 +55,7 @@ public class NetworkLatency {
             startServer();
             
             Date start = new Date();
-            sendXRequests("http://localhost:7474" + NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
+            sendXRequests("http://localhost:7473" + NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
             Date end = new Date();
             
             long total = end.getTime() - start.getTime(); 
@@ -76,7 +74,7 @@ public class NetworkLatency {
     }
     
     private void startServer() {
-        server = new SmackServer("localhost", 7474, new Database(new ImpermanentGraphDatabase()));
+        server = new SmackServer("localhost", 7473, new Database(new ImpermanentGraphDatabase()));
         server.addRoute("",new MockRoutes());
         server.start();
     }

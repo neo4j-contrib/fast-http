@@ -26,27 +26,22 @@ public class DatabaseInvocationEvent implements Fallible {
      */
     public boolean usesTxAPI;
 
-    private Throwable failure;
 
     private ChannelHandlerContext context;
+    private boolean error;
 
-    @Override
-    public void setFailure(Throwable e) {
-        this.failure = e;
-    }
-
-    @Override
-    public Throwable getFailure() {
-        return failure;
+    public void setFailed() {
+        this.error = true;
     }
 
     @Override
     public boolean hasFailed() {
-        return failure != null;
+        return error;
     }
 
     public void setContext(ChannelHandlerContext outputChannel) {
         this.context = outputChannel;
+        this.error = false;
     }
 
     public ChannelHandlerContext getContext() {
