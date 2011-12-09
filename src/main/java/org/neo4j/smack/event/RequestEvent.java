@@ -34,6 +34,8 @@ public class RequestEvent implements Fallible {
             return new RequestEvent();
         }
     };
+    
+    private long id;
 
     private InvocationVerb verb;
     
@@ -48,6 +50,7 @@ public class RequestEvent implements Fallible {
     private Object deserializedContent;
     
     private ChannelHandlerContext context;
+    
     private boolean failed;
 
     private boolean isPersistentConnection;
@@ -84,6 +87,10 @@ public class RequestEvent implements Fallible {
         this.endpoint = endpoint;
     }
 
+    public boolean getIsPersistentConnection() {
+        return this.isPersistentConnection;
+    }
+
     public Endpoint getEndpoint() {
         return endpoint;
     }
@@ -114,9 +121,18 @@ public class RequestEvent implements Fallible {
     }
 
     public void setFailed() {
-        this.failed =true;
+        this.failed = true;
     }
+    
     public boolean hasFailed() {
         return failed;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
     }
 }

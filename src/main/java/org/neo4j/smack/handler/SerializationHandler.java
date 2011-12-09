@@ -19,13 +19,14 @@
  */
 package org.neo4j.smack.handler;
 
-import com.lmax.disruptor.WorkHandler;
 import org.jboss.netty.buffer.DynamicChannelBuffer;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.neo4j.smack.event.ResponseEvent;
 import org.neo4j.smack.serialization.SerializationFactory;
 import org.neo4j.smack.serialization.SerializationStrategy;
 import org.neo4j.smack.serialization.Serializer;
 
+import com.lmax.disruptor.WorkHandler;
 
 public class SerializationHandler implements WorkHandler<ResponseEvent> {
 
@@ -34,15 +35,20 @@ public class SerializationHandler implements WorkHandler<ResponseEvent> {
     @Override
     public void onEvent(ResponseEvent event) throws Exception {
         if (event.hasFailed()) return;
+        
         final Object data = event.getInvocationResult().getData();
-        if (data==null) return;
-        @SuppressWarnings("unchecked") final SerializationStrategy<Object> serializationStrategy = (SerializationStrategy<Object>) event.getSerializationStrategy();
-        final DynamicChannelBuffer content = new DynamicChannelBuffer(1000); // todo
-
-        Serializer serializer = serializationFactory.getSerializer(content);
-        serializationStrategy.serialize(data, serializer, null);
-
-        event.getHttpResponse().setContent(content);
+        
+        if (data==null) {
+            event.getHttpResponse().addHeader(HttpHeaders.Names.CONTENT_LENGTH, 0);
+        } else {
+            @SuppressWarnings("unchecked") final SerializationStrategy<Object> serializationStrategy = (SerializationStrategy<Object>) event.getSerializationStrategy();
+            final DynamicChannelBuffer content = new DynamicChannelBuffer(1000); // todo
+    
+            Serializer serializer = serializationFactory.getSerializer(content);
+            serializationStrategy.serialize(data, serializer, null);
+            
+            event.getHttpResponse().setContent(content);
+        }
     }
 
 }

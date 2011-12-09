@@ -41,6 +41,10 @@ public class ResponseEvent implements Fallible {
 
     private ChannelHandlerContext context;
 
+    private boolean isPersistentConnection;
+
+    private long id;
+
     public void setInvocationResult(Result result) {
         this.result = result;
     }
@@ -78,6 +82,25 @@ public class ResponseEvent implements Fallible {
     }
 
     public boolean hasFailed() {
+        if(result == null ) {
+            System.out.println(result);
+        }
         return result.hasFailed();
+    }
+    
+    public void setIsPersistentConnection(boolean isPersistentConnection) {
+        this.isPersistentConnection = isPersistentConnection;
+    }
+
+    public boolean getIsPersistentConnection() {
+        return this.isPersistentConnection;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+    
+    public long getId() {
+        return id;
     }
 }

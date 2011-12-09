@@ -26,6 +26,9 @@ public class DatabaseInvocationEvent implements Fallible {
      */
     public boolean usesTxAPI;
 
+    public boolean isPersistentConnection;
+
+    public long id;
 
     private ChannelHandlerContext context;
     private boolean error;

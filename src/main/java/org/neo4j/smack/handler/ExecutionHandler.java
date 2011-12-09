@@ -19,9 +19,6 @@
  */
 package org.neo4j.smack.handler;
 
-import com.lmax.disruptor.ExceptionHandler;
-import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.WorkHandler;
 import org.apache.log4j.Logger;
 import org.neo4j.smack.Database;
 import org.neo4j.smack.DatabaseWorkerThread;
@@ -29,6 +26,10 @@ import org.neo4j.smack.TransactionRegistry;
 import org.neo4j.smack.annotation.Transactional;
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.event.ResponseEvent;
+
+import com.lmax.disruptor.ExceptionHandler;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.WorkHandler;
 
 public class ExecutionHandler implements WorkHandler<RequestEvent> {
 
@@ -91,7 +92,7 @@ public class ExecutionHandler implements WorkHandler<RequestEvent> {
         }
 
         // Pick worker
-        int workerId = (int) (txId % NUM_DATABASE_WORK_EXECUTORS);
+        int workerId = (int) (((Long)event.getContext().getAttachment()) % NUM_DATABASE_WORK_EXECUTORS);
         workers[workerId].addWork(event, txId, transactional, usesTxAPI);
     }
 

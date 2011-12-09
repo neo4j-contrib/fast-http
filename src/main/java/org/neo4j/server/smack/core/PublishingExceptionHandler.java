@@ -1,7 +1,8 @@
 package org.neo4j.server.smack.core;
 
-import com.lmax.disruptor.ExceptionHandler;
-import com.lmax.disruptor.RingBuffer;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.neo4j.server.smack.serialization.ExceptionSerializationStrategy;
 import org.neo4j.smack.event.RequestEvent;
@@ -10,8 +11,8 @@ import org.neo4j.smack.event.Result;
 import org.neo4j.smack.routing.ResourceNotFoundException;
 import org.neo4j.smack.serialization.SerializationStrategy;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.lmax.disruptor.ExceptionHandler;
+import com.lmax.disruptor.RingBuffer;
 
 /**
  * @author mh
@@ -40,10 +41,12 @@ public class PublishingExceptionHandler implements ExceptionHandler {
         System.err.println("Error occurred while processing sequence " + sequence + " event " + event);
         e.printStackTrace();
         if (event instanceof RequestEvent) {
+            System.err.println("[S] Failing request was: " + ((RequestEvent)event).getId());
             handleRequest((RequestEvent) event, e);
             return;
         }
         if (event instanceof ResponseEvent) {
+            System.err.println("[S] Failing response was: " + ((ResponseEvent)event).getId());
             handleResponse((ResponseEvent) event, e);
         }
     }

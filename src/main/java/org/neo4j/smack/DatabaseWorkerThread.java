@@ -1,12 +1,19 @@
 package org.neo4j.smack;
 
-import com.lmax.disruptor.*;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.neo4j.smack.event.DatabaseInvocationEvent;
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.event.ResponseEvent;
 import org.neo4j.smack.handler.DatabaseWorkHandler;
 
-import java.util.concurrent.atomic.AtomicLong;
+import com.lmax.disruptor.ClaimStrategy;
+import com.lmax.disruptor.ExceptionHandler;
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.SequenceBarrier;
+import com.lmax.disruptor.Sequencer;
+import com.lmax.disruptor.WaitStrategy;
+import com.lmax.disruptor.WorkProcessor;
 
 public class DatabaseWorkerThread {
 
@@ -51,10 +58,11 @@ public class DatabaseWorkerThread {
         long sequenceId = workBuffer.next();
         DatabaseInvocationEvent work = workBuffer.get(sequenceId);
 
-        
+        work.id = event.getId();
         work.isTransactional = transactional;
         work.endpoint = event.getEndpoint();
         work.usesTxAPI = usesTxAPI;
+        work.isPersistentConnection = event.getIsPersistentConnection();
 
         work.invocation.setPath(event.getPath());
         work.invocation.setTxId(txId);
@@ -64,6 +72,7 @@ public class DatabaseWorkerThread {
         work.invocation.setTxRegistry(txs);
         
         work.setContext(event.getContext());   // TODO contexthandler
+        
         workBuffer.publish(sequenceId);
     }
 

@@ -19,6 +19,7 @@
  */
 package org.neo4j.smack.handler;
 
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.neo4j.smack.event.ResponseEvent;
@@ -26,12 +27,14 @@ import org.neo4j.smack.event.ResponseEvent;
 import com.lmax.disruptor.WorkHandler;
 
 public class WriteResponseHandler implements WorkHandler<ResponseEvent> {
-
+    
     public void onEvent(final ResponseEvent event) throws Exception 
     {
         HttpResponse response = event.getHttpResponse();
-        // TODO: We shouldn't close the channel unless we really have to,
-        // preferably, there should be one TCP connection needed per client.
-        event.getContext().getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        ChannelFuture future = event.getContext().getChannel().write(response).await();
+
+        if( ! event.getIsPersistentConnection()) {
+            future.addListener(ChannelFutureListener.CLOSE);
+        }
     }
 }

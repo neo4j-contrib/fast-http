@@ -31,7 +31,7 @@ public class RoutingHandler implements WorkHandler<RequestEvent> {
     public RoutingHandler(Router router) {
         this.router = router;
     }
-
+    
     public void onEvent(final RequestEvent event)
             throws Exception {
         event.setEndpoint(router.route(event));

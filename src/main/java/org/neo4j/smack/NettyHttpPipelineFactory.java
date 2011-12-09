@@ -26,7 +26,6 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import org.neo4j.smack.event.RequestEvent;
 
 import com.lmax.disruptor.RingBuffer;
@@ -55,7 +54,7 @@ public class NettyHttpPipelineFactory implements ChannelPipelineFactory {
         pipeline.addLast("decoder",       new HttpRequestDecoder());
         pipeline.addLast("aggregator",    new HttpChunkAggregator(65536));
         pipeline.addLast("encoder",       new HttpResponseEncoder());
-        pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
+        //pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
         pipeline.addLast("handler",       new NettyHttpHandler(workBuffer));
         return pipeline;
     }
