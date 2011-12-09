@@ -6,8 +6,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -464,7 +464,7 @@ public class RESTDocsGenerator extends AsciiDocGenerator
     protected void document( final DocumentationData data )
     {
         data.description = replaceSnippets( data.description );
-        FileWriter fw = null;
+        Writer fw = null;
         try
         {
             fw = getFW("target" + File.separator + "docs"+ File.separator + section , data.title);
@@ -532,7 +532,7 @@ public class RESTDocsGenerator extends AsciiDocGenerator
         }
     }
 
-    public void writeEntity( final FileWriter fw, final String entity ) throws IOException
+    public void writeEntity( final Writer fw, final String entity ) throws IOException
     {
         if ( entity != null )
         {
