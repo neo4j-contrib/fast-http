@@ -21,6 +21,7 @@ package org.neo4j.smack.handler;
 
 import org.jboss.netty.buffer.DynamicChannelBuffer;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.neo4j.smack.event.ResponseEvent;
 import org.neo4j.smack.serialization.SerializationFactory;
 import org.neo4j.smack.serialization.SerializationStrategy;
@@ -37,17 +38,18 @@ public class SerializationHandler implements WorkHandler<ResponseEvent> {
         if (event.hasFailed()) return;
         
         final Object data = event.getInvocationResult().getData();
-        
+
+        final HttpResponse httpResponse = event.getHttpResponse();
         if (data==null) {
-            event.getHttpResponse().addHeader(HttpHeaders.Names.CONTENT_LENGTH, 0);
+            httpResponse.addHeader(HttpHeaders.Names.CONTENT_LENGTH, 0);
         } else {
             @SuppressWarnings("unchecked") final SerializationStrategy<Object> serializationStrategy = (SerializationStrategy<Object>) event.getSerializationStrategy();
             final DynamicChannelBuffer content = new DynamicChannelBuffer(1000); // todo
     
             Serializer serializer = serializationFactory.getSerializer(content);
             serializationStrategy.serialize(data, serializer, null);
-            
-            event.getHttpResponse().setContent(content);
+            httpResponse.setHeader(HttpHeaders.Names.CONTENT_TYPE, serializer.getContentType().toString());
+            httpResponse.setContent(content);
         }
     }
 

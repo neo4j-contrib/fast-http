@@ -5,8 +5,10 @@ import org.neo4j.smack.serialization.SerializationModifier;
 import org.neo4j.smack.serialization.SerializationStrategy;
 import org.neo4j.smack.serialization.Serializer;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author mh
@@ -15,9 +17,32 @@ import java.io.StringWriter;
 public class ExceptionSerializationStrategy implements SerializationStrategy<Throwable> {
 
     @Override
-    public void serialize(Throwable error, Serializer out, SerializationModifier modifier) throws SerializationException {
-        final StringWriter writer = new StringWriter();
-        error.printStackTrace(new PrintWriter(writer));
-        out.putString(writer.toString());
+    public void serialize(Throwable exception, Serializer out, SerializationModifier modifier) throws SerializationException {
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        addMessage(exception, result);
+        addException(exception, result);
+        addStackTrace(exception, result);
+        out.putMap(result);
+    }
+
+    private void addException(Throwable exception, Map<String, Object> result) {
+        result.put("exception", exception.toString());
+    }
+
+    private void addMessage(Throwable exception, Map<String, Object> result) {
+        String message = exception.getMessage();
+        if (message == null) return;
+        result.put("message", message);
+    }
+
+    private void addStackTrace(Throwable exception, Map<String, Object> result) {
+        StackTraceElement[] trace = exception.getStackTrace();
+        if (trace == null) return;
+
+        List<String> list = new ArrayList<String>(trace.length);
+        for (StackTraceElement traceElement : trace) {
+            list.add(traceElement.toString());
+        }
+        result.put("stacktrace", list);
     }
 }

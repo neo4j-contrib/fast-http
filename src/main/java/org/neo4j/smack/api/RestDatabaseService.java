@@ -4,6 +4,7 @@ import org.neo4j.server.rest.paging.LeaseManager;
 import org.neo4j.server.rest.paging.RealClock;
 import org.neo4j.server.rest.repr.*;
 import org.neo4j.server.rest.web.DatabaseActions;
+import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.neo4j.server.rest.web.PropertyValueException;
 import org.neo4j.server.rest.web.RestfulGraphDatabase;
 import org.neo4j.server.smack.serialization.RepresentationSerializationStrategy;
@@ -30,19 +31,14 @@ import static java.util.Arrays.asList;
  * @author mh
  * @since 05.12.11
  */
-public class RestDatabaseService
-{
-    @SuppressWarnings( "serial" )
-    public static class AmpersandSeparatedCollection extends LinkedHashSet<String>
-    {
-        public AmpersandSeparatedCollection( String path )
-        {
-            for ( String e : path.split( "&" ) )
-            {
-                if ( e.trim()
-                        .length() > 0 )
-                {
-                    add( e );
+public class RestDatabaseService {
+    @SuppressWarnings("serial")
+    public static class AmpersandSeparatedCollection extends LinkedHashSet<String> {
+        public AmpersandSeparatedCollection(String path) {
+            for (String e : path.split("&")) {
+                if (e.trim()
+                        .length() > 0) {
+                    add(e);
                 }
             }
         }
@@ -90,52 +86,43 @@ public class RestDatabaseService
     public static final String PATH_TO_CREATE_PAGED_TRAVERSERS = PATH_NODE + "/paged/traverse/{returnType}";
     public static final String PATH_TO_PAGED_TRAVERSERS = PATH_NODE + "/paged/traverse/{returnType}/{traverserId}";
 
-    public RestDatabaseService()
-    {
+    public RestDatabaseService() {
     }
 
-    private static final LeaseManager leaseManager = new LeaseManager( new RealClock() );
+    private static final LeaseManager leaseManager = new LeaseManager(new RealClock());
 
 
     private RestfulGraphDatabase createRestGraphDatabase(Invocation invocation) {
-        URI baseUri=null;
+        URI baseUri = null;
         final UriInfo uriInfo = null;
 
         final RepresentationFormatRepository repository = new RepresentationFormatRepository(null);
         final InputFormat jsonInputFormat = repository.inputFormat(MediaType.APPLICATION_JSON_TYPE);
         final OutputFormat jsonOutputFormat = repository.outputFormat(asList(MediaType.APPLICATION_JSON_TYPE), baseUri);
-        return new RestfulGraphDatabase(uriInfo,new org.neo4j.server.database.Database(invocation.getDatabase().getGraphDB()),jsonInputFormat, jsonOutputFormat,leaseManager);
+        return new RestfulGraphDatabase(uriInfo, new org.neo4j.server.database.Database(invocation.getDatabase().getGraphDB()), jsonInputFormat, jsonOutputFormat, leaseManager);
     }
 
     private DatabaseActions createDatabaseActions(Invocation invocation) {
-        return new DatabaseActions(new org.neo4j.server.database.Database(invocation.getDatabase().getGraphDB()),leaseManager);
+        return new DatabaseActions(new org.neo4j.server.database.Database(invocation.getDatabase().getGraphDB()), leaseManager);
     }
 
-    private static Response nothing()
-    {
+    private static Response nothing() {
         return Response.noContent()
                 .build();
     }
 
-    private long extractNodeId( String uri ) throws BadInputException
-    {
-        try
-        {
-            return Long.parseLong( uri.substring( uri.lastIndexOf( "/" ) + 1 ) );
-        }
-        catch ( NumberFormatException ex )
-        {
-            throw new BadInputException( ex );
-        }
-        catch ( NullPointerException ex )
-        {
-            throw new BadInputException( ex );
+    private long extractNodeId(String uri) throws BadInputException {
+        try {
+            return Long.parseLong(uri.substring(uri.lastIndexOf("/") + 1));
+        } catch (NumberFormatException ex) {
+            throw new BadInputException(ex);
+        } catch (NullPointerException ex) {
+            throw new BadInputException(ex);
         }
     }
 
-    private long extractRelationshipId(String uri) throws BadInputException
-    {
-        return extractNodeId( uri );
+    private long extractRelationshipId(String uri) throws BadInputException {
+        return extractNodeId(uri);
     }
 
     RepresentationFormatRepository repository = new RepresentationFormatRepository(new ExtensionInjector() {
@@ -153,22 +140,32 @@ public class RestDatabaseService
 
     @GET
     @SerializeWith(RepresentationSerializationStrategy.class)
-    public void getRoot(Invocation invocation, Result result)
-    {
-         result.setOk(createDatabaseActions(invocation).root());
+    public void getRoot(Invocation invocation, Result result) {
+        result.setOk(createDatabaseActions(invocation).root());
     }
 
     @POST
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
     @SerializeWith(RepresentationSerializationStrategy.class)
     @Transactional
-    @Path( PATH_NODES )
-    public void createNode( Invocation invocation, Result result ) throws PropertyValueException, URISyntaxException {
+    @Path(PATH_NODES)
+    public void createNode(Invocation invocation, Result result) throws PropertyValueException, URISyntaxException {
         final NodeRepresentation node = createDatabaseActions(invocation).createNode((Map<String, Object>) invocation.getDeserializedContent());
         final String location = createOutputFormat(invocation).format(node.selfUri());
         result.setCreated(location);
         result.setData(node);
     }
+
+
+    @GET
+    @Path(PATH_NODE)
+    @SerializeWith(RepresentationSerializationStrategy.class)
+    public void getNode(Invocation invocation, Result result) throws PropertyValueException, URISyntaxException, NodeNotFoundException {
+        final Long nodeId = invocation.getPathVariables().getParamAsLong("nodeId");
+        result.setOk(createDatabaseActions(invocation).getNode(nodeId));
+    }
+
+
 
     // Nodes
 /*

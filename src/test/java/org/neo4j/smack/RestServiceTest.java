@@ -16,7 +16,9 @@ import org.neo4j.test.ImpermanentGraphDatabase;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -60,10 +62,12 @@ public class RestServiceTest {
                 .get(ClientResponse.class);
 
         final int status = response.getStatus();
+        final Map content = readEntity(response, Map.class);
         System.out.printf("GET to [%s], status code [%d], returned data: %n%s",
-                uri, status, response.getEntity(String.class));
+                uri, status, content);
         response.close();
         assertEquals("info returned 200", 200, status);
+        assertEquals("info reference node",BASE_URI+"db/data/node/0",content.get("reference_node"));
     }
 
     @Test
@@ -78,7 +82,8 @@ public class RestServiceTest {
 
         final int status = response.getStatus();
         final URI location = response.getLocation();
-        final String entity = response.getEntity(String.class);
+        System.out.println("response.getEntityTag() = " + response.getEntityTag());
+        final Map entity = readEntity(response, Map.class);
         System.out.printf("POST [%s] to [%s], status code [%d] location: %s, returned data: %n%s",
                 data, uri, status, location, entity);
         response.close();
@@ -94,7 +99,26 @@ public class RestServiceTest {
         assertEquals(10, gds.getNodeById(1).getProperty("age"));
     }
 
-    private <T> T parseJson(String entity, Class<T> type) throws IOException {
-        return jsonFactory.createJsonParser(entity).readValueAs(type);
+    private <T> T readEntity(ClientResponse response, Class<T> type) throws IOException {
+        final InputStream is = response.getEntityInputStream();
+        return jsonFactory.createJsonParser(is).readValueAs(type);
+    }
+
+    @Test
+    public void testGetNode() throws Exception {
+        final String uri = BASE_URI + "db/data/node/"+ROOT_NODE_ID;
+        WebResource resource = Client.create().resource(uri);
+        ClientResponse response = resource.accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .get(ClientResponse.class);
+
+        final int status = response.getStatus();
+        final URI location = response.getLocation();
+        final Map result = readEntity(response, Map.class);
+        System.out.printf("GET from [%s], status code [%d] location: %s, returned data: %n%s",
+                uri, status, location, result);
+        response.close();
+        assertEquals("get-node returned 200", 200, status);
+        assertEquals("get-node returned location for new node", BASE_URI+"db/data/node/"+ROOT_NODE_ID, result.get("self"));
     }
 }

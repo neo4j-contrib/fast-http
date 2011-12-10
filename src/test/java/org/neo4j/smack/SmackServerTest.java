@@ -16,6 +16,7 @@ import org.neo4j.test.ImpermanentGraphDatabase;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
@@ -152,18 +153,21 @@ public class SmackServerTest {
 
         final int status = response.getStatus();
         final URI location = response.getLocation();
-        final String entity = response.getEntity(String.class);
+        final Map data = readEntity(response, Map.class);
         System.out.printf("GET from [%s], status code [%d] location: %s, returned data: %n%s",
-                uri, status, location, entity);
+                uri, status, location, data);
         response.close();
         assertEquals("info returned 201", 200, status);
-        final Class<Map> type = Map.class;
-        final Map data = parseJson(entity, type);
         assertEquals("test", data.get("name"));
         //assertEquals("info returned location for new node", "/node/0", location.toString());
     }
 
     private <T> T parseJson(String entity, Class<T> type) throws IOException {
         return jsonFactory.createJsonParser(entity).readValueAs(type);
+    }
+
+    private <T> T readEntity(ClientResponse response, Class<T> type) throws IOException {
+        final InputStream is = response.getEntityInputStream();
+        return jsonFactory.createJsonParser(is).readValueAs(type);
     }
 }

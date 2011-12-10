@@ -31,8 +31,7 @@ public class WriteResponseHandler implements WorkHandler<ResponseEvent> {
     public void onEvent(final ResponseEvent event) throws Exception 
     {
         HttpResponse response = event.getHttpResponse();
-        ChannelFuture future = event.getContext().getChannel().write(response).await();
-
+        ChannelFuture future = event.getContext().getChannel().write(response).await(); // TODO Jake, why await ??
         if( ! event.getIsPersistentConnection()) {
             future.addListener(ChannelFutureListener.CLOSE);
         }

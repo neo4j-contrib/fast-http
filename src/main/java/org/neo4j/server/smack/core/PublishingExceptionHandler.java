@@ -1,9 +1,10 @@
 package org.neo4j.server.smack.core;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.lmax.disruptor.ExceptionHandler;
+import com.lmax.disruptor.RingBuffer;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.neo4j.server.rest.repr.BadInputException;
+import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.neo4j.server.smack.serialization.ExceptionSerializationStrategy;
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.event.ResponseEvent;
@@ -11,8 +12,9 @@ import org.neo4j.smack.event.Result;
 import org.neo4j.smack.routing.ResourceNotFoundException;
 import org.neo4j.smack.serialization.SerializationStrategy;
 
-import com.lmax.disruptor.ExceptionHandler;
-import com.lmax.disruptor.RingBuffer;
+import javax.management.relation.RelationNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author mh
@@ -23,6 +25,10 @@ public class PublishingExceptionHandler implements ExceptionHandler {
     private final SerializationStrategy serializationStrategy;
     private Map<Class<? extends Throwable>, HttpResponseStatus> exceptionToStatusMap = new HashMap<Class<? extends Throwable>, HttpResponseStatus>() {{
         put(ResourceNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+        put(NodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+        put(RelationNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+        put(ArrayStoreException.class, HttpResponseStatus.BAD_REQUEST);
+        put(BadInputException.class, HttpResponseStatus.BAD_REQUEST);
     }};
 
     private HttpResponseStatus getErrorStatus(Exception ex) {

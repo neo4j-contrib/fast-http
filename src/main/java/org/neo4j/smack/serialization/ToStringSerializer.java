@@ -23,6 +23,7 @@ package org.neo4j.smack.serialization;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
+import javax.ws.rs.core.MediaType;
 import java.util.Map;
 
 public class ToStringSerializer implements Serializer {
@@ -61,5 +62,10 @@ public class ToStringSerializer implements Serializer {
     @Override
     public void putRaw(String value) {
         putString(value);
+    }
+
+    @Override
+    public MediaType getContentType() {
+        return MediaType.TEXT_PLAIN_TYPE;
     }
 }

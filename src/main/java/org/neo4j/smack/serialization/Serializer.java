@@ -23,6 +23,7 @@ package org.neo4j.smack.serialization;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
+import javax.ws.rs.core.MediaType;
 import java.util.Map;
 
 public interface Serializer {
@@ -36,4 +37,7 @@ public interface Serializer {
     void putRelationship(Relationship rel) throws SerializationException;
 
     void putRaw(String value) throws SerializationException;
+
+    MediaType getContentType();
 }
+

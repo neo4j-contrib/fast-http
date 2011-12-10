@@ -27,6 +27,7 @@ import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.Map;
 
@@ -85,5 +86,10 @@ public class JsonSerializer implements Serializer {
         } catch (IOException e) {
             throw new SerializationException("Could not serialize string to bytes " + data, e);
         }
+    }
+
+    @Override
+    public MediaType getContentType() {
+        return MediaType.APPLICATION_JSON_TYPE;
     }
 }
