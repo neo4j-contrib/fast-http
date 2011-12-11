@@ -45,6 +45,11 @@ public class Invocation {
     public <T> T getDeserializedContent() {
         return (T)deserializedContent;
     }
+    public <T> T getDeserializedContent(Class<T> type) {
+        if (deserializedContent==null) return null;
+        if (type.isInstance(deserializedContent)) return type.cast(deserializedContent);
+        throw new ClassCastException("Expected "+type+" found "+deserializedContent.getClass());
+    }
 
     public void setDeserializedContent(Object deserializedContent) {
         this.deserializedContent = deserializedContent;

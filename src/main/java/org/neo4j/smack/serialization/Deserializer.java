@@ -33,5 +33,5 @@ public interface Deserializer {
 
     Map<String, Object> readMap() throws DeserializationException;
 
-    String readObject() throws DeserializationException;
+    Object readObject() throws DeserializationException;
 }

@@ -30,7 +30,7 @@ public class PathVariables {
     
     private Map<String,String> pathVariables = new HashMap<String, String>();
     
-    public PathVariables(MatchResult matched, PathPattern routePattern) {
+    public void add(MatchResult matched, PathPattern routePattern) {
         List<String> vars = routePattern.getTemplate().getTemplateVariables();
         for(int i=0,l=vars.size();i<l;i++) {
             pathVariables.put(vars.get(i), matched.group(i+1));
@@ -44,7 +44,15 @@ public class PathVariables {
         return Long.valueOf(getParam(key));
     }
 
-    private String getParam(String key) {
+    public String getParam(String key) {
         return pathVariables.get(key);
+    }
+
+    // todo only handle first parameter so far
+    public void add(Map<String, List<String>> parameters) {
+        for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
+            if (entry.getValue()==null && entry.getValue().isEmpty()) continue;
+            pathVariables.put(entry.getKey(),entry.getValue().get(0));
+        }
     }
 }

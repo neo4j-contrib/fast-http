@@ -36,8 +36,11 @@ public class Result {
     private ChannelHandlerContext context;
     private boolean failed =false;
 
-    public void setCreated(String location) {
+    public void setCreated() {
         setStatus(CREATED);
+    }
+    public void setCreated(String location) {
+        setCreated();
         this.setLocation(location);
     }
     

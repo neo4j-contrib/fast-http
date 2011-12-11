@@ -19,15 +19,15 @@
  */
 package org.neo4j.smack.serialization;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 public class JsonDeserializer implements Deserializer {
 
     private JsonParser parser;
@@ -80,14 +80,13 @@ public class JsonDeserializer implements Deserializer {
     }
 
     @Override
-    public String readObject() throws DeserializationException {
+    public Object readObject() throws DeserializationException {
         try {
-            parser.readValueAs(Object.class);
-            return parser.getText();
+            return parser.readValueAs(Object.class);
         } catch (JsonParseException e) {
-            throw new DeserializationException("Invalid JSON format, expected String.", e);
+            throw new DeserializationException("Invalid JSON format, expected object.", e);
         } catch (IOException e) {
-            throw new DeserializationException("Unable to read expected String value.", e);
+            throw new DeserializationException("Unable to read expected object value.", e);
         }
     }
 

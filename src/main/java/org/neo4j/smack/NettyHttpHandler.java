@@ -19,32 +19,22 @@
  */
 package org.neo4j.smack;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
-import java.util.concurrent.atomic.AtomicLong;
-
+import com.lmax.disruptor.RingBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.*;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.jboss.netty.handler.codec.http.*;
 import org.jboss.netty.util.CharsetUtil;
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.routing.InvocationVerb;
 
-import com.lmax.disruptor.RingBuffer;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
+import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class NettyHttpHandler extends SimpleChannelHandler {
 
@@ -64,15 +54,31 @@ public class NettyHttpHandler extends SimpleChannelHandler {
         
         long sequenceNo = workBuffer.next();
         RequestEvent event = workBuffer.get(sequenceNo);
-        
         event.setId(i.incrementAndGet());
-        event.setVerb(InvocationVerb.valueOf(httpRequest.getMethod().getName().toUpperCase()));
-        event.setPath(httpRequest.getUri());
+        addMethod(httpRequest, event);
+        addParamsAndPath(httpRequest, event);
+        // e.getRemoteAddress() // todo routing ?
         event.setIsPersistentConnection(isKeepAlive(httpRequest));
         event.setContent(httpRequest.getContent());
         event.setContext(ctx);
 
         workBuffer.publish(sequenceNo);
+    }
+
+    private void addMethod(HttpRequest httpRequest, RequestEvent event) {
+        final String methodName = httpRequest.getMethod().getName();
+        event.setVerb(InvocationVerb.valueOf(methodName.toUpperCase()));
+    }
+
+    private void addParamsAndPath(HttpRequest httpRequest, RequestEvent event) {
+        final String uri = httpRequest.getUri();
+        if (uri.contains("?")) {
+            final QueryStringDecoder decoder = new QueryStringDecoder(uri);
+            event.getPathVariables().add(decoder.getParameters());
+            event.setPath(decoder.getPath());
+        } else {
+           event.setPath(uri);
+        }
     }
 
     // todo use output buffer for exception handling

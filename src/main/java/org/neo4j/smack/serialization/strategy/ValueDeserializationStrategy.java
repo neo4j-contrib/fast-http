@@ -17,15 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.smack.api;
+package org.neo4j.smack.serialization.strategy;
 
-import javax.ws.rs.POST;
+import org.neo4j.smack.serialization.DeserializationException;
+import org.neo4j.smack.serialization.DeserializationStrategy;
+import org.neo4j.smack.serialization.Deserializer;
 
-public class IndexService {
+public class ValueDeserializationStrategy implements DeserializationStrategy<Object> {
 
-    @POST
-    public void blah() {
-        
+    @Override
+    public Object deserialize(final Deserializer in) throws DeserializationException {
+        return in.readObject();
     }
-    
+
 }

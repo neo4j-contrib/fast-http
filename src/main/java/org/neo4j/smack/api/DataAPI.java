@@ -19,6 +19,10 @@
  */
 package org.neo4j.smack.api;
 
+import org.neo4j.smack.api.rest.IndexService;
+import org.neo4j.smack.api.rest.NodeService;
+import org.neo4j.smack.api.rest.RelationshipService;
+import org.neo4j.smack.api.rest.TraversalService;
 import org.neo4j.smack.routing.RoutingDefinition;
 
 public class DataAPI extends RoutingDefinition {
@@ -27,11 +31,13 @@ public class DataAPI extends RoutingDefinition {
         addRoute("/tx",               new TransactionService());
         
         addRoute("",                  new CoreService());
-        addRoute("/index",            new IndexService());
-        
+
         addRoute("/tx/{tx_id}",       new CoreService());
         addRoute("/tx/{tx_id}/index", new IndexService());
-        addRoute("/db/data", new RestDatabaseService());
+        addRoute("/db/data", new NodeService());
+        addRoute("/db/data", new RelationshipService());
+        addRoute("/db/data", new IndexService());
+        addRoute("/db/data", new TraversalService());
     }
     
 }

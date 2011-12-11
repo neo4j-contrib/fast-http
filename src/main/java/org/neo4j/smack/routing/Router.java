@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.neo4j.smack.event.RequestEvent;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.MatchResult;
 
@@ -44,7 +43,7 @@ public class Router extends RoutingDefinition {
             {
                 Endpoint endpoint = route.getEndpoint(event.getVerb());
                 if(endpoint != null) {
-                    event.setPathVariables(new PathVariables(matchResult, route.pattern));
+                    event.getPathVariables().add(matchResult, route.pattern); // todo is this the best way ?
                     return endpoint;
                 }
                 throw new ResourceNotFoundException("Path '" + path + "' does not support '"+event.getVerb()+"'." );
@@ -60,10 +59,11 @@ public class Router extends RoutingDefinition {
         {
             if(!routeMap.containsKey(definition.getPath()))
             {
+                System.out.println("Adding Route: "+definition.getEndpoint().getVerb() +" to: "+ definition.getPath());
+                logger.debug("Adding Route: "+definition.getEndpoint().getVerb() +" to: "+ definition.getPath());
                 routeMap.put(definition.getPath(), createRoute(definition));
             }
-            logger.debug("Adding Route: "+definition.getEndpoint().getVerb() +" to: "+ definition.getPath());
-            
+
             RouteEntry route = routeMap.get(definition.getPath());
             route.setEndpoint(definition.getEndpoint().getVerb(), definition.getEndpoint());
             // todo what happens if multiple paths have differnt verbs?

@@ -96,6 +96,9 @@ public class RequestEvent implements Fallible {
     }
 
     public PathVariables getPathVariables() {
+        if (pathVariables==null) { // todo contention, distribute query params and Path Variables into different fields ?
+            pathVariables = new PathVariables();
+        }
         return pathVariables;
     }
 
