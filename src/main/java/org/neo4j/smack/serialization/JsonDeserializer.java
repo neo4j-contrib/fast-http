@@ -22,11 +22,10 @@ package org.neo4j.smack.serialization;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 public class JsonDeserializer implements Deserializer {
 
@@ -89,31 +88,28 @@ public class JsonDeserializer implements Deserializer {
             throw new DeserializationException("Unable to read expected object value.", e);
         }
     }
+    @Override
+    public Object readObjectOrNull() throws DeserializationException {
+        try {
+            return parser.readValueAs(Object.class);
+        } catch(EOFException e) {
+            return null;
+        } catch (JsonParseException e) {
+            throw new DeserializationException("Invalid JSON format, expected object.", e);
+        } catch (IOException e) {
+            throw new DeserializationException("Unable to read expected object value.", e);
+        }
+    }
 
 
     @Override
     public Map<String, Object> readMap() throws DeserializationException {
         try {
-            Map<String, Object> map = new HashMap<String, Object>();
-
-            String field;
-            JsonToken token;
-            token = parser.nextToken();
-            
-            if(token == JsonToken.START_OBJECT) {
-                while( (token = parser.nextToken()) != JsonToken.END_OBJECT && token != null) {
-                    field = parser.getText();
-                    token = parser.nextToken();
-                    map.put(field, parser.readValueAs(Object.class));
-                }
-            } else {
-                throw new DeserializationException("Invalid JSON, expected map.");
-            }
-            return map;
+            return parser.readValueAs(Map.class);
         } catch (JsonParseException e) {
-            throw new DeserializationException("Invalid JSON format, expected String.", e);
+            throw new DeserializationException("Invalid JSON format, expected Map.", e);
         } catch (IOException e) {
-            throw new DeserializationException("Unable to read expected String value.", e);
+            throw new DeserializationException("Unable to read expected Map value.", e);
         }
     }
 }

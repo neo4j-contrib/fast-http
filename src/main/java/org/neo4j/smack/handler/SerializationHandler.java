@@ -19,16 +19,14 @@
  */
 package org.neo4j.smack.handler;
 
+import com.lmax.disruptor.WorkHandler;
 import org.jboss.netty.buffer.DynamicChannelBuffer;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.neo4j.smack.event.ResponseEvent;
 import org.neo4j.smack.serialization.SerializationFactory;
 import org.neo4j.smack.serialization.SerializationStrategy;
 import org.neo4j.smack.serialization.Serializer;
-
-import com.lmax.disruptor.WorkHandler;
 
 public class SerializationHandler implements WorkHandler<ResponseEvent> {
 
@@ -41,9 +39,6 @@ public class SerializationHandler implements WorkHandler<ResponseEvent> {
         final HttpResponse httpResponse = event.getHttpResponse();
         if (data==null) {
             httpResponse.addHeader(HttpHeaders.Names.CONTENT_LENGTH, 0);
-            if (httpResponse.getStatus().equals(HttpResponseStatus.FOUND)) {
-                httpResponse.setStatus(HttpResponseStatus.NO_CONTENT);
-            }
         } else {
             @SuppressWarnings("unchecked") final SerializationStrategy<Object> serializationStrategy = (SerializationStrategy<Object>) event.getSerializationStrategy();
             final DynamicChannelBuffer content = new DynamicChannelBuffer(1000); // todo

@@ -24,6 +24,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class Result {
@@ -46,6 +47,10 @@ public class Result {
     
     public void setOk(){
         setStatus(OK);
+    }
+
+    public void setNoContent(){
+        setStatus(NO_CONTENT);
     }
 
     public void setOk(Object value) {

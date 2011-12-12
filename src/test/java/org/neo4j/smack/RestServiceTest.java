@@ -10,6 +10,8 @@ import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.smack.api.DataAPI;
 import org.neo4j.test.ImpermanentGraphDatabase;
 
+import javax.ws.rs.core.Response;
+
 import static org.neo4j.helpers.collection.MapUtil.map;
 
 /**
@@ -51,13 +53,37 @@ public class RestServiceTest {
     }
 
     @Test
+    public void testCreateNodeWithProperties() throws Exception {
+        REST.to("node").post(map("name","John","age",10)).created().location("node/\\d+").expect("data/name", "John").expect("data.age", 10).compareNodeProperties("age", "name");
+    }
+    @Test
     public void testCreateNode() throws Exception {
-        REST.to("node").post(map("name","John","age",10)).created().location("node/1").expect("data/name","John").expect("data.age",10).checkNode("age","name");
+        REST.to("node").post().created().location("node/\\d+").expect("data", map()).compareNodeProperties("!name");
+    }
+
+    @Test
+    public void testCreateNodeWithInvalidProperty() throws Exception {
+        REST.to("node").post(map("name",null)).assertStatus(Response.Status.BAD_REQUEST);
+    }
+
+    @Test
+    public void testSetNodeProperty() throws Exception {
+        REST.to("node/0/properties/foo").put("bar").noContent().checkNodeProperty(0, "foo", "bar");
+    }
+
+    @Test
+    public void testReplaceNodeProperties() throws Exception {
+        REST.to("node/0/properties").put(map("foo","bar")).noContent().checkNodeProperty(0, "foo", "bar").checkNodeProperty(0, "!name", null);
     }
 
     @Test
     public void testGetNode() throws Exception {
         final String rootNodeUri = "node/" + ROOT_NODE_ID;
         REST.from(rootNodeUri).get().ok().expectUri("self", rootNodeUri);
+    }
+
+    @Test
+    public void testGetNonExistingNode() throws Exception {
+        REST.from("node/" + 9999).get().notFound();
     }
 }

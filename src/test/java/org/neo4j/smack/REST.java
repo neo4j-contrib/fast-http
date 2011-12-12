@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -75,6 +76,10 @@ public class REST {
         return handle(resource.post(ClientResponse.class, formatJson(data)));
     }
 
+    public REST post() {
+        return handle(resource.post(ClientResponse.class));
+    }
+
     private REST handle(ClientResponse response) {
         status = response.getStatus();
         location = response.getLocation();
@@ -103,10 +108,19 @@ public class REST {
             }).readValueAs(type);
         } catch (Exception e) {
             System.out.flush();
-            throw new RuntimeException("Error reading response object", e);
+            throw new RuntimeException("Error reading response object "+this, e);
         }
     }
 
+    @Override
+    public String toString() {
+        return "REST{" +
+                "status=" + status +
+                ", location=" + location +
+                ", entity=" + entity +
+                ", path='" + path + '\'' +
+                '}';
+    }
 
     private String formatJson(Object data) {
         try {
@@ -135,7 +149,9 @@ public class REST {
     }
 
     public REST location(String location) {
-        assertTrue("Location", mergeUri(URI, location).matches(this.location.toString())); // todo full uri vs path
+        final String expected = mergeUri(URI, location);
+        final String value = this.location.toString();
+        assertTrue("Location " + expected + " matches " + value, value.matches(expected));
         return this;
     }
 
@@ -169,19 +185,27 @@ public class REST {
         return this;
     }
 
-    public void checkNode(String...props) {
+    public void compareNodeProperties(String... props) {
         checkPropertyContainer(node(), props);
     }
 
     private void checkPropertyContainer(PropertyContainer container, String[] props) {
         Map data = data();
         for (String prop : props) {
-            assertEquals(container.getProperty(prop), data.get(prop));
+            checkProperty(container, prop, data.get(prop));
         }
     }
 
+    private void checkProperty(PropertyContainer container, String prop, Object value) {
+        if (prop.startsWith("!")) {
+            assertFalse(container+" has not "+prop,container.hasProperty(prop.substring(1)));
+            return;
+        }
+        assertEquals(container+" "+prop+": ",container.getProperty(prop), value);
+    }
+
     public void checkRelationship(String...props) {
-        checkPropertyContainer(relationship(),props);
+        checkPropertyContainer(relationship(), props);
     }
 
     private Map data() {
@@ -211,4 +235,24 @@ public class REST {
         final String[] parts = uri.split("/");
         return Long.valueOf(parts[parts.length - 1]);
     }
+
+    public REST notFound() {
+        assertStatus(Response.Status.NOT_FOUND);
+        return this;
+    }
+
+    public REST noContent() {
+        assertStatus(Response.Status.NO_CONTENT);
+        return this;
+    }
+
+    public REST checkNodeProperty(long id, String prop, Object value) {
+        checkProperty(gds.getNodeById(id),prop,value);
+        return this;
+    }
+    public REST checkRelationship(long id, String prop, Object value) {
+        checkProperty(gds.getRelationshipById(id),prop,value);
+        return this;
+    }
+
 }

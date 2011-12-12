@@ -13,9 +13,11 @@ import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.Result;
 import org.neo4j.smack.serialization.strategy.PropertyMapDeserializationStrategy;
 import org.neo4j.smack.serialization.strategy.ValueDeserializationStrategy;
+import org.neo4j.smack.serialization.strategy.ValueOrNullDeserializationStrategy;
 
 import javax.ws.rs.*;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -39,12 +41,14 @@ public class NodeService extends RestService {
     }
 
     @POST
-    @DeserializeWith(PropertyMapDeserializationStrategy.class)
+    @DeserializeWith(ValueOrNullDeserializationStrategy.class)
     @SerializeWith(RepresentationSerializationStrategy.class)
     @Transactional
     @Path(PATH_NODES)
     public void createNode(Invocation invocation, Result result) throws PropertyValueException, URISyntaxException {
-        final NodeRepresentation node = actionsFor(invocation).createNode((Map<String, Object>) invocation.getDeserializedContent());
+        Object payload = invocation.getDeserializedContent();
+        if (payload==null) payload = Collections.emptyMap();
+        final NodeRepresentation node = actionsFor(invocation).createNode((Map<String, Object>) payload);
         final String location = createOutputFormat(invocation).format(node.selfUri());
         result.setCreated(location);
         result.setData(node);
@@ -72,7 +76,7 @@ public class NodeService extends RestService {
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
     public void setAllNodeProperties(Invocation invocation, Result result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException {
         actionsFor(invocation).setAllNodeProperties(getNodeId(invocation), (Map<String, Object>) invocation.getDeserializedContent());
-        result.setOk();
+        result.setNoContent();
     }
 
 
@@ -88,7 +92,7 @@ public class NodeService extends RestService {
     @DeserializeWith(ValueDeserializationStrategy.class)
     public void setNodeProperty(Invocation invocation, Result result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException {
         actionsFor(invocation).setNodeProperty(getNodeId(invocation), getKey(invocation), invocation.getDeserializedContent());
-        result.setOk();
+        result.setNoContent();
     }
 
     @GET

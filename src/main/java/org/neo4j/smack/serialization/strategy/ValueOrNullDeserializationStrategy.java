@@ -17,23 +17,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.smack.serialization;
+package org.neo4j.smack.serialization.strategy;
 
-import java.util.Map;
+import org.neo4j.smack.serialization.DeserializationException;
+import org.neo4j.smack.serialization.DeserializationStrategy;
+import org.neo4j.smack.serialization.Deserializer;
 
-public interface Deserializer {
+public class ValueOrNullDeserializationStrategy implements DeserializationStrategy<Object> {
 
-    long readLong() throws DeserializationException;
+    @Override
+    public Object deserialize(final Deserializer in) throws DeserializationException {
+        return in.readObjectOrNull();
+    }
 
-    String readString() throws DeserializationException;
-
-    long readInt() throws DeserializationException;
-
-    <T> T readEnum(IdentifiableEnumDeserializer<T> deserializer) throws DeserializationException;
-
-    Map<String, Object> readMap() throws DeserializationException;
-
-    Object readObject() throws DeserializationException;
-
-    Object readObjectOrNull() throws DeserializationException;
 }

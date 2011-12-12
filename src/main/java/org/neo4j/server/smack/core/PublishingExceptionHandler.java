@@ -9,6 +9,7 @@ import org.neo4j.server.rest.domain.StartNodeNotFoundException;
 import org.neo4j.server.rest.repr.BadInputException;
 import org.neo4j.server.rest.web.*;
 import org.neo4j.server.smack.serialization.ExceptionSerializationStrategy;
+import org.neo4j.smack.event.DatabaseInvocationEvent;
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.event.ResponseEvent;
 import org.neo4j.smack.event.Result;
@@ -16,6 +17,7 @@ import org.neo4j.smack.routing.ResourceNotFoundException;
 import org.neo4j.smack.serialization.SerializationStrategy;
 
 import javax.management.relation.RelationNotFoundException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +45,10 @@ public class PublishingExceptionHandler implements ExceptionHandler {
         put(NotFoundException.class, HttpResponseStatus.NOT_FOUND);
     }};
 
-    private HttpResponseStatus getErrorStatus(Exception ex) {
+    private HttpResponseStatus getErrorStatus(Throwable ex) {
+        if (ex instanceof InvocationTargetException) {
+            ex = ((InvocationTargetException)ex).getTargetException();
+        }
         for (Map.Entry<Class<? extends Throwable>, HttpResponseStatus> entry : exceptionToStatusMap.entrySet()) {
             if (entry.getKey().isInstance(ex)) return entry.getValue();
         }
@@ -67,6 +72,10 @@ public class PublishingExceptionHandler implements ExceptionHandler {
             System.err.println("[S] Failing response was: " + ((ResponseEvent)event).getId());
             handleResponse((ResponseEvent) event, e);
         }
+        if (event instanceof DatabaseInvocationEvent) {
+            System.err.println("[S] Failing database-event was: " + event);
+            handleDatabaseEvent((DatabaseInvocationEvent) event, e);
+        }
     }
 
     private void handleResponse(ResponseEvent event, Exception e) {
@@ -76,6 +85,17 @@ public class PublishingExceptionHandler implements ExceptionHandler {
 
     private Result extractResult(ResponseEvent event) {
         final Result result = event.getInvocationResult();
+        result.setContext(event.getContext());
+        return result;
+    }
+
+    private void handleDatabaseEvent(DatabaseInvocationEvent event, Exception e) {
+        event.setFailed();
+        publishError(extractResult(event), e);
+    }
+
+    private Result extractResult(DatabaseInvocationEvent event) {
+        final Result result = event.getResult();
         result.setContext(event.getContext());
         return result;
     }

@@ -50,4 +50,8 @@ public class DatabaseInvocationEvent implements Fallible {
     public ChannelHandlerContext getContext() {
         return context;
     }
+
+    public Result getResult() {
+        return result;
+    }
 }
