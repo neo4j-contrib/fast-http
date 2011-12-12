@@ -28,7 +28,8 @@ public class TraversalService extends RestService {
     public static final String PATH_TO_CREATE_PAGED_TRAVERSERS = PATH_NODE + "/paged/traverse/{returnType}";
     public static final String PATH_TO_PAGED_TRAVERSERS = PATH_NODE + "/paged/traverse/{returnType}/{traverserId}";
 
-    public TraversalService() {
+    public TraversalService(String baseUri, String dataPath) {
+        super(baseUri,dataPath);
     }
 
     @POST

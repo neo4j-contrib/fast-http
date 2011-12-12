@@ -33,7 +33,8 @@ public class RelationshipService extends RestService {
     private static final String PATH_RELATIONSHIP_PROPERTIES = PATH_RELATIONSHIP + "/properties";
     private static final String PATH_RELATIONSHIP_PROPERTY = PATH_RELATIONSHIP_PROPERTIES + "/{key}";
 
-    public RelationshipService() {
+    public RelationshipService(String baseUri, String dataPath) {
+        super(baseUri,dataPath);
     }
 
 

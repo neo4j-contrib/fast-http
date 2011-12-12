@@ -36,6 +36,7 @@ public class Router extends RoutingDefinition {
     public Endpoint route(RequestEvent event)
     {
         String path = event.getPath();
+        if (path.endsWith("/")) path = path.substring(0,path.length()-1);
         for(RouteEntry route : routes) // todo parallelize routing ?? (overhead ?)
         {
             MatchResult matchResult = route.pattern.match(path);
@@ -59,7 +60,6 @@ public class Router extends RoutingDefinition {
         {
             if(!routeMap.containsKey(definition.getPath()))
             {
-                System.out.println("Adding Route: "+definition.getEndpoint().getVerb() +" to: "+ definition.getPath());
                 logger.debug("Adding Route: "+definition.getEndpoint().getVerb() +" to: "+ definition.getPath());
                 routeMap.put(definition.getPath(), createRoute(definition));
             }

@@ -35,8 +35,6 @@ public class CreateErrorResponseHandler implements WorkHandler<ResponseEvent> {
     public void onEvent(final ResponseEvent event) throws Exception {
         if (!event.hasFailed()) throw new IllegalStateException("Error result has no error flag set " + event);
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, event.getInvocationResult().getStatus());
-        final Object data = event.getInvocationResult().getData();
-        addException(response, data);
         event.setHttpResponse(response);
     }
 

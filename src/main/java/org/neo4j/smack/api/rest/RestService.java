@@ -32,6 +32,13 @@ public class RestService {
             return Collections.emptyMap();
         }
     });
+    private final String baseUri;
+    private final String dataPath;
+
+    public RestService(String baseUri, String dataPath) {
+        this.baseUri = baseUri;
+        this.dataPath = dataPath;
+    }
 
     protected DatabaseActions actionsFor(Invocation invocation) {
         return new DatabaseActions(new org.neo4j.server.database.Database(invocation.getDatabase().getGraphDB()), leaseManager);
@@ -48,7 +55,7 @@ public class RestService {
     }
 
     protected OutputFormat createOutputFormat(Invocation invocation) throws URISyntaxException {
-        final URI uri = new URI("/db/data"); // TODO invocation.getPath() is full path of route, need invocation.getBaseUri() from router
+        final URI uri = new URI(baseUri + dataPath); // TODO invocation.getPath() is full path of route, need invocation.getBaseUri() from router
         return repository.outputFormat(Arrays.asList(MediaType.APPLICATION_JSON_TYPE), uri);
     }
 

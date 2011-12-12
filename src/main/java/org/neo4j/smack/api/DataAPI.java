@@ -26,18 +26,30 @@ import org.neo4j.smack.api.rest.TraversalService;
 import org.neo4j.smack.routing.RoutingDefinition;
 
 public class DataAPI extends RoutingDefinition {
-    
-    {
+
+    private String baseUri;
+    private String dataPath;
+
+    public DataAPI(String host, int port) {
+        this.baseUri = String.format("http://%s:%d",host,port);
+        this.dataPath = "/db/data";
         addRoute("/tx",               new TransactionService());
-        
+
         addRoute("",                  new CoreService());
 
         addRoute("/tx/{tx_id}",       new CoreService());
-        addRoute("/tx/{tx_id}/index", new IndexService());
-        addRoute("/db/data", new NodeService());
-        addRoute("/db/data", new RelationshipService());
-        addRoute("/db/data", new IndexService());
-        addRoute("/db/data", new TraversalService());
+        // addRoute("/tx/{tx_id}/index", new IndexService());
+        addRoute(dataPath, new NodeService(baseUri,dataPath));
+        addRoute(dataPath, new RelationshipService(baseUri,dataPath));
+        addRoute(dataPath, new IndexService(baseUri,dataPath));
+        addRoute(dataPath, new TraversalService(baseUri,dataPath));
     }
-    
+
+    public String getDataPath() {
+        return dataPath;
+    }
+
+    public String getBaseUri() {
+        return baseUri;
+    }
 }

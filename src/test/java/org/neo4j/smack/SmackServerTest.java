@@ -43,7 +43,7 @@ public class SmackServerTest {
         tx.success();
         tx.finish();
         server = new SmackServer(HOST, PORT, new Database(gds));
-        server.addRoute("", new DataAPI());
+        server.addRoute("", new DataAPI(HOST,PORT));
         server.start();
     }
 

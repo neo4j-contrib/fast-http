@@ -38,7 +38,8 @@ public class IndexService extends RestService {
     public static final String PATH_AUTO_RELATIONSHIP_INDEX = "index/auto/relationship";
     protected static final String PATH_AUTO_RELATIONSHIP_INDEX_GET = PATH_AUTO_RELATIONSHIP_INDEX + "/{key}/{value}";
 
-    public IndexService() {
+    public IndexService(String baseUri, String dataPath) {
+        super(baseUri,dataPath);
     }
 
     @GET

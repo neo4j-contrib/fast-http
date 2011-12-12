@@ -27,7 +27,8 @@ public class NodeService extends RestService {
     private static final String PATH_NODE_PROPERTIES = PATH_NODE + "/properties";
     private static final String PATH_NODE_PROPERTY = PATH_NODE_PROPERTIES + "/{key}";
 
-    public NodeService() {
+    public NodeService(String baseUri, String dataPath) {
+        super(baseUri,dataPath);
     }
 
 

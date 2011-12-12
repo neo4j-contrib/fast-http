@@ -36,8 +36,6 @@ public class SerializationHandler implements WorkHandler<ResponseEvent> {
 
     @Override
     public void onEvent(ResponseEvent event) throws Exception {
-        if (event.hasFailed()) return;
-        
         final Object data = event.getInvocationResult().getData();
 
         final HttpResponse httpResponse = event.getHttpResponse();

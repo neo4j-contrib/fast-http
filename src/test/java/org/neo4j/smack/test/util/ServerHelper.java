@@ -10,9 +10,12 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 public class ServerHelper {
 
+    public static final String HOST = "localhost";
+    public static final int PORT = 7473;
+
     public static SmackServer createServer() {
-        SmackServer server = new SmackServer("localhost", 7473, new Database(new ImpermanentGraphDatabase()));
-        server.addRoute("",new DataAPI());
+        SmackServer server = new SmackServer(HOST, PORT, new Database(new ImpermanentGraphDatabase()));
+        server.addRoute("",new DataAPI(HOST,PORT));
         return server;
     }
     

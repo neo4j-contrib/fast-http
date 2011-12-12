@@ -77,12 +77,12 @@ public class SmackServer {
         
         // OUTPUT PIPELINE
 
-        errorPipeline = new PipelineBootstrap<ResponseEvent>(ResponseEvent.FACTORY, new WorkExceptionHandler(), new CreateErrorResponseHandler(), new WriteResponseHandler());
+        errorPipeline = new PipelineBootstrap<ResponseEvent>(ResponseEvent.FACTORY, new WorkExceptionHandler(), new CreateErrorResponseHandler(), new SerializationHandler(), new WriteResponseHandler());
         errorPipeline.start();
 
         final PublishingExceptionHandler exceptionHandler = new PublishingExceptionHandler(errorPipeline.getRingBuffer());
 
-        outputPipeline = new PipelineBootstrap<ResponseEvent>(ResponseEvent.FACTORY, exceptionHandler, new CreateResponseHandler(), new SerializationHandler(), new WriteResponseHandler());
+        outputPipeline = new PipelineBootstrap<ResponseEvent>(ResponseEvent.FACTORY, exceptionHandler, new CreateResponseHandler(), new ValidDataSerializationHandler(), new WriteResponseHandler());
         outputPipeline.start();
 
         executionHandler = new ExecutionHandler(database, outputPipeline.getRingBuffer(), exceptionHandler);
