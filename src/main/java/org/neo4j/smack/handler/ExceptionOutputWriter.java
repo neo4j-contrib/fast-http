@@ -29,7 +29,12 @@ public class ExceptionOutputWriter {
     
     private final SerializationStrategy<Throwable> exceptionSerializationStrategy;
     
-    private Map<Class<? extends Throwable>, HttpResponseStatus> exceptionToStatusMap = new HashMap<Class<? extends Throwable>, HttpResponseStatus>() {{
+    private Map<Class<? extends Throwable>, HttpResponseStatus> exceptionToStatusMap = new HashMap<Class<? extends Throwable>, HttpResponseStatus>() 
+            {
+        
+        private static final long serialVersionUID = -5937199711856466595L;
+
+    {
         put(ResourceNotFoundException.class, HttpResponseStatus.NOT_FOUND);
         put(NodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
         put(RelationNotFoundException.class, HttpResponseStatus.NOT_FOUND);

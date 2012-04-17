@@ -38,16 +38,17 @@ import org.neo4j.smack.serialization.Serializer;
 public class NettyChannelBackedOutput implements Output {
 
     private SerializationFactory serializationFactory;
-    
+
     private boolean outputStarted;
     private Channel channel;
     private SerializationStrategy<Object> defaultSerializationStrategy;
     private boolean isPersistentConnection;
 
-    public NettyChannelBackedOutput(SerializationFactory serializationFactory) {
+    public NettyChannelBackedOutput(SerializationFactory serializationFactory)
+    {
         this.serializationFactory = serializationFactory;
     }
-    
+
     @Override
     public void created()
     {
@@ -100,56 +101,71 @@ public class NettyChannelBackedOutput implements Output {
     {
         return outputStarted;
     }
-    
+
     @SuppressWarnings("unchecked")
-    protected void reset(Channel channel, SerializationStrategy<?> serializationStrategy, boolean isPersistentConnection) {
+    protected void reset(Channel channel,
+            SerializationStrategy<?> serializationStrategy,
+            boolean isPersistentConnection)
+    {
         this.channel = channel;
         this.defaultSerializationStrategy = (SerializationStrategy<Object>) serializationStrategy;
         this.isPersistentConnection = isPersistentConnection;
 
         outputStarted = false;
     }
-    
-    public void send(HttpResponseStatus status, Object data, String location) {
+
+    public void send(HttpResponseStatus status, Object data, String location)
+    {
         send(status, data, location, defaultSerializationStrategy);
     }
-    
-    public void send(HttpResponseStatus status, Object data, String location, SerializationStrategy serializationStrategy) {
-        if(outputStarted) {
-            throw new RuntimeException("Response has already been sent, can only send once per invocation.");
+
+    @SuppressWarnings("unchecked")
+    public void send(
+            HttpResponseStatus status,
+            Object data,
+            String location,
+            @SuppressWarnings("rawtypes") SerializationStrategy serializationStrategy)
+    {
+        if (outputStarted)
+        {
+            throw new RuntimeException(
+                    "Response has already been sent, can only send once per invocation.");
         }
-        
+
         outputStarted = true;
-        
+
         DefaultHttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
-        
+
         if (location != null)
         {
             response.addHeader(HttpHeaders.Names.LOCATION, location);
         }
-        
-        if (data == null) 
+
+        if (data == null)
         {
             response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, 0);
-        } else 
+        } else
         {
-            if(serializationStrategy.isStreaming())
+            if (serializationStrategy.isStreaming())
             {
                 response.setChunked(true);
                 throw new RuntimeException("IMPLEMENT ME!");
-            } else 
+            } else
             {
-                final DynamicChannelBuffer content = new DynamicChannelBuffer(1000);
-                Serializer serializer = serializationFactory.getSerializer(content);
+                final DynamicChannelBuffer content = new DynamicChannelBuffer(
+                        1000);
+                Serializer serializer = serializationFactory
+                        .getSerializer(content);
                 serializationStrategy.serialize(data, serializer);
-                response.setHeader(HttpHeaders.Names.CONTENT_TYPE, serializer.getContentType().toString());
+                response.setHeader(HttpHeaders.Names.CONTENT_TYPE, serializer
+                        .getContentType().toString());
                 response.setContent(content);
             }
         }
-        
+
         ChannelFuture future = channel.write(response);
-        
-        if( ! isPersistentConnection ) 
+
+        if (!isPersistentConnection)
         {
             try
             {
@@ -157,7 +173,8 @@ public class NettyChannelBackedOutput implements Output {
             } catch (InterruptedException e)
             {
                 // TODO: Create specific exception?
-                throw new RuntimeException("Waiting for channel to be done to close it failed.", e);
+                throw new RuntimeException(
+                        "Waiting for channel to be done to close it failed.", e);
             }
         }
     }

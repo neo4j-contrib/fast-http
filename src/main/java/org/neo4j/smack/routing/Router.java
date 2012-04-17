@@ -19,14 +19,15 @@
  */
 package org.neo4j.smack.routing;
 
-import com.sun.jersey.server.impl.uri.PathPattern;
-import com.sun.jersey.server.impl.uri.PathTemplate;
-import org.apache.log4j.Logger;
-import org.neo4j.smack.event.RequestEvent;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.MatchResult;
+
+import org.apache.log4j.Logger;
+import org.neo4j.smack.event.RequestEvent;
+
+import com.sun.jersey.server.impl.uri.PathPattern;
+import com.sun.jersey.server.impl.uri.PathTemplate;
 
 public class Router extends RoutingDefinition {
 
@@ -74,7 +75,7 @@ public class Router extends RoutingDefinition {
     private RouteEntry createRoute(RouteDefinitionEntry definition) {
         RouteEntry route = new RouteEntry();
         final PathTemplate template = new PathTemplate(definition.getPath());
-        route.pattern = new PathPattern(template,"");
+        route.pattern = new PathPattern(template,"/");
         return route;
     }
 }

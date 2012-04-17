@@ -19,14 +19,14 @@
  */
 package org.neo4j.smack.serialization;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.JsonParser;
 public class JsonDeserializer implements Deserializer {
 
     private JsonParser parser;
@@ -101,8 +101,8 @@ public class JsonDeserializer implements Deserializer {
         }
     }
 
-
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, Object> readMap() throws DeserializationException {
         try {
             return parser.readValueAs(Map.class);

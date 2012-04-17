@@ -36,7 +36,7 @@ public class NetworkLatency {
     private double test() {
         try {
             
-            int numRequests = 10000;
+            int numRequests = 100000;
             
             startServer();
             
