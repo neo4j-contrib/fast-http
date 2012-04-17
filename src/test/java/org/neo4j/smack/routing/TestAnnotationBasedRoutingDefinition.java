@@ -14,9 +14,6 @@ import javax.ws.rs.Path;
 
 import org.junit.Test;
 import org.neo4j.smack.annotation.Transactional;
-import org.neo4j.smack.routing.AnnotationBasedRoutingDefinition;
-import org.neo4j.smack.routing.Endpoint;
-import org.neo4j.smack.routing.RouteDefinitionEntry;
 
 public class TestAnnotationBasedRoutingDefinition {
 
@@ -85,7 +82,7 @@ public class TestAnnotationBasedRoutingDefinition {
         
         Endpoint p = rd.getRouteDefinitionEntries().get(0).getEndpoint();
         
-        assertThat(p.hasAnnotation(Transactional.class), is(true));
+        assertThat(p.isTransactional(), is(true));
         
     }
 }

@@ -20,9 +20,30 @@
 package org.neo4j.smack.serialization;
 
 public interface SerializationStrategy<T> {
-    public static SerializationStrategy<Object> NO_OP = new SerializationStrategy<Object>(){
-        public void serialize(Object value, Serializer out, SerializationModifier modifier) throws SerializationException { }
+
+    public static SerializationStrategy<Object> NO_OP = new SerializationStrategy<Object>() {
+        public void serialize(Object value, Serializer out) throws SerializationException
+        {
+
+        }
+
+        public boolean isStreaming()
+        {
+            return false;
+        }
+
+        public int estimatedSerializedSizeInBytes(Object value)
+        {
+            return 0;
+        }
     };
-    
-    void serialize(T value, Serializer out, SerializationModifier modifier) throws SerializationException;
+
+    void serialize(T value, Serializer out)
+            throws SerializationException;
+
+    boolean isStreaming();
+
+    // To be reconsidered, currently used to set initial size of output buffer
+    int estimatedSerializedSizeInBytes(T value);
+
 }

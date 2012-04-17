@@ -1,23 +1,22 @@
-package org.neo4j.server.smack.serialization;
-
-import org.neo4j.smack.serialization.SerializationException;
-import org.neo4j.smack.serialization.SerializationModifier;
-import org.neo4j.smack.serialization.SerializationStrategy;
-import org.neo4j.smack.serialization.Serializer;
+package org.neo4j.smack.serialization.strategy;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.neo4j.smack.serialization.AbstractNonStreamingSerializationStrategy;
+import org.neo4j.smack.serialization.SerializationException;
+import org.neo4j.smack.serialization.Serializer;
+
 /**
  * @author mh
  * @since 27.11.11
  */
-public class ExceptionSerializationStrategy implements SerializationStrategy<Throwable> {
+public class ExceptionSerializationStrategy extends AbstractNonStreamingSerializationStrategy<Throwable> {
 
     @Override
-    public void serialize(Throwable exception, Serializer out, SerializationModifier modifier) throws SerializationException {
+    public void serialize(Throwable exception, Serializer out) throws SerializationException {
         Map<String, Object> result = new LinkedHashMap<String, Object>();
         addMessage(exception, result);
         addException(exception, result);

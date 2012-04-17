@@ -1,5 +1,16 @@
-package org.neo4j.smack.api.rest;
+package org.neo4j.smack.api;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.core.MediaType;
+
+import org.neo4j.kernel.impl.transaction.xaframework.ForceMode;
 import org.neo4j.server.rest.paging.LeaseManager;
 import org.neo4j.server.rest.paging.RealClock;
 import org.neo4j.server.rest.repr.BadInputException;
@@ -8,11 +19,6 @@ import org.neo4j.server.rest.repr.OutputFormat;
 import org.neo4j.server.rest.repr.RepresentationFormatRepository;
 import org.neo4j.server.rest.web.DatabaseActions;
 import org.neo4j.smack.event.Invocation;
-
-import javax.ws.rs.core.MediaType;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
 
 /**
  * @author mh
@@ -32,16 +38,15 @@ public class RestService {
             return Collections.emptyMap();
         }
     });
-    private final String baseUri;
+    
     private final String dataPath;
 
-    public RestService(String baseUri, String dataPath) {
-        this.baseUri = baseUri;
+    public RestService(String dataPath) {
         this.dataPath = dataPath;
     }
 
     protected DatabaseActions actionsFor(Invocation invocation) {
-        return new DatabaseActions(new org.neo4j.server.database.Database(invocation.getDatabase().getGraphDB()), leaseManager);
+        return new DatabaseActions(new org.neo4j.server.database.Database(invocation.getDatabase().getGraphDB()), leaseManager, ForceMode.forced);
     }
 
     long extractId(Object uri) throws BadInputException {
@@ -55,7 +60,7 @@ public class RestService {
     }
 
     protected OutputFormat createOutputFormat(Invocation invocation) throws URISyntaxException {
-        final URI uri = new URI(baseUri + dataPath); // TODO invocation.getPath() is full path of route, need invocation.getBaseUri() from router
+        final URI uri = new URI(dataPath);
         return repository.outputFormat(Arrays.asList(MediaType.APPLICATION_JSON_TYPE), uri);
     }
 
@@ -87,7 +92,8 @@ public class RestService {
         return getParameter(invocation, "key");
     }
 
-    protected Map readMap(Invocation invocation) {
+    @SuppressWarnings("unchecked")
+    protected Map<String,Object> readMap(Invocation invocation) {
         return invocation.getDeserializedContent(Map.class);
     }
 

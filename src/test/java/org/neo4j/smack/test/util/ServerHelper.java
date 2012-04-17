@@ -4,7 +4,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.smack.Database;
 import org.neo4j.smack.SmackServer;
-import org.neo4j.smack.api.DataAPI;
+import org.neo4j.smack.api.DatabaseService;
 import org.neo4j.test.ImpermanentGraphDatabase;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -15,7 +15,7 @@ public class ServerHelper {
 
     public static SmackServer createServer() {
         SmackServer server = new SmackServer(HOST, PORT, new Database(new ImpermanentGraphDatabase()));
-        server.addRoute("",new DataAPI(HOST,PORT));
+        server.addRoute("",new DatabaseService(""));
         return server;
     }
     

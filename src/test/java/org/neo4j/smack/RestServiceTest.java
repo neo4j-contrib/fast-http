@@ -1,18 +1,16 @@
 package org.neo4j.smack;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
+import static org.neo4j.helpers.collection.MapUtil.map;
+
+import javax.ws.rs.core.Response;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.AbstractGraphDatabase;
-import org.neo4j.smack.api.DataAPI;
+import org.neo4j.smack.api.DatabaseService;
 import org.neo4j.test.ImpermanentGraphDatabase;
-
-import javax.ws.rs.core.Response;
-
-import static org.neo4j.helpers.collection.MapUtil.map;
 
 /**
  * @author mh
@@ -23,9 +21,10 @@ public class RestServiceTest {
     public static final int PORT = 7473;
     public static final String BASE_URI = "http://" + HOST + ":" + PORT + "/";
     public static final int ROOT_NODE_ID = 0;
-    static SmackServer server;
+    
+    public static SmackServer server;
+    
     private static AbstractGraphDatabase gds;
-    private final static JsonFactory jsonFactory = new JsonFactory(new ObjectMapper());
 
     @BeforeClass
     public static void setUp() throws Exception {
@@ -35,10 +34,10 @@ public class RestServiceTest {
         tx.success();
         tx.finish();
         server = new SmackServer(HOST, PORT, new Database(gds));
-        final DataAPI dataApi = new DataAPI(HOST, PORT);
+        final DatabaseService dataApi = new DatabaseService("");
         server.addRoute("", dataApi);
         server.start();
-        REST.init(dataApi.getBaseUri(),dataApi.getDataPath(),gds);
+        REST.init(BASE_URI,"",gds);
     }
 
     @AfterClass

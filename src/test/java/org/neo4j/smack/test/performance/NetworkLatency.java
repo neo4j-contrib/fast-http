@@ -28,9 +28,9 @@ public class NetworkLatency {
     
     public static void main(String [] args) {
         NetworkLatency latency = new NetworkLatency();
-        System.out.println("Running network latency tests.. (this may take a while)");
+        System.out.println("Running over-the-network request latency tests.. (this may take a while)");
         double avgLatency = latency.test();
-        System.out.println("Average network latency: " + avgLatency + "ms");
+        System.out.println("Average over-the-network request latency: " + avgLatency + "ms");
     }
 
     private double test() {

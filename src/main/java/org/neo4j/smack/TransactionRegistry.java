@@ -70,12 +70,8 @@ public class TransactionRegistry {
 
     public void suspendCurrentTransaction() throws SystemException 
     {
-        try {
-            if(threadHasTransactionAssociated)
-                tm.suspend();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        if(threadHasTransactionAssociated)
+            tm.suspend();
     }
     
     public void createTransaction(long id) 

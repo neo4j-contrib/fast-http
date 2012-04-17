@@ -19,23 +19,35 @@
  */
 package org.neo4j.smack.serialization.strategy;
 
-import org.neo4j.server.smack.serialization.*;
 import org.neo4j.smack.serialization.DeserializationException;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.Deserializer;
 import org.neo4j.smack.serialization.SerializationException;
-import org.neo4j.smack.serialization.SerializationModifier;
 import org.neo4j.smack.serialization.SerializationStrategy;
 import org.neo4j.smack.serialization.Serializer;
 
 public class TxLocationSerializationStrategy implements DeserializationStrategy<Long>, SerializationStrategy<Long> {
 
-    public void serialize(Long txId, Serializer out, SerializationModifier modifier) throws SerializationException {
+    @Override
+    public void serialize(Long txId, Serializer out) throws SerializationException {
         out.putString("/db/data/tx/" + txId);
     }
 
+    @Override
     public Long deserialize(Deserializer in) throws DeserializationException {
         return in.readLong();
+    }
+
+    @Override
+    public boolean isStreaming()
+    {
+        return false;
+    }
+
+    @Override
+    public int estimatedSerializedSizeInBytes(Long value)
+    {
+        return 15;
     }
     
 }

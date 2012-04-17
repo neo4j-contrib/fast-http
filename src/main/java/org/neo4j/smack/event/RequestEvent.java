@@ -20,7 +20,7 @@
 package org.neo4j.smack.event;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.Channel;
 import org.neo4j.smack.routing.Endpoint;
 import org.neo4j.smack.routing.InvocationVerb;
 import org.neo4j.smack.routing.PathVariables;
@@ -34,8 +34,6 @@ public class RequestEvent implements Fallible {
             return new RequestEvent();
         }
     };
-    
-    private long id;
 
     private InvocationVerb verb;
     
@@ -49,11 +47,13 @@ public class RequestEvent implements Fallible {
     
     private Object deserializedContent;
     
-    private ChannelHandlerContext context;
+    private Channel channel;
     
-    private boolean failed;
+    private Throwable failure;
 
     private boolean isPersistentConnection;
+
+    private Long connectionId;
 
     public void setVerb(InvocationVerb verb) {
         this.verb = verb;
@@ -114,28 +114,37 @@ public class RequestEvent implements Fallible {
         return deserializedContent;
     }
 
-    public void setContext(ChannelHandlerContext context) {
-        this.context = context;
-        this.failed = false;
+    public Channel getChannel() {
+        return channel;
     }
 
-    public ChannelHandlerContext getContext() {
-        return context;
+    @Override
+    public void setFailed(Throwable ex) {
+        this.failure = ex;
     }
 
-    public void setFailed() {
-        this.failed = true;
+    @Override
+    public Throwable getFailureCause() {
+        return this.failure;
+    }
+
+    @Override
+    public boolean hasFailed() {
+        return failure == null;
     }
     
-    public boolean hasFailed() {
-        return failed;
+    public void setChannel(Channel channel) 
+    {
+        this.channel = channel;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setConnectionId(Long connectionId)
+    {
+        this.connectionId = connectionId;
     }
 
-    public long getId() {
-        return id;
+    public long getConnectionId()
+    {
+        return connectionId;
     }
 }

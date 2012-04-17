@@ -17,10 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.smack.serialization;
+package org.neo4j.smack.api;
 
-public class DefaultSerializationModifier implements SerializationModifier {
+import org.neo4j.smack.routing.RoutingDefinition;
 
-    public static final SerializationModifier INSTANCE = new DefaultSerializationModifier();
+public class DatabaseService extends RoutingDefinition {
 
+    public DatabaseService(String dataPath) {
+        addRoute("/tx",               new TransactionService());
+
+        addRoute("",                  new DataOperationsService(dataPath));
+        addRoute("/tx/{tx_id}",       new DataOperationsService(dataPath));
+    }
 }

@@ -1,19 +1,13 @@
 package org.neo4j.smack.routing;
 
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.RequestEvent;
-import org.neo4j.smack.event.Result;
-import org.neo4j.smack.routing.Endpoint;
-import org.neo4j.smack.routing.InvocationVerb;
-import org.neo4j.smack.routing.ResourceNotFoundException;
-import org.neo4j.smack.routing.Router;
+import org.neo4j.smack.event.NettyChannelBackedOutput;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.SerializationStrategy;
-
-import java.lang.annotation.Annotation;
-
-import static org.junit.Assert.assertNotNull;
 
 public class TestRouter  {
 
@@ -22,7 +16,7 @@ public class TestRouter  {
        Endpoint e = new Endpoint() {
 
             @Override
-            public void invoke(Invocation ctx, Result result) throws Exception { }
+            public void invoke(Invocation ctx, NettyChannelBackedOutput result) throws Exception { }
 
             @Override
             public InvocationVerb getVerb() {
@@ -38,8 +32,7 @@ public class TestRouter  {
                 return SerializationStrategy.NO_OP;
             }
 
-            public boolean hasAnnotation(
-                    Class<? extends Annotation> annotationClass) {
+            public boolean isTransactional() {
                 return false;
             }
         };
@@ -74,7 +67,7 @@ public class TestRouter  {
 
             @Override
             public void invoke(Invocation ctx,
-                    Result response) throws Exception { }
+                    NettyChannelBackedOutput response) throws Exception { }
 
             @Override
             public InvocationVerb getVerb() {
@@ -90,8 +83,7 @@ public class TestRouter  {
                 return SerializationStrategy.NO_OP;
             }
 
-            public boolean hasAnnotation(
-                    Class<? extends Annotation> annotationClass) {
+            public boolean isTransactional() {
                 return false;
             }
         };

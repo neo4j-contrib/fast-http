@@ -1,6 +1,7 @@
 package org.neo4j.smack.serialization.strategy;
 
-import org.neo4j.graphdb.Node;
+import java.util.Map;
+
 import org.neo4j.smack.serialization.AbstractNonStreamingSerializationStrategy;
 import org.neo4j.smack.serialization.SerializationException;
 import org.neo4j.smack.serialization.Serializer;
@@ -9,10 +10,10 @@ import org.neo4j.smack.serialization.Serializer;
  * @author mh
  * @since 27.11.11
  */
-public class NodeSerializationStrategy extends AbstractNonStreamingSerializationStrategy<Node> {
+public class MapSerializationStrategy extends AbstractNonStreamingSerializationStrategy<Map> {
 
     @Override
-    public void serialize(Node node, Serializer out) throws SerializationException {
-        out.putNode(node);
+    public void serialize(Map map, Serializer out) throws SerializationException {
+        out.putMap(map);
     }
 }

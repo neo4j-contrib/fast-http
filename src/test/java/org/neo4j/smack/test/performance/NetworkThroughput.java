@@ -45,8 +45,8 @@ public class NetworkThroughput {
         NetworkThroughput throughput = new NetworkThroughput();
         System.out.println("Running network throughput tests.. (this may take a while)");
         NetworkThroughputResult result = throughput.test();
-        System.out.println("Average throughput over network with simple HTTP calls: " + result.simpleHttpCalls + " transactions/second");
-        System.out.println("Average throughput over network with pipelined HTTP calls: " + result.pipelinedCalls + " transactions/second");
+        System.out.println("Average throughput over network with simple HTTP calls: " + result.simpleHttpCalls + " requests/second");
+        System.out.println("Average throughput over network with pipelined HTTP calls: " + result.pipelinedCalls + " requests/second");
     }
 
     private NetworkThroughputResult test() {
