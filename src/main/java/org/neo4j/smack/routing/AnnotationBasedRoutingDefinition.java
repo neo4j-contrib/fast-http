@@ -32,7 +32,7 @@ import org.neo4j.smack.annotation.DeserializeWith;
 import org.neo4j.smack.annotation.SerializeWith;
 import org.neo4j.smack.annotation.Transactional;
 import org.neo4j.smack.event.Invocation;
-import org.neo4j.smack.event.NettyChannelBackedOutput;
+import org.neo4j.smack.event.Output;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.SerializationStrategy;
 
@@ -62,7 +62,7 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
             this.deserializationStrategy = deserializationStrategy;
         }
 
-        public void invoke(Invocation request, NettyChannelBackedOutput result) throws Exception
+        public void invoke(Invocation request, Output result) throws Exception
         {
             method.invoke(underlyingObject, request, result);
         }

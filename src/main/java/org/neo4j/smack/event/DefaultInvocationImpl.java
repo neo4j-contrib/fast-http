@@ -40,7 +40,7 @@ public class DefaultInvocationImpl implements Invocation {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getDeserializedContent() {
+    public <T> T getContent() {
         return (T)content;
     }
     

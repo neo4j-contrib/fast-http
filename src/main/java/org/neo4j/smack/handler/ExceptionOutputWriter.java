@@ -55,7 +55,7 @@ public class ExceptionOutputWriter {
         exceptionSerializationStrategy = new ExceptionSerializationStrategy();
     }
 
-    public void write(NettyChannelBackedOutput output, Exception e)
+    public void write(NettyChannelBackedOutput output, Throwable e)
     {
         e.printStackTrace();
         output.send(getErrorStatus(e), e, null, exceptionSerializationStrategy);

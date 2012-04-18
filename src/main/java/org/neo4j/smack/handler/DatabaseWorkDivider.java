@@ -23,8 +23,8 @@ import org.apache.log4j.Logger;
 import org.neo4j.smack.Database;
 import org.neo4j.smack.DatabaseWorkerThread;
 import org.neo4j.smack.TransactionRegistry;
-import org.neo4j.smack.event.WorkTransactionMode;
 import org.neo4j.smack.event.RequestEvent;
+import org.neo4j.smack.event.WorkTransactionMode;
 
 import com.lmax.disruptor.ExceptionHandler;
 import com.lmax.disruptor.WorkHandler;
@@ -69,7 +69,7 @@ public class DatabaseWorkDivider implements WorkHandler<RequestEvent> {
             
             // If this seemed like an open transaction, since client
             // did not provide a tx id, it is a single transaction.
-            if(txMode != WorkTransactionMode.OPEN_TRANSACTION) {
+            if(txMode == WorkTransactionMode.OPEN_TRANSACTION) {
                 txMode = WorkTransactionMode.SINGLE_TRANSACTION;
             }
         }

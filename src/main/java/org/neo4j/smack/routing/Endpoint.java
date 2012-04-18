@@ -20,14 +20,14 @@
 package org.neo4j.smack.routing;
 
 import org.neo4j.smack.event.Invocation;
-import org.neo4j.smack.event.NettyChannelBackedOutput;
+import org.neo4j.smack.event.Output;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.SerializationStrategy;
 
 public interface Endpoint {
 
     // TODO java7 use method-handle
-    public void invoke(Invocation invocation, NettyChannelBackedOutput result) throws Exception;
+    public void invoke(Invocation invocation, Output result) throws Exception;
     public InvocationVerb getVerb();
     public DeserializationStrategy<?> getDeserializationStrategy();
     public SerializationStrategy<?> getSerializationStrategy();

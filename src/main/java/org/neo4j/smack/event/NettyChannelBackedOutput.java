@@ -20,6 +20,7 @@
 package org.neo4j.smack.event;
 
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -95,6 +96,12 @@ public class NettyChannelBackedOutput implements Output {
     public void okAt(String location, Object value)
     {
         send(OK, value, location);
+    }
+    
+    @Override
+    public void notFound()
+    {
+        send(NOT_FOUND, null, null);
     }
 
     protected boolean started()

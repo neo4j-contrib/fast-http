@@ -33,7 +33,6 @@ public class RouteEntry {
     protected Endpoint headEndpoint;
     
     public void setEndpoint(InvocationVerb verb, Endpoint endpoint) {
-        System.out.println(this);
         switch(verb) {
         case GET:
             getEndpoint = endpoint;

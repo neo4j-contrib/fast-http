@@ -48,8 +48,12 @@ public class DatabaseWork implements Fallible {
     {
         try
         {
-            endpoint.invoke(invocation, output);
-        } catch (Exception e)
+            if(!hasFailed()) {
+                endpoint.invoke(invocation, output);
+            } else {
+                throw failure;
+            }
+        } catch (Throwable e)
         {
             if (output.started())
             {
@@ -60,6 +64,7 @@ public class DatabaseWork implements Fallible {
             } else
             {
                 exceptionOutputWriter.write(output, e);
+                throw new RuntimeException("Work failed, was able to send error reply to client.", e);
             }
         }
     }
@@ -76,7 +81,7 @@ public class DatabaseWork implements Fallible {
 
     @Override
     public boolean hasFailed() {
-        return failure == null;
+        return failure != null;
     }
 
     public WorkTransactionMode getTransactionMode()

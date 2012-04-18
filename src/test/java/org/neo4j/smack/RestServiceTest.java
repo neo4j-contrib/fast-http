@@ -48,16 +48,17 @@ public class RestServiceTest {
 
     @Test
     public void testGetDbInfo() throws Exception {
-        REST.from("").get().ok().expectUri("reference_node", "node/0");
+        REST.from("/").get().ok().expectUri("reference_node", "node/0");
     }
 
     @Test
     public void testCreateNodeWithProperties() throws Exception {
-        REST.to("node").post(map("name","John","age",10)).created().location("node/\\d+").expect("data/name", "John").expect("data.age", 10).compareNodeProperties("age", "name");
+        REST.to("node").post(map("name","John","age",10)).created().location("/node/\\d+").expect("data/name", "John").expect("data.age", 10).compareNodeProperties("age", "name");
     }
+    
     @Test
     public void testCreateNode() throws Exception {
-        REST.to("node").post().created().location("node/\\d+").expect("data", map()).compareNodeProperties("!name");
+        REST.to("node").post().created().location("/node/\\d+").expect("data", map()).compareNodeProperties("!name");
     }
 
     @Test

@@ -33,6 +33,7 @@ public class Router extends RoutingDefinition {
 
     private RouteEntry [] routes;
     private static final Logger logger=Logger.getLogger(Router.class);
+    private static Endpoint notFoundEndpoint = new NotFoundEndpoint();
     
     public Endpoint route(RequestEvent event)
     {
@@ -48,10 +49,10 @@ public class Router extends RoutingDefinition {
                     event.getPathVariables().add(matchResult, route.pattern); // todo is this the best way ?
                     return endpoint;
                 }
-                throw new ResourceNotFoundException("Path '" + path + "' does not support '"+event.getVerb()+"'." );
+                return notFoundEndpoint;
             }
         }
-        throw new ResourceNotFoundException("Path '" + path + "' not found." );
+        return notFoundEndpoint;
     }
     
     public void compileRoutes() {
@@ -69,13 +70,17 @@ public class Router extends RoutingDefinition {
             route.setEndpoint(definition.getEndpoint().getVerb(), definition.getEndpoint());
             // todo what happens if multiple paths have differnt verbs?
         }
+        
+        for(RouteEntry route : routeMap.values()) 
+            System.out.println(route);
+        
         routes = routeMap.values().toArray(new RouteEntry[routeMap.size()]);
     }
 
     private RouteEntry createRoute(RouteDefinitionEntry definition) {
         RouteEntry route = new RouteEntry();
         final PathTemplate template = new PathTemplate(definition.getPath());
-        route.pattern = new PathPattern(template,"/");
+        route.pattern = new PathPattern(template, definition.getPath().equals("") ? "/" : "");
         return route;
     }
 }

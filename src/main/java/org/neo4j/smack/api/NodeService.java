@@ -50,7 +50,7 @@ public class NodeService extends RestService {
     @DeserializeWith(ValueOrNullDeserializationStrategy.class)
     @SerializeWith(RepresentationSerializationStrategy.class)
     public void createNode(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException {
-        Map<String, Object> payload = invocation.getDeserializedContent();
+        Map<String, Object> payload = invocation.getContent();
         if (payload==null) payload = Collections.emptyMap();
         final NodeRepresentation node = actionsFor(invocation).createNode(payload);
         final String location = createOutputFormat(invocation).format(node.selfUri());
@@ -93,7 +93,7 @@ public class NodeService extends RestService {
     @Path(PATH_NODE_PROPERTY)
     @DeserializeWith(ValueDeserializationStrategy.class)
     public void setNodeProperty(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException {
-        actionsFor(invocation).setNodeProperty(getNodeId(invocation), getKey(invocation), invocation.getDeserializedContent());
+        actionsFor(invocation).setNodeProperty(getNodeId(invocation), getKey(invocation), invocation.getContent());
         result.okNoContent();
     }
 

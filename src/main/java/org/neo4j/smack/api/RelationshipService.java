@@ -57,7 +57,7 @@ public class RelationshipService extends RestService {
             NoSuchPropertyException, StartNodeNotFoundException,
             EndNodeNotFoundException
     {
-        final Map<String, Object> data = invocation.getDeserializedContent();
+        final Map<String, Object> data = invocation.getContent();
         final long endNodeId = extractId(data.get("to"));
         final String type = (String) data.get("type");
         final Map<String, Object> properties = (Map<String, Object>) data
@@ -161,7 +161,7 @@ public class RelationshipService extends RestService {
     {
         actionsFor(invocation).setRelationshipProperty(
                 getRelationshipId(invocation), getKey(invocation),
-                invocation.getDeserializedContent());
+                invocation.getContent());
         result.ok();
     }
 

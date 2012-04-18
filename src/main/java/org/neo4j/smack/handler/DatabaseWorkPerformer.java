@@ -16,12 +16,6 @@ public class DatabaseWorkPerformer implements WorkHandler<DatabaseWork> {
     
     private long currentTxId = -1l;
     
-    private enum ResultState {
-        SUCCESS,
-        FAILED_BEFORE_WRITE,
-        FAILED_AFTER_WRITE;
-    }
-    
     public DatabaseWorkPerformer(Database database, TransactionRegistry txs) {
         this.database = database;
         this.txs = txs;
@@ -34,30 +28,51 @@ public class DatabaseWorkPerformer implements WorkHandler<DatabaseWork> {
             switch(work.getTransactionMode()) 
             {
             case OPEN_TRANSACTION:
-                if(work.getInvocation().getTxId() != currentTxId)
-                {
-                    txs.suspendCurrentTransaction();
-                    txs.associateWithCurrentThread(work.getInvocation().getTxId());
-                    currentTxId = work.getInvocation().getTxId();
+                try {
+                    if(work.getInvocation().getTxId() != currentTxId)
+                    {
+                        txs.suspendCurrentTransaction();
+                        txs.associateWithCurrentThread(work.getInvocation().getTxId());
+                        currentTxId = work.getInvocation().getTxId();
+                    }
+                } catch(Throwable e) {
+                    work.setFailed(e);
                 }
                 work.perform();
                 break;
                 
             case SINGLE_TRANSACTION:
-                txs.suspendCurrentTransaction();
-                Transaction tx = database.graph.beginTx();
+                Transaction tx = null;
+                try 
+                {
+                    txs.suspendCurrentTransaction();
+                    tx = database.graph.beginTx();
+                } catch(Throwable e) 
+                {
+                    work.setFailed(e);
+                }
                 try
                 {
                     work.perform();
-                    tx.success();
+                    if(tx != null) 
+                    {
+                        tx.success();
+                    }
                 } finally 
                 {
-                    tx.finish();
+                    if(tx != null) 
+                    {
+                        tx.finish();
+                    }
                 }
                 break;
                 
             case NO_TRANSACTION:
-                txs.suspendCurrentTransaction();
+                try {
+                    txs.suspendCurrentTransaction();
+                } catch(Throwable e) {
+                    work.setFailed(e);
+                }
                 work.perform();
                 break;
             }

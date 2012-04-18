@@ -18,5 +18,7 @@ public interface Output {
     public void okNoContent();
 
     public void okAt(String location, Object value);
+
+    public void notFound();
     
 }

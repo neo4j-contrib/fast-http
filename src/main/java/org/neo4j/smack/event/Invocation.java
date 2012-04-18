@@ -27,7 +27,7 @@ public interface Invocation {
     
     public PathVariables getPathVariables();
 
-    public <T> T getDeserializedContent();
+    public <T> T getContent();
     
     public <T> T getDeserializedContent(Class<T> type);
 

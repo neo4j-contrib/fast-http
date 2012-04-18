@@ -62,7 +62,7 @@ public class TransactionService {
         TransactionRegistry database = req.getTxRegistry();
         Long txId = req.getTxId();
         
-        actions.setTransactionState(database, txId, (TransactionState)req.getDeserializedContent());
+        actions.setTransactionState(database, txId, (TransactionState)req.getContent());
         
         res.ok();
     }
