@@ -13,8 +13,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.lmax.disruptor.BusySpinWaitStrategy;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.ExceptionHandler;
+import com.lmax.disruptor.MultiThreadedClaimStrategy;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.Sequencer;
@@ -24,9 +26,9 @@ import com.lmax.disruptor.WorkProcessor;
 
 public class PipelineBootstrap<E> {
 
-    private final ExceptionHandler exceptionHandler;
+    protected RingBuffer<E> ringBuffer;
 
-    private RingBuffer<E> ringBuffer;
+    private final ExceptionHandler exceptionHandler;
 
     private List<WorkProcessor<E>> processors = new ArrayList<WorkProcessor<E>>();
     
@@ -36,7 +38,10 @@ public class PipelineBootstrap<E> {
     
     private final EventFactory<E> eventFactory;
 
-    public PipelineBootstrap(final EventFactory<E> eventFactory, final ExceptionHandler exceptionHandler, WorkHandler<E>... handlers) {
+    private String nameForThreads;
+
+    public PipelineBootstrap(String nameForThreads, final EventFactory<E> eventFactory, final ExceptionHandler exceptionHandler, WorkHandler<E>... handlers) {
+        this.nameForThreads = nameForThreads;
         this.handlers=asList(handlers);
         this.eventFactory = eventFactory;
         this.exceptionHandler = exceptionHandler;
@@ -45,12 +50,13 @@ public class PipelineBootstrap<E> {
     public void start() {
         if (handlers.isEmpty()) throw new IllegalStateException("No Handlers configured on Pipeline");
         final int numEventProcessors = handlers.size();
-        workers = Executors.newFixedThreadPool(numEventProcessors, new DaemonThreadFactory());
+        workers = Executors.newFixedThreadPool(numEventProcessors, new DaemonThreadFactory(nameForThreads));
 
         final int bufferSize = 1024 * 4;
         ringBuffer = new RingBuffer<E>(
                 eventFactory,
-                bufferSize);
+                new MultiThreadedClaimStrategy(bufferSize),
+                new BusySpinWaitStrategy());
 
         WorkProcessor<E> processor = null;
         for (WorkHandler<E> handler : handlers) {

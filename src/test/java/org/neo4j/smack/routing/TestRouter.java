@@ -7,12 +7,40 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.Output;
-import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.SerializationStrategy;
 
 public class TestRouter  {
 
+    class Routling implements Routable {
+        private String path;
+        private InvocationVerb verb;
+        private PathVariables pathVariables = new PathVariables();
+
+        Routling(InvocationVerb verb, String path) {
+            this.verb = verb;
+            this.path = path;
+        }
+
+        @Override
+        public String getPath()
+        {
+            return path;
+        }
+
+        @Override
+        public InvocationVerb getVerb()
+        {
+            return verb;
+        }
+
+        @Override
+        public PathVariables getPathVariables()
+        {
+            return pathVariables;
+        }
+    }
+    
     @Test
     public void shouldRouteVerbsCorrectly() {
        Endpoint e = new Endpoint() {
@@ -43,18 +71,10 @@ public class TestRouter  {
         r.addRoute("/db/data", e);
         r.compileRoutes();
         
-        RequestEvent req = new RequestEvent();
-        req.setVerb(InvocationVerb.GET);
-        req.setPath("/db/data");
-        
-        Endpoint found = r.route(req);
+        Endpoint found = r.route(new Routling(InvocationVerb.GET, "/db/data"));
         assertNotNull(found);
         
-        req = new RequestEvent();
-        req.setVerb(InvocationVerb.POST);
-        req.setPath("/db/data");
-        
-        Endpoint endpoint = r.route(req);
+        Endpoint endpoint = r.route(new Routling(InvocationVerb.POST, "/db/data"));
         assertThat(endpoint, instanceOf(NotFoundEndpoint.class));
     }
 
@@ -89,18 +109,10 @@ public class TestRouter  {
         r.addRoute("/db/data", e);
         r.compileRoutes();
         
-        RequestEvent req = new RequestEvent();
-        req.setVerb(InvocationVerb.GET);
-        req.setPath("/db/data");
-        
-        Endpoint found = r.route(req);
+        Endpoint found = r.route(new Routling(InvocationVerb.GET, "/db/data"));
         assertNotNull(found);
-    
-        req = new RequestEvent();
-        req.setVerb(InvocationVerb.GET);
-        req.setPath("/db/da");
         
-        Endpoint endpoint = r.route(req);
+        Endpoint endpoint = r.route(new Routling(InvocationVerb.GET, "/db/da"));
         assertThat(endpoint, instanceOf(NotFoundEndpoint.class)); 
     }
     

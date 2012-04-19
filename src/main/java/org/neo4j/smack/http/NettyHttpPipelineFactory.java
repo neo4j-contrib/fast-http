@@ -17,27 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.smack;
+package org.neo4j.smack.http;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
-import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.neo4j.smack.event.RequestEvent;
-
-import com.lmax.disruptor.RingBuffer;
+import org.neo4j.smack.WorkInputGate;
 
 public class NettyHttpPipelineFactory implements ChannelPipelineFactory {
 
-    private RingBuffer<RequestEvent> workBuffer;
+    private WorkInputGate workConsumer;
     private ChannelGroup openChannels;
+    private AtomicLong connectionIdGenerator;
 
-    public NettyHttpPipelineFactory(RingBuffer<RequestEvent> workBuffer, ChannelGroup openChannels) {
-        this.workBuffer = workBuffer;
+    public NettyHttpPipelineFactory(WorkInputGate workBuffer, ChannelGroup openChannels) {
+        this.workConsumer = workBuffer;
         this.openChannels = openChannels;
+        this.connectionIdGenerator = new AtomicLong();
     }
     
     public ChannelPipeline getPipeline() throws Exception {
@@ -51,11 +51,9 @@ public class NettyHttpPipelineFactory implements ChannelPipelineFactory {
         // pipeline.addLast("ssl", new SslHandler(engine));
 
         pipeline.addLast("channeltracker",new NettyChannelTrackingHandler(openChannels));
-        pipeline.addLast("decoder",       new HttpRequestDecoder());
-        pipeline.addLast("aggregator",    new HttpChunkAggregator(65536));
         pipeline.addLast("encoder",       new HttpResponseEncoder());
         //pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
-        pipeline.addLast("handler",       new NettyHttpHandler(workBuffer));
+        pipeline.addLast("handler",       new NettyHttpHandler(workConsumer, connectionIdGenerator));
         return pipeline;
     }
     

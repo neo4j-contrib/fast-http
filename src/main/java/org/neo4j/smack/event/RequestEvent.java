@@ -24,10 +24,11 @@ import org.jboss.netty.channel.Channel;
 import org.neo4j.smack.routing.Endpoint;
 import org.neo4j.smack.routing.InvocationVerb;
 import org.neo4j.smack.routing.PathVariables;
+import org.neo4j.smack.routing.Routable;
 
 import com.lmax.disruptor.EventFactory;
 
-public class RequestEvent implements Fallible {
+public class RequestEvent implements Fallible, Routable {
    
     public static EventFactory<RequestEvent> FACTORY = new EventFactory<RequestEvent>() {
         public RequestEvent newInstance() {
@@ -63,20 +64,8 @@ public class RequestEvent implements Fallible {
         return verb;
     }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
-
     public String getPath() {
         return path;
-    } 
-
-    public void setContent(ChannelBuffer content) {
-        this.content = content;
-    }
-
-    public void setIsPersistentConnection(boolean isPersistentConnection) {
-        this.isPersistentConnection = isPersistentConnection;
     }
 
     public void setPathVariables(PathVariables pathVariables) {
@@ -138,13 +127,26 @@ public class RequestEvent implements Fallible {
         this.channel = channel;
     }
 
-    public void setConnectionId(Long connectionId)
-    {
-        this.connectionId = connectionId;
-    }
-
     public long getConnectionId()
     {
         return connectionId;
+    }
+
+    public void reset(Long connectionId, InvocationVerb verb, String path,
+            ChannelBuffer content, Channel channel, boolean keepAlive)
+    {
+
+        this.connectionId = connectionId;
+        this.verb = verb;
+        this.path = path;
+        this.content = content;
+        this.channel = channel;
+        this.isPersistentConnection = keepAlive;
+        
+        this.pathVariables = null;
+        this.endpoint = null;
+        this.deserializedContent = null;
+        
+        this.failure = null;
     }
 }

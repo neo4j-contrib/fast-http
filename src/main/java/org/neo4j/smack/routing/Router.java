@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.regex.MatchResult;
 
 import org.apache.log4j.Logger;
-import org.neo4j.smack.event.RequestEvent;
 
 import com.sun.jersey.server.impl.uri.PathPattern;
 import com.sun.jersey.server.impl.uri.PathTemplate;
@@ -35,18 +34,18 @@ public class Router extends RoutingDefinition {
     private static final Logger logger=Logger.getLogger(Router.class);
     private static Endpoint notFoundEndpoint = new NotFoundEndpoint();
     
-    public Endpoint route(RequestEvent event)
+    public Endpoint route(Routable routable)
     {
-        String path = event.getPath();
+        String path = routable.getPath();
         if (path.endsWith("/")) path = path.substring(0,path.length()-1);
         for(RouteEntry route : routes) // todo parallelize routing ?? (overhead ?)
         {
             MatchResult matchResult = route.pattern.match(path);
             if(matchResult != null)
             {
-                Endpoint endpoint = route.getEndpoint(event.getVerb());
+                Endpoint endpoint = route.getEndpoint(routable.getVerb());
                 if(endpoint != null) {
-                    event.getPathVariables().add(matchResult, route.pattern); // todo is this the best way ?
+                    routable.getPathVariables().add(matchResult, route.pattern); // todo is this the best way ?
                     return endpoint;
                 }
                 return notFoundEndpoint;

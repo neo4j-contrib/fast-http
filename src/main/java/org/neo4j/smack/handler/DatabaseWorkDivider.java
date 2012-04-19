@@ -75,7 +75,8 @@ public class DatabaseWorkDivider implements WorkHandler<RequestEvent> {
         }
 
         // Pick worker
-        int workerId = (int) event.getConnectionId() % NUM_DATABASE_WORK_EXECUTORS;
+        //System.out.println(event.getConnectionId());
+        int workerId = (int) (event.getConnectionId() % NUM_DATABASE_WORK_EXECUTORS);
         workers[workerId].addWork(event, txId, txMode);
     }
 

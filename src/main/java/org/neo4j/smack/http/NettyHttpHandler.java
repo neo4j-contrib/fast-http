@@ -17,9 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.smack;
+package org.neo4j.smack.http;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -42,58 +41,47 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.jboss.netty.util.CharsetUtil;
+import org.neo4j.smack.WorkInputGate;
 import org.neo4j.smack.event.RequestEvent;
-import org.neo4j.smack.routing.InvocationVerb;
-
-import com.lmax.disruptor.RingBuffer;
 
 public class NettyHttpHandler extends SimpleChannelHandler {
 
-    private RingBuffer<RequestEvent> workBuffer;
-
-    public NettyHttpHandler(RingBuffer<RequestEvent> workBuffer) {
-        this.workBuffer = workBuffer;
-    }
+    private HttpDecoder httpDecoder;
     
-    static AtomicLong connectionId = new AtomicLong(0l);
+    private AtomicLong connectionId;
+
+    public NettyHttpHandler(WorkInputGate workBuffer, AtomicLong connectionIdGenerator) {
+        this.httpDecoder = new HttpDecoder(workBuffer);
+        this.connectionId = connectionIdGenerator;
+    }
     
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
             throws Exception {
-        HttpRequest httpRequest = (HttpRequest) e.getMessage();
-        
-        long sequenceNo = workBuffer.next();
-        RequestEvent event = workBuffer.get(sequenceNo);
-        
-        event.setConnectionId((Long)ctx.getAttachment());
-
-        addMethod(httpRequest, event);
-        addParamsAndPath(httpRequest, event);
-
-        event.setIsPersistentConnection(isKeepAlive(httpRequest));
-        event.setContent(httpRequest.getContent());
-        event.setChannel(ctx.getChannel());
-
-        workBuffer.publish(sequenceNo);
+//        HttpRequest httpRequest = (HttpRequest) e.getMessage();
+//        Long connectionId = (Long)ctx.getAttachment();
+//        InvocationVerb verb = InvocationVerb.valueOf(httpRequest.getMethod().getName().toUpperCase());
+//        
+//        workBuffer.addWork(connectionId, verb, httpRequest.getUri(), httpRequest.getContent(), ctx.getChannel(), isKeepAlive(httpRequest));
+        httpDecoder.messageReceived(ctx, e);
     }
 
-    private void addMethod(HttpRequest httpRequest, RequestEvent event) {
-        final String methodName = httpRequest.getMethod().getName();
-        event.setVerb(InvocationVerb.valueOf(methodName.toUpperCase()));
-    }
-
+    // TODO: This should go in router
     private void addParamsAndPath(HttpRequest httpRequest, RequestEvent event) {
         final String uri = httpRequest.getUri();
         if (uri.contains("?")) {
             final QueryStringDecoder decoder = new QueryStringDecoder(uri);
-            event.getPathVariables().add(decoder.getParameters());
-            event.setPath(decoder.getPath());
+            //event.getPathVariables().add(decoder.getParameters());
+            //event.setPath(decoder.getPath());
         } else {
-           event.setPath(uri);
+           //event.setPath(uri);
         }
     }
 
-    // todo use output buffer for exception handling
+    // TODO: Create a failure RequestEvent from this, output
+    // should not be done from here, it needs to be done from the
+    // database worker thread assigned to this connection, because
+    // otherwise responses may be sent out of order to the client.
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
             throws Exception {
@@ -113,6 +101,7 @@ public class NettyHttpHandler extends SimpleChannelHandler {
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
         ctx.setAttachment(connectionId.incrementAndGet());
+        System.out.println("Assigned connection: " + connectionId.get());
     }
     
     private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {

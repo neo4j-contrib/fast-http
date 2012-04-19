@@ -27,14 +27,13 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ServerSocketChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
-import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.handler.DatabaseWorkDivider;
 import org.neo4j.smack.handler.DefaultExceptionHandler;
-import org.neo4j.smack.handler.DeserializationHandler;
 import org.neo4j.smack.handler.RoutingHandler;
+import org.neo4j.smack.http.NettyHttpPipelineFactory;
 import org.neo4j.smack.routing.Endpoint;
 import org.neo4j.smack.routing.Router;
 import org.neo4j.smack.routing.RoutingDefinition;
@@ -46,7 +45,9 @@ public class SmackServer {
     private String host;
     private Router router = new Router();
     private ServerBootstrap netty;
-    private PipelineBootstrap<RequestEvent> inputPipeline;
+    
+    private InputPipeline inputPipeline;
+    
     private ServerSocketChannelFactory channelFactory;
     private ChannelGroup openChannels = new DefaultChannelGroup("SmackServer");
     private Database database;
@@ -70,7 +71,6 @@ public class SmackServer {
         this.database = db;
     }
     
-    @SuppressWarnings("unchecked")
     public void start() {
         
         router.compileRoutes();
@@ -80,19 +80,19 @@ public class SmackServer {
         exceptionHandler = new DefaultExceptionHandler();
         executionHandler = new DatabaseWorkDivider(database, exceptionHandler);
 
-        inputPipeline = new PipelineBootstrap<RequestEvent>(RequestEvent.FACTORY, exceptionHandler, new RoutingHandler(router), new DeserializationHandler(), executionHandler);
+        inputPipeline = new InputPipeline(exceptionHandler, new RoutingHandler(router), executionHandler);
         inputPipeline.start();
 
         // NETTY 
         
         channelFactory = 
-            new NioServerSocketChannelFactory(
-                    Executors.newCachedThreadPool(new DaemonThreadFactory()),
-                    Executors.newCachedThreadPool(new DaemonThreadFactory()));
+            new OioServerSocketChannelFactory(
+                    Executors.newCachedThreadPool(new DaemonThreadFactory("SocketMaster")),
+                    Executors.newCachedThreadPool(new DaemonThreadFactory("SocketSlave")));
         netty = new ServerBootstrap(channelFactory);
 
         // Set up the event pipeline factory.
-        netty.setPipelineFactory(new NettyHttpPipelineFactory(inputPipeline.getRingBuffer(), openChannels));
+        netty.setPipelineFactory(new NettyHttpPipelineFactory(inputPipeline, openChannels));
 
         // Bind and start to accept incoming connections.
         openChannels.add(netty.bind(new InetSocketAddress(host, port)));

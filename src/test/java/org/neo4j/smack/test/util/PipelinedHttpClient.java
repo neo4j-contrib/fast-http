@@ -2,11 +2,15 @@ package org.neo4j.smack.test.util;
 
 import static org.jboss.netty.channel.Channels.pipeline;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -17,14 +21,14 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
-import org.jboss.netty.handler.codec.http.HttpClientCodec;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.jboss.netty.util.CharsetUtil;
 
 /** 
@@ -32,6 +36,50 @@ import org.jboss.netty.util.CharsetUtil;
  * Used as a lab tool to see how we can maximize performance.
  */
 public class PipelinedHttpClient {
+    
+    static final byte SP = 32;
+
+    //tab ' '
+    static final byte HT = 9;
+
+    /**
+     * Carriage return
+     */
+    static final byte CR = 13;
+
+    /**
+     * Equals '='
+     */
+    static final byte EQUALS = 61;
+
+    /**
+     * Line feed character
+     */
+    static final byte LF = 10;
+
+    /**
+     * carriage return line feed
+     */
+    static final byte[] CRLF = new byte[] { CR, LF };
+
+    /**
+    * Colon ':'
+    */
+    static final byte COLON = 58;
+
+    /**
+    * Semicolon ';'
+    */
+    static final byte SEMICOLON = 59;
+
+     /**
+    * comma ','
+    */
+    static final byte COMMA = 44;
+
+    static final byte DOUBLE_QUOTE = '"';
+
+    static final Charset DEFAULT_CHARSET = CharsetUtil.UTF_8;
     
     public static class HttpClientPipelineFactory implements ChannelPipelineFactory {
 
@@ -45,10 +93,10 @@ public class PipelinedHttpClient {
             // Create a default pipeline implementation.
             ChannelPipeline pipeline = pipeline();
 
-            pipeline.addLast("codec", new HttpClientCodec());
+            //pipeline.addLast("codec", new HttpClientCodec());
 
             // Uncomment the following line if you don't want to handle HttpChunks.
-            pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
+            //pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
 
             pipeline.addLast("handler", responseHandler);
             return pipeline;
@@ -56,17 +104,122 @@ public class PipelinedHttpClient {
 
     } 
     
-    public static class HttpResponseHandler extends SimpleChannelUpstreamHandler {
-        public int responseCount = 0;
+    public static class HttpResponseHandler extends SimpleChannelUpstreamHandler  {
+        
+        static class HttpDecoder extends  ReplayingDecoder<HttpDecoder.State> 
+        {
+            enum State {
+                SKIP_CONTROL_CHARS,
+                READ_INITIAL,
+                READ_HEADERS;
+            }
+
+            private AtomicInteger responseCount;
+            
+            HttpDecoder(AtomicInteger responseCount) {
+                super(State.SKIP_CONTROL_CHARS, true);
+                this.responseCount = responseCount;
+            }
+
+            /**
+             * Capable of parsing a single type of HTTP responses, namely:
+             * 
+             * HTTP/1.1 200 OK
+             * Content-Length: 0
+             * 
+             * Used to count responses for performance testing.
+             */
+            @Override
+            @SuppressWarnings ("fallthrough")
+            protected Object decode(ChannelHandlerContext ctx, Channel channel,
+                    ChannelBuffer buffer, State state) throws Exception
+            {
+                switch (state) {
+                case SKIP_CONTROL_CHARS: {
+                    try {
+                        skipControlCharacters(buffer);
+                        checkpoint(State.READ_INITIAL);
+                    } finally {
+                        checkpoint();
+                    }
+                }
+                case READ_INITIAL: {
+                    readLine(buffer, 1000);
+                    checkpoint(State.READ_HEADERS);
+                }
+                case READ_HEADERS: {
+                    readLine(buffer, 1000);
+                    responseCount.incrementAndGet();
+                    return reset();
+                }
+                default: {
+                    throw new Error("Shouldn't reach here.");
+                }
+
+                }
+            }
+            
+            private Object reset()
+            {
+                checkpoint(State.SKIP_CONTROL_CHARS);
+                return null;
+            }
+
+            private void skipControlCharacters(ChannelBuffer buffer) {
+                for (;;) {
+                    char c = (char) buffer.readUnsignedByte();
+                    if (!Character.isISOControl(c) &&
+                        !Character.isWhitespace(c)) {
+                        buffer.readerIndex(buffer.readerIndex() - 1);
+                        break;
+                    }
+                }
+            }
+            
+            private String readLine(ChannelBuffer buffer, int maxLineLength) throws TooLongFrameException {
+                StringBuilder sb = new StringBuilder(64);
+                int lineLength = 0;
+                while (true) {
+                    byte nextByte = buffer.readByte();
+                    if (nextByte == CR) {
+                        nextByte = buffer.readByte();
+                        if (nextByte == LF) {
+                            return sb.toString();
+                        }
+                    }
+                    else if (nextByte == LF) {
+                        return sb.toString();
+                    }
+                    else {
+                        if (lineLength >= maxLineLength) {
+                            // TODO: Respond with Bad Request and discard the traffic
+                            //    or close the connection.
+                            //       No need to notify the upstream handlers - just log.
+                            //       If decoding a response, just throw an exception.
+                            throw new TooLongFrameException(
+                                    "An HTTP line is larger than " + maxLineLength +
+                                    " bytes.");
+                        }
+                        lineLength ++;
+                        sb.append((char) nextByte);
+                    }
+                }
+            }
+        }
+        
+        public AtomicInteger responseCount = new AtomicInteger();
 
         public HttpResponse lastResponse;
         public Throwable lastException = null;
         
+        HttpDecoder decode = new HttpDecoder(responseCount);
+        
         @Override
         public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
                 throws Exception {
-            lastResponse = (HttpResponse) e.getMessage();
-            responseCount++;
+            //lastResponse = (HttpResponse) e.getMessage();
+            decode.messageReceived(ctx, e);
+            //responseCount++;
         }
         
         @Override
@@ -125,17 +278,66 @@ public class PipelinedHttpClient {
         
         // Send the HTTP request.
         return channel.write(request);
-        
     }
     
+    public void sendRaw(int reqsInMessage) {
+        ChannelBuffer buf = ChannelBuffers.dynamicBuffer(channel.getConfig().getBufferFactory());
+        
+        try
+        {
+            for(int i=0;i<reqsInMessage;i++) 
+                addRequestTo(buf);
+        } catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException(e);
+        }
+        
+        channel.write(buf);
+    }
+    
+    private void addRequestTo(ChannelBuffer buf) throws UnsupportedEncodingException
+    {
+        buf.writeBytes("GET".getBytes("ASCII"));
+        buf.writeByte(SP);
+        buf.writeBytes("/noserialnodeserial".getBytes("ASCII"));
+        buf.writeByte(SP);
+        buf.writeBytes(HttpVersion.HTTP_1_1.toString().getBytes("ASCII"));
+        buf.writeByte(CR);
+        buf.writeByte(LF);
+        
+        buf.writeBytes(HttpHeaders.Names.HOST.getBytes("ASCII"));
+        buf.writeByte(COLON);
+        buf.writeByte(SP);
+        buf.writeBytes("localhost".getBytes("ASCII"));
+        buf.writeByte(CR);
+        buf.writeByte(LF);
+        
+        buf.writeBytes(HttpHeaders.Names.CONNECTION.getBytes("ASCII"));
+        buf.writeByte(COLON);
+        buf.writeByte(SP);
+        buf.writeBytes("keep-alive".getBytes("ASCII"));
+        buf.writeByte(CR);
+        buf.writeByte(LF);
+        
+        buf.writeBytes(HttpHeaders.Names.CONTENT_LENGTH.getBytes("ASCII"));
+        buf.writeByte(COLON);
+        buf.writeByte(SP);
+        buf.writeBytes("0".getBytes("ASCII"));
+        buf.writeByte(CR);
+        buf.writeByte(LF);
+
+        buf.writeByte(CR);
+        buf.writeByte(LF);
+    }
+
     // Quick hack to wait for responses
     public void waitForXResponses(int count) throws InterruptedException {
-        while(responseHandler.responseCount < count) {
+        while(responseHandler.responseCount.get() < count) {
             if(responseHandler.lastException != null) {
                 responseHandler.lastException.printStackTrace();
                 throw new RuntimeException(responseHandler.lastException);
             }
-            Thread.sleep(3);
+            Thread.sleep(0, 10);
         }
     }
 

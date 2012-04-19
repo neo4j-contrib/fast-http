@@ -21,12 +21,15 @@ package org.neo4j.smack.handler;
 
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.routing.Router;
+import org.neo4j.smack.serialization.Deserializer;
+import org.neo4j.smack.serialization.SerializationFactory;
 
 import com.lmax.disruptor.WorkHandler;
 
 public class RoutingHandler implements WorkHandler<RequestEvent> {
 
     private Router router;
+    SerializationFactory serializationFactory = new SerializationFactory();
 
     public RoutingHandler(Router router) {
         this.router = router;
@@ -35,6 +38,11 @@ public class RoutingHandler implements WorkHandler<RequestEvent> {
     public void onEvent(final RequestEvent event)
             throws Exception {
         event.setEndpoint(router.route(event));
+        
+        if(!event.hasFailed()) {
+            Deserializer d = serializationFactory.getDeserializer(event.getContent());
+            event.setDeserializedContent(event.getEndpoint().getDeserializationStrategy().deserialize(d));
+        }
     }
 
 }
