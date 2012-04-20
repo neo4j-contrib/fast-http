@@ -233,8 +233,12 @@ public class PipelinedHttpClient {
     
     public HttpResponseHandler responseHandler = new HttpResponseHandler();
 
-    public PipelinedHttpClient(String host, int port) {
+    private ChannelBuffer buf;
 
+    public PipelinedHttpClient(String host, int port) {
+        
+        initRequestBuffer();
+        
         // Configure the client.
         bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
                 Executors.newCachedThreadPool(),
@@ -252,6 +256,18 @@ public class PipelinedHttpClient {
         if (!future.isSuccess()) {
             bootstrap.releaseExternalResources();
             throw new RuntimeException(future.getCause());
+        }
+    }
+
+    private void initRequestBuffer()
+    {
+        buf = ChannelBuffers.dynamicBuffer(100);
+        try {
+            for(int i=0;i<20;i++) {
+                addRequestTo(buf);
+            }
+        } catch(Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -281,16 +297,16 @@ public class PipelinedHttpClient {
     }
     
     public void sendRaw(int reqsInMessage) {
-        ChannelBuffer buf = ChannelBuffers.dynamicBuffer(channel.getConfig().getBufferFactory());
-        
-        try
-        {
-            for(int i=0;i<reqsInMessage;i++) 
-                addRequestTo(buf);
-        } catch (UnsupportedEncodingException e)
-        {
-            throw new RuntimeException(e);
-        }
+//        ChannelBuffer buf = ChannelBuffers.dynamicBuffer(channel.getConfig().getBufferFactory());
+//        
+//        try
+//        {
+//            for(int i=0;i<reqsInMessage;i++) 
+//                addRequestTo(buf);
+//        } catch (UnsupportedEncodingException e)
+//        {
+//            throw new RuntimeException(e);
+//        }
         
         channel.write(buf);
     }

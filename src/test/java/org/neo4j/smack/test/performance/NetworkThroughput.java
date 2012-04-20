@@ -14,9 +14,9 @@ import org.neo4j.test.ImpermanentGraphDatabase;
  * entire stack, including the network layer.
  *   
  * High scores
- *   smack,        pipelined,     2 channels     :  279 415.4628 req/second (2012-04-19, JH)
- *   smack,        pipelined,     4 channels     :  234 752.8052 req/second (2012-04-19, JH)
- *   smack,        pipelined,     single channel :  204 457.1662 req/second (2012-04-19, JH)
+ *   smack,        pipelined,     4 channels     :  518 564.6131 req/second (2012-04-20, JH)
+ *   smack,        pipelined,     2 channels     :  504 859.2704 req/second (2012-04-20, JH)
+ *   smack,        pipelined,     single channel :  377 337.1318 req/second (2012-04-20, JH)
  *   jetty+jersey, pipelined,     single channel :   17 470.6057 req/second (2012-04-18, JH)
  *   smack,        non-pipelined, single channel :    8 443.8064 req/second (2012-04-18, JH)
  *   jetty+jersey, non-pipelined, single channel :      509.9959 req/second (2012-04-18, JH)
@@ -58,9 +58,9 @@ public class NetworkThroughput {
     private NetworkThroughputResult test() {
         NetworkThroughputResult result = new NetworkThroughputResult();
         try {
-            //Thread.sleep(1000 * 15);
+//            Thread.sleep(1000 * 15);
             
-            int numRequests = 10000000;
+            int numRequests = 20000000;
             startServer();
             
             pipelineClient = new PipelinedHttpClient("localhost", 7473);
@@ -84,8 +84,10 @@ public class NetworkThroughput {
             System.out.println("Running test..");
             start = new Date();
             //sendXRequestsPipelined("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
-            totalSeconds = sendXRequestsPipelinedMultiThreaded("http://localhost:7474/dummy/justreturn/200", numRequests, 2);
+            
+            totalSeconds = sendXRequestsPipelinedMultiThreaded("http://localhost:7474/dummy/justreturn/200", numRequests, 4);
             end = new Date();
+            //totalSeconds = (end.getTime() - start.getTime()) / 1000.0d;
             
             //totalSeconds =  (end.getTime() - start.getTime()) / 1000.0d;
             System.out.println("Did " + numRequests + " http calls in " + totalSeconds + " seconds.");
@@ -117,9 +119,9 @@ public class NetworkThroughput {
                 @Override
                 public void run()
                 {
-                    for(int i=0;i<numRequestsPerThread;i+=10) {
+                    for(int i=0;i<numRequestsPerThread;i+=20) {
                         //pipelineClient.handle(HttpMethod.GET, target, "");
-                        client.sendRaw(10);
+                        client.sendRaw(20);
                     }
                     
                     try

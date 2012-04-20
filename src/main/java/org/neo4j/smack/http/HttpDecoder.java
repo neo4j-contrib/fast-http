@@ -16,7 +16,6 @@ import org.jboss.netty.handler.codec.http.HttpChunkTrailer;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
-import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.neo4j.smack.WorkInputGate;
@@ -422,17 +421,17 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
     }
 
     protected boolean isContentAlwaysEmpty(DecodedHttpMessage msg) {
-        if (msg instanceof HttpResponse) {
-            HttpResponse res = (HttpResponse) msg;
-            int code = res.getStatus().getCode();
-            if (code < 200) {
-                return true;
-            }
-            switch (code) {
-            case 204: case 205: case 304:
-                return true;
-            }
-        }
+//        if (msg instanceof HttpResponse) {
+//            HttpResponse res = (HttpResponse) msg;
+//            int code = res.getStatus().getCode();
+//            if (code < 200) {
+//                return true;
+//            }
+//            switch (code) {
+//            case 204: case 205: case 304:
+//                return true;
+//            }
+//        }
         return false;
     }
 
@@ -468,6 +467,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         }
     }
 
+    // TODO: Make garbage free
     private State readHeaders(ChannelBuffer buffer) throws TooLongFrameException {
         headerSize = 0;
         String line = readHeader(buffer);
@@ -517,6 +517,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         return nextState;
     }
 
+    // TODO: Make garbage free
     private HttpChunkTrailer readTrailingHeaders(ChannelBuffer buffer) throws TooLongFrameException {
         headerSize = 0;
         String line = readHeader(buffer);
@@ -554,6 +555,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         return HttpChunk.LAST_CHUNK;
     }
 
+    // TODO: Make garbage free
     private String readHeader(ChannelBuffer buffer) throws TooLongFrameException {
         StringBuilder sb = new StringBuilder(64);
         int headerSize = this.headerSize;
@@ -607,6 +609,8 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         return Integer.parseInt(hex, 16);
     }
 
+    // TODO: Make this garbage free (map bytes directly to appropriate enums etc. rather
+    // than creating a string and then parsing that).
     private String readLine(ChannelBuffer buffer, int maxLineLength) throws TooLongFrameException {
         StringBuilder sb = new StringBuilder(64);
         int lineLength = 0;
@@ -637,6 +641,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         }
     }
 
+    // TODO: Make garbage free
     private String[] splitInitialLine(String sb) {
         int aStart;
         int aEnd;
@@ -660,6 +665,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
                 cStart < cEnd? sb.substring(cStart, cEnd) : "" };
     }
 
+    // TODO: Make garbage free
     private String[] splitHeader(String sb) {
         final int length = sb.length();
         int nameStart;
