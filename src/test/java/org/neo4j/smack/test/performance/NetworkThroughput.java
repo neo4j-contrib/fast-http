@@ -60,7 +60,7 @@ public class NetworkThroughput {
             //Thread.sleep(1000 * 20);
             
             //long numRequests = 1755028000l;
-            long numRequests = 10000000l;
+            long numRequests = 50000000l;
             //startServer();
             
             // Simple HTTP calls
@@ -72,7 +72,7 @@ public class NetworkThroughput {
             // Pipelined calls
             
             System.out.println("Warming up..");
-            sendXRequestsPipelined("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, 100000);
+            sendXRequestsPipelined(100000);
             
             System.out.println("Running test..");
             //totalSeconds = sendXRequestsPipelined("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
@@ -125,8 +125,9 @@ public class NetworkThroughput {
         return (end.getTime() - start.getTime()) / 1000.0d;
     }
     
-    private double sendXRequestsPipelined(String uri, long numRequests) throws InterruptedException {
-        int requestsPerBatch = 1000;
+    private double sendXRequestsPipelined(long numRequests) throws InterruptedException 
+    {
+        int requestsPerBatch = 10;
         FixedRequestClient client = new FixedRequestClient("localhost", 7473, PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION_AND_NO_INTROSPECTION, requestsPerBatch);
         Date start = new Date();
         for(int i=0;i<numRequests;i+=requestsPerBatch) {

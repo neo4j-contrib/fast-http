@@ -19,6 +19,8 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.channel.group.ChannelGroup;
+import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
@@ -29,6 +31,7 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.jboss.netty.util.CharsetUtil;
+import org.neo4j.smack.http.NettyChannelTrackingHandler;
 
 /** 
  * Incomplete implementation of a HTTP client that does pipelining.
@@ -80,12 +83,14 @@ public class PipelinedHttpClient {
 
     static final Charset DEFAULT_CHARSET = CharsetUtil.UTF_8;
     
-    public static class HttpClientPipelineFactory implements ChannelPipelineFactory {
+    public class HttpClientPipelineFactory implements ChannelPipelineFactory {
 
         private HttpResponseHandler responseHandler;
+        private ChannelGroup openChannels;
 
-        public HttpClientPipelineFactory(HttpResponseHandler responseHandler) {
+        public HttpClientPipelineFactory(ChannelGroup openChannels, HttpResponseHandler responseHandler) {
             this.responseHandler = responseHandler;
+            this.openChannels = openChannels;
         }
         
         public ChannelPipeline getPipeline() throws Exception {
@@ -97,6 +102,7 @@ public class PipelinedHttpClient {
             // Uncomment the following line if you don't want to handle HttpChunks.
             //pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
 
+            pipeline.addLast("channeltracker",new NettyChannelTrackingHandler(openChannels));
             pipeline.addLast("handler", responseHandler);
             return pipeline;
         }
@@ -148,6 +154,7 @@ public class PipelinedHttpClient {
                 }
                 case READ_HEADERS: {
                     readLine(buffer, 1000);
+                    
                     responseCount.incrementAndGet();
                     return reset();
                 }
@@ -216,9 +223,7 @@ public class PipelinedHttpClient {
         @Override
         public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
                 throws Exception {
-            //lastResponse = (HttpResponse) e.getMessage();
             decode.messageReceived(ctx, e);
-            //responseCount++;
         }
         
         @Override
@@ -231,6 +236,7 @@ public class PipelinedHttpClient {
     private ClientBootstrap bootstrap;
     
     public HttpResponseHandler responseHandler = new HttpResponseHandler();
+    private ChannelGroup openChannels = new DefaultChannelGroup("SmackClient");
 
     public PipelinedHttpClient(String host, int port) {
         
@@ -240,7 +246,7 @@ public class PipelinedHttpClient {
                 Executors.newCachedThreadPool()));
 
         // Set up the event pipeline factory.
-        bootstrap.setPipelineFactory(new HttpClientPipelineFactory(responseHandler));
+        bootstrap.setPipelineFactory(new HttpClientPipelineFactory(openChannels, responseHandler));
 
         // Start the connection attempt.
         ChannelFuture future = bootstrap.connect(new InetSocketAddress(host,
@@ -283,7 +289,6 @@ public class PipelinedHttpClient {
     public void waitForXResponses(long count) {
         while(responseHandler.responseCount.get() < count) {
             if(responseHandler.lastException != null) {
-                responseHandler.lastException.printStackTrace();
                 throw new RuntimeException(responseHandler.lastException);
             }
             try {
@@ -295,10 +300,8 @@ public class PipelinedHttpClient {
     }
 
     public void close() {
-        // Shut down executor threads to exit.
+        if (openChannels!=null) openChannels.close().awaitUninterruptibly();
         bootstrap.releaseExternalResources();
     }
-
-
     
 }

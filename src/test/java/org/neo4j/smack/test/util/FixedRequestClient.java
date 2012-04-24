@@ -27,6 +27,7 @@ public class FixedRequestClient extends PipelinedHttpClient {
         try {
             for(int i=0;i<numRequestsPerBatch;i++) {
                 addRequestTo(buf, path, host);
+                System.out.println(i);
             }
         } catch(Exception e) {
             throw new RuntimeException(e);
