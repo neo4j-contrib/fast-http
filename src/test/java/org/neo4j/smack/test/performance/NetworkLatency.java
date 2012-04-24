@@ -1,14 +1,13 @@
 package org.neo4j.smack.test.performance;
 
-import java.net.URI;
 import java.util.Date;
 
 import javax.ws.rs.core.MediaType;
 
 import org.neo4j.smack.Database;
 import org.neo4j.smack.SmackServer;
+import org.neo4j.smack.test.util.FixedRequestClient;
 import org.neo4j.smack.test.util.PerformanceRoutes;
-import org.neo4j.smack.test.util.PipelinedHttpClient;
 import org.neo4j.test.ImpermanentGraphDatabase;
 
 import com.sun.jersey.api.client.Client;
@@ -31,7 +30,7 @@ import com.sun.jersey.api.client.WebResource.Builder;
 public class NetworkLatency {
 
     private SmackServer server;
-    private PipelinedHttpClient pipelineClient;
+    private FixedRequestClient pipelineClient;
     
     public static void main(String [] args) {
         NetworkLatency latency = new NetworkLatency();
@@ -43,21 +42,16 @@ public class NetworkLatency {
     private double test() {
         try {
             
-            int numRequests = 1000000;
+            int numRequests = 500000;
             
-            startServer();
+            //startServer();
+            
+            pipelineClient = new FixedRequestClient("localhost", 7473, PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION_AND_NO_INTROSPECTION, 1);
             
             Date start = new Date();
-            //sendXRequests("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
+            sendXRequests("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION_AND_NO_INTROSPECTION, numRequests);
+            //sendXRequestsPipelined(numRequests);
             Date end = new Date();
-            
-            // Pipelined calls
-            pipelineClient = new PipelinedHttpClient("localhost", 7473);
-            
-            start = new Date();
-            sendXRequests("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
-            //sendXRequestsPipelined("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
-            end = new Date();
             
             long total = end.getTime() - start.getTime(); 
             return ((double)total)/numRequests;
@@ -67,7 +61,7 @@ public class NetworkLatency {
             e.printStackTrace();
             return 0d;
         } finally {
-            stopServer();
+            //stopServer();
         }
     }
     
@@ -78,11 +72,9 @@ public class NetworkLatency {
         }
     }
     
-    private void sendXRequestsPipelined(String uri, int numRequests) throws InterruptedException {
-        URI target = URI.create(uri);
+    private void sendXRequestsPipelined(int numRequests) throws InterruptedException {
         for(int i=0;i<numRequests;i++) {
-            //pipelineClient.handle(HttpMethod.GET, target, "");
-            pipelineClient.sendRaw(1);
+            pipelineClient.sendBatch();
             pipelineClient.waitForXResponses(i);
         }
     }

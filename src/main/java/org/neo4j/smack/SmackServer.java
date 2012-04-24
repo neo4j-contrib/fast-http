@@ -27,7 +27,7 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ServerSocketChannelFactory;
-import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.smack.handler.DatabaseWorkDivider;
@@ -86,7 +86,7 @@ public class SmackServer {
         // NETTY 
         
         channelFactory = 
-            new OioServerSocketChannelFactory(
+            new NioServerSocketChannelFactory(
                     Executors.newCachedThreadPool(new DaemonThreadFactory("SocketMaster")),
                     Executors.newCachedThreadPool(new DaemonThreadFactory("SocketSlave")));
         netty = new ServerBootstrap(channelFactory);

@@ -2,7 +2,6 @@ package org.neo4j.smack.test.util;
 
 import static org.jboss.netty.channel.Channels.pipeline;
 
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -176,19 +175,19 @@ public class PipelinedHttpClient {
                 }
             }
             
-            private String readLine(ChannelBuffer buffer, int maxLineLength) throws TooLongFrameException {
-                StringBuilder sb = new StringBuilder(64);
+            private void readLine(ChannelBuffer buffer, int maxLineLength) throws TooLongFrameException {
+                //StringBuilder sb = new StringBuilder(64);
                 int lineLength = 0;
                 while (true) {
                     byte nextByte = buffer.readByte();
                     if (nextByte == CR) {
                         nextByte = buffer.readByte();
                         if (nextByte == LF) {
-                            return sb.toString();
+                            return;
                         }
                     }
                     else if (nextByte == LF) {
-                        return sb.toString();
+                        return;
                     }
                     else {
                         if (lineLength >= maxLineLength) {
@@ -201,7 +200,7 @@ public class PipelinedHttpClient {
                                     " bytes.");
                         }
                         lineLength ++;
-                        sb.append((char) nextByte);
+                        //sb.append((char) nextByte);
                     }
                 }
             }
@@ -228,16 +227,12 @@ public class PipelinedHttpClient {
         }
     }
     
-    private Channel channel;
+    protected Channel channel;
     private ClientBootstrap bootstrap;
     
     public HttpResponseHandler responseHandler = new HttpResponseHandler();
 
-    private ChannelBuffer buf;
-
     public PipelinedHttpClient(String host, int port) {
-        
-        initRequestBuffer();
         
         // Configure the client.
         bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(
@@ -256,18 +251,6 @@ public class PipelinedHttpClient {
         if (!future.isSuccess()) {
             bootstrap.releaseExternalResources();
             throw new RuntimeException(future.getCause());
-        }
-    }
-
-    private void initRequestBuffer()
-    {
-        buf = ChannelBuffers.dynamicBuffer(100);
-        try {
-            for(int i=0;i<20;i++) {
-                addRequestTo(buf);
-            }
-        } catch(Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -295,65 +278,19 @@ public class PipelinedHttpClient {
         // Send the HTTP request.
         return channel.write(request);
     }
-    
-    public void sendRaw(int reqsInMessage) {
-//        ChannelBuffer buf = ChannelBuffers.dynamicBuffer(channel.getConfig().getBufferFactory());
-//        
-//        try
-//        {
-//            for(int i=0;i<reqsInMessage;i++) 
-//                addRequestTo(buf);
-//        } catch (UnsupportedEncodingException e)
-//        {
-//            throw new RuntimeException(e);
-//        }
-        
-        channel.write(buf);
-    }
-    
-    private void addRequestTo(ChannelBuffer buf) throws UnsupportedEncodingException
-    {
-        buf.writeBytes("GET".getBytes("ASCII"));
-        buf.writeByte(SP);
-        buf.writeBytes(PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION_AND_NO_INTROSPECTION.getBytes("ASCII"));
-        buf.writeByte(SP);
-        buf.writeBytes(HttpVersion.HTTP_1_1.toString().getBytes("ASCII"));
-        buf.writeByte(CR);
-        buf.writeByte(LF);
-        
-        buf.writeBytes(HttpHeaders.Names.HOST.getBytes("ASCII"));
-        buf.writeByte(COLON);
-        buf.writeByte(SP);
-        buf.writeBytes("localhost".getBytes("ASCII"));
-        buf.writeByte(CR);
-        buf.writeByte(LF);
-        
-        buf.writeBytes(HttpHeaders.Names.CONNECTION.getBytes("ASCII"));
-        buf.writeByte(COLON);
-        buf.writeByte(SP);
-        buf.writeBytes("keep-alive".getBytes("ASCII"));
-        buf.writeByte(CR);
-        buf.writeByte(LF);
-        
-        buf.writeBytes(HttpHeaders.Names.CONTENT_LENGTH.getBytes("ASCII"));
-        buf.writeByte(COLON);
-        buf.writeByte(SP);
-        buf.writeBytes("0".getBytes("ASCII"));
-        buf.writeByte(CR);
-        buf.writeByte(LF);
-
-        buf.writeByte(CR);
-        buf.writeByte(LF);
-    }
 
     // Quick hack to wait for responses
-    public void waitForXResponses(long count) throws InterruptedException {
+    public void waitForXResponses(long count) {
         while(responseHandler.responseCount.get() < count) {
             if(responseHandler.lastException != null) {
                 responseHandler.lastException.printStackTrace();
                 throw new RuntimeException(responseHandler.lastException);
             }
-            Thread.sleep(0, 10);
+            try {
+                Thread.sleep(0, 10);
+            } catch(Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

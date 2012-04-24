@@ -29,8 +29,12 @@ public class MutableString {
 
     public void append(char character)
     {
-        ensureCapacity(length+1);
-        chars[length++] = character;
+        try {
+            chars[length++] = character;
+        } catch(ArrayIndexOutOfBoundsException e) {
+            ensureCapacity(length);
+            chars[length] = character;
+        }
     }
 
     public void setTo(MutableString value)
