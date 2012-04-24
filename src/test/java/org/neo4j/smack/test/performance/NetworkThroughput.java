@@ -61,8 +61,8 @@ public class NetworkThroughput {
         try {
             Thread.sleep(1000 * 20);
             
-            long numRequests = 1755028000l;
-            //long numRequests = 10000000l;
+            //long numRequests = 1755028000l;
+            long numRequests = 10000000l;
             startServer();
             
             pipelineClient = new PipelinedHttpClient("localhost", 7473);
@@ -117,6 +117,7 @@ public class NetworkThroughput {
                         //pipelineClient.handle(HttpMethod.GET, target, "");
                         client.sendRaw(20);
                         try {
+                            // Used to help profiling
                             Thread.sleep(10);
                         } catch(InterruptedException e) {
                             throw new RuntimeException(e);

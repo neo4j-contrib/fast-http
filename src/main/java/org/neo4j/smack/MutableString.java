@@ -2,6 +2,14 @@ package org.neo4j.smack;
 
 import java.util.Arrays;
 
+/**
+ * A mutable String implementation. Uses more memory than
+ * native java strings and are slower, but can be reused.
+ * 
+ * In high-throughput applications, this can be very useful
+ * as the performance impact of GC is high, and we can pool
+ * mutable string objects, so we don't need GC.
+ */
 public class MutableString {
     
     private char [] chars;

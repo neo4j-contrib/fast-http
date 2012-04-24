@@ -63,6 +63,10 @@ public class HttpHeaderContainer {
         {
             numValues = 0;
         }
+        
+        protected int currentCapacity() {
+            return values.length;
+        }
 
         private void makeInternalValueStoreBigger()
         {

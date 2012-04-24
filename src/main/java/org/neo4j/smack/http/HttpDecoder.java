@@ -31,9 +31,9 @@ import org.neo4j.smack.routing.InvocationVerb;
  * This is *very* much in dev right now, for instance chunking is epically
  * broken. Don't use for production.
  * 
- * TODO: This class is one of the largest creators of garbage in Smack, along
- * with the output implementations. It currently generates a vast amount of
- * throwaway String objects. Look this over and see if we can make it entirely garbage free.
+ * TODO: Add chunked input support
+ * TODO: Replace the readTrailingHeaders method with HttpHeaderDecoder to make it garbage free
+ * TODO: Look into ReplayingHeaderDecoder, I think it buffers data and then does not reuse the buffers
  */
 public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
 
@@ -85,11 +85,6 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
             headers.removeHeader(name);
         }
 
-        void clearHeaders()
-        {
-            headers.clear();
-        }
-
         long getContentLength(long defaultValue)
         {
             return contentLength != null ? contentLength : defaultValue;
@@ -135,6 +130,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
             this.protocolVersion = protocolVersion;
             this.verb = verb;
             this.path = path;
+            this.headers.clear();
         }
     }
     
@@ -142,6 +138,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
     
     private final int maxInitialLineLength;
     private final int maxChunkSize;
+    private final int maxHeaderSize;
     
     private final HttpHeaderDecoder headerDecoder;
     
@@ -159,20 +156,15 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
     
     private boolean isDecodingRequest = true;
 
-    // TODO: Remove this.
-    private int maxHeaderSize = 8192;
-
-    HttpDecoder(WorkPublisher workBuffer)
+    public HttpDecoder(WorkPublisher workBuffer)
     {
-        this(workBuffer, 4096, 8192, 8192, new HashSet<HttpHeaderName>(){
-            
-        });
+        this(workBuffer, 4096, 8192, 8192, new HashSet<HttpHeaderName>(){{
+            add(HttpHeaderNames.CONTENT_LENGTH);
+            add(HttpHeaderNames.CONNECTION);
+        }});
     }
 
-    /**
-     * Creates a new instance with the specified parameters.
-     */
-    protected HttpDecoder(WorkPublisher workBuffer, 
+    public HttpDecoder(WorkPublisher workBuffer, 
             int maxInitialLineLength, int maxHeaderSize, int maxChunkSize, Set<HttpHeaderName> headersToCareAbout) {
 
         super(State.SKIP_CONTROL_CHARS, true);
@@ -192,6 +184,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         this.workBuffer = workBuffer;
         
         this.headerDecoder = new HttpHeaderDecoder(headersToCareAbout, maxHeaderSize);
+        this.maxHeaderSize = maxHeaderSize;
     }
 
     /*
@@ -478,8 +471,6 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         }
     }
 
-    // TODO: This currently allocates a huge amount of Strings, make it reuse char arrays 
-    // or something instead.
     protected State readHeaders(ChannelBuffer buffer) throws TooLongFrameException {
         headerDecoder.decode(buffer, message.getHeaderContainer());
 
@@ -650,7 +641,6 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
                 cStart < cEnd? sb.substring(cStart, cEnd) : "" };
     }
 
-    // TODO: Make garbage free
     private String[] splitHeader(String sb) {
         final int length = sb.length();
         int nameStart;
