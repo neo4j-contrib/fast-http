@@ -10,6 +10,14 @@ import org.neo4j.smack.serialization.SerializationFactory;
 
 import com.lmax.disruptor.EventFactory;
 
+/**
+ * Represents work that has been prepared and is ready to be performed
+ * by the system by a single database thread, usually within some specific 
+ * transaction and always by a specific database worker thread.
+ * 
+ * Note: There are lots of these instances, keep this as slim as possible to 
+ * keep memory usage down.
+ */
 public class DatabaseWork implements Fallible {
 
     public static EventFactory<DatabaseWork> FACTORY = new EventFactory<DatabaseWork>() {
@@ -22,6 +30,8 @@ public class DatabaseWork implements Fallible {
             return new DatabaseWork(serializationFactory);
         }
     };
+    
+    private static final ExceptionOutputWriter exceptionOutputWriter = new ExceptionOutputWriter();
 
     private Endpoint endpoint;
 
@@ -32,8 +42,6 @@ public class DatabaseWork implements Fallible {
     private final DefaultInvocationImpl invocation;
 
     private final NettyChannelBackedOutput output;
-    
-    private final ExceptionOutputWriter exceptionOutputWriter;
 
     private Throwable failure;
 
@@ -41,7 +49,6 @@ public class DatabaseWork implements Fallible {
     {
         this.invocation = new DefaultInvocationImpl();
         this.output = new NettyChannelBackedOutput(serializationFactory);
-        this.exceptionOutputWriter = new ExceptionOutputWriter();
     }
 
     public void perform() throws Exception
@@ -59,7 +66,7 @@ public class DatabaseWork implements Fallible {
             {
                 channel.close();
                 throw new RuntimeException(
-                        "FATAL: Failure occured while I was responding to the client, killed the connection.",
+                        "FATAL: Failure occured while I was writing data to the client, killed the connection.",
                         e);
             } else
             {
@@ -93,6 +100,13 @@ public class DatabaseWork implements Fallible {
     {
         return invocation;
     }
+
+    public void reset(Channel channel, boolean isPersistentConnection, long txId, WorkTransactionMode txMode,
+            Database database, TransactionRegistry txs, Throwable failureCause)
+    {
+        reset(null, channel, isPersistentConnection, null, txId, txMode, null, null, database, txs);
+        setFailed(failureCause);
+    }
     
     public void reset(Endpoint endpoint, Channel outputChannel,
             boolean isPersistentConnection, String path,
@@ -106,7 +120,7 @@ public class DatabaseWork implements Fallible {
         this.failure = null;
 
         invocation.reset(path, txId, pathVariables, content, database, txRegistry);
-        output.reset(outputChannel, endpoint.getSerializationStrategy(),
+        output.reset(outputChannel, endpoint != null ? endpoint.getSerializationStrategy() : null,
                 isPersistentConnection);
     }
 }

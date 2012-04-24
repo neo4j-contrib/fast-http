@@ -75,10 +75,14 @@ public class DatabaseWorkerThread {
         long sequenceId = workBuffer.next();
         DatabaseWork work = workBuffer.get(sequenceId);
 
-        work.reset(event.getEndpoint(), event.getChannel(),
-                event.getIsPersistentConnection(), event.getPath(), txId, txMode,
-                event.getPathVariables(), event.getDeserializedContent(),
-                database, txs);
+        if(!event.hasFailed()) {
+            work.reset(event.getEndpoint(), event.getChannel(),
+                    event.getIsPersistentConnection(), event.getPath(), txId, txMode,
+                    event.getPathVariables(), event.getDeserializedContent(),
+                    database, txs);
+        } else {
+            work.reset(event.getChannel(), event.getIsPersistentConnection(), txId, txMode, database, txs, event.getFailureCause());
+        }
 
         workBuffer.publish(sequenceId);
     }

@@ -7,7 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -114,9 +114,9 @@ public class PipelinedHttpClient {
                 READ_HEADERS;
             }
 
-            private AtomicInteger responseCount;
+            private AtomicLong responseCount;
             
-            HttpDecoder(AtomicInteger responseCount) {
+            HttpDecoder(AtomicLong responseCount) {
                 super(State.SKIP_CONTROL_CHARS, true);
                 this.responseCount = responseCount;
             }
@@ -207,7 +207,7 @@ public class PipelinedHttpClient {
             }
         }
         
-        public AtomicInteger responseCount = new AtomicInteger();
+        public AtomicLong responseCount = new AtomicLong();
 
         public HttpResponse lastResponse;
         public Throwable lastException = null;
@@ -315,7 +315,7 @@ public class PipelinedHttpClient {
     {
         buf.writeBytes("GET".getBytes("ASCII"));
         buf.writeByte(SP);
-        buf.writeBytes("/noserialnodeserial".getBytes("ASCII"));
+        buf.writeBytes(PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION_AND_NO_INTROSPECTION.getBytes("ASCII"));
         buf.writeByte(SP);
         buf.writeBytes(HttpVersion.HTTP_1_1.toString().getBytes("ASCII"));
         buf.writeByte(CR);
@@ -347,7 +347,7 @@ public class PipelinedHttpClient {
     }
 
     // Quick hack to wait for responses
-    public void waitForXResponses(int count) throws InterruptedException {
+    public void waitForXResponses(long count) throws InterruptedException {
         while(responseHandler.responseCount.get() < count) {
             if(responseHandler.lastException != null) {
                 responseHandler.lastException.printStackTrace();

@@ -36,6 +36,10 @@ import org.neo4j.smack.serialization.SerializationFactory;
 import org.neo4j.smack.serialization.SerializationStrategy;
 import org.neo4j.smack.serialization.Serializer;
 
+/**
+ * Note: There are lots of these instances, keep it as slim as possible to 
+ * keep memory usage down.
+ */
 public class NettyChannelBackedOutput implements Output {
 
     private SerializationFactory serializationFactory;
@@ -126,6 +130,7 @@ public class NettyChannelBackedOutput implements Output {
         send(status, data, location, defaultSerializationStrategy);
     }
 
+    // TODO: Make this garbage free
     @SuppressWarnings("unchecked")
     public void send(
             HttpResponseStatus status,
@@ -185,4 +190,6 @@ public class NettyChannelBackedOutput implements Output {
             }
         }
     }
+    
+    //private void writeResponse(Serializer serializer)
 }

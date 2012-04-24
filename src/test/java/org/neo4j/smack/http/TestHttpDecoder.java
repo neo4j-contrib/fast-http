@@ -15,7 +15,7 @@ import org.jboss.netty.channel.ChannelConfig;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.junit.Test;
-import org.neo4j.smack.WorkInputGate;
+import org.neo4j.smack.WorkPublisher;
 import org.neo4j.smack.routing.InvocationVerb;
 
 public class TestHttpDecoder {
@@ -73,7 +73,7 @@ public class TestHttpDecoder {
         public boolean keepAlive;
     }
     
-    class DummyInputGate implements WorkInputGate 
+    class DummyInputGate implements WorkPublisher 
     {
         
         ArrayList<Request> requests = new ArrayList<Request>();
@@ -85,6 +85,14 @@ public class TestHttpDecoder {
         {
             Request work = new Request(connectionId,verb,path,content,channel,keepAlive);
             requests.add(work);
+        }
+
+        @Override
+        public void addFailure(Long connectionId, Channel channel,
+                Throwable cause)
+        {
+            // TODO Auto-generated method stub
+            
         }
         
     }

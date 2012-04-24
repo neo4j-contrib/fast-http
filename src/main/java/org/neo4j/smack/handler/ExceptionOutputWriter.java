@@ -1,6 +1,7 @@
 package org.neo4j.smack.handler;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,37 +28,33 @@ import org.neo4j.smack.serialization.strategy.ExceptionSerializationStrategy;
  */
 public class ExceptionOutputWriter {
     
-    private final SerializationStrategy<Throwable> exceptionSerializationStrategy;
+    private static final SerializationStrategy<Throwable> exceptionSerializationStrategy = new ExceptionSerializationStrategy();
     
-    private Map<Class<? extends Throwable>, HttpResponseStatus> exceptionToStatusMap = new HashMap<Class<? extends Throwable>, HttpResponseStatus>() 
-            {
+    private static final Map<Class<? extends Throwable>, HttpResponseStatus> exceptionToStatusMap = Collections.unmodifiableMap(new HashMap<Class<? extends Throwable>, HttpResponseStatus>() 
+    {
         
         private static final long serialVersionUID = -5937199711856466595L;
 
-    {
-        put(ResourceNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-        put(NodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-        put(RelationNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-        put(ArrayStoreException.class, HttpResponseStatus.BAD_REQUEST);
-        put(BadInputException.class, HttpResponseStatus.BAD_REQUEST);
-        put(OperationFailureException.class, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-        put(NoSuchPropertyException.class, HttpResponseStatus.NOT_FOUND);
-        put(RelationshipNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-        put(ClassCastException.class, HttpResponseStatus.BAD_REQUEST);
-        put(StartNodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-        put(EndNodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-        put(PropertyValueException.class, HttpResponseStatus.BAD_REQUEST);
-        put(UnsupportedOperationException.class, HttpResponseStatus.METHOD_NOT_ALLOWED);
-        put(NotFoundException.class, HttpResponseStatus.NOT_FOUND);
-    }};
-
-    public ExceptionOutputWriter() {
-        exceptionSerializationStrategy = new ExceptionSerializationStrategy();
-    }
+        {
+            put(ResourceNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+            put(NodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+            put(RelationNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+            put(ArrayStoreException.class, HttpResponseStatus.BAD_REQUEST);
+            put(BadInputException.class, HttpResponseStatus.BAD_REQUEST);
+            put(OperationFailureException.class, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            put(NoSuchPropertyException.class, HttpResponseStatus.NOT_FOUND);
+            put(RelationshipNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+            put(ClassCastException.class, HttpResponseStatus.BAD_REQUEST);
+            put(StartNodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+            put(EndNodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
+            put(PropertyValueException.class, HttpResponseStatus.BAD_REQUEST);
+            put(UnsupportedOperationException.class, HttpResponseStatus.METHOD_NOT_ALLOWED);
+            put(NotFoundException.class, HttpResponseStatus.NOT_FOUND);
+        }
+    });
 
     public void write(NettyChannelBackedOutput output, Throwable e)
     {
-        e.printStackTrace();
         output.send(getErrorStatus(e), e, null, exceptionSerializationStrategy);
     }
 

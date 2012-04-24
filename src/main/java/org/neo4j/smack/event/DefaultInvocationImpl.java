@@ -23,6 +23,10 @@ import org.neo4j.smack.Database;
 import org.neo4j.smack.TransactionRegistry;
 import org.neo4j.smack.routing.PathVariables;
 
+/**
+ * Note: There are lots of these instances, keep it as slim as possible to 
+ * keep memory usage down.
+ */
 public class DefaultInvocationImpl implements Invocation {
 
     private PathVariables pathVariables;

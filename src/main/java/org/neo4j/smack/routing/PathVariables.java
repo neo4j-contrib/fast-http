@@ -19,12 +19,12 @@
  */
 package org.neo4j.smack.routing;
 
-import com.sun.jersey.server.impl.uri.PathPattern;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.MatchResult;
+
+import com.sun.jersey.server.impl.uri.PathPattern;
 
 public class PathVariables {
     
@@ -54,5 +54,9 @@ public class PathVariables {
             if (entry.getValue()==null && entry.getValue().isEmpty()) continue;
             pathVariables.put(entry.getKey(),entry.getValue().get(0));
         }
+    }
+    
+    public void reset() {
+        pathVariables.clear();
     }
 }

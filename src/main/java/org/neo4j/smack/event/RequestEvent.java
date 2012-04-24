@@ -28,6 +28,10 @@ import org.neo4j.smack.routing.Routable;
 
 import com.lmax.disruptor.EventFactory;
 
+/**
+ * Note: There are lots of these instances, keep it as slim as possible to 
+ * keep memory usage down.
+ */
 public class RequestEvent implements Fallible, Routable {
    
     public static EventFactory<RequestEvent> FACTORY = new EventFactory<RequestEvent>() {
@@ -35,14 +39,14 @@ public class RequestEvent implements Fallible, Routable {
             return new RequestEvent();
         }
     };
+    
+    private final PathVariables pathVariables = new PathVariables();
 
     private InvocationVerb verb;
     
     private String path;
     
-    private ChannelBuffer content;
-    
-    private PathVariables pathVariables;
+    private ChannelBuffer content;;
     
     private Endpoint endpoint;
     
@@ -68,10 +72,6 @@ public class RequestEvent implements Fallible, Routable {
         return path;
     }
 
-    public void setPathVariables(PathVariables pathVariables) {
-        this.pathVariables = pathVariables;
-    }
-
     public void setEndpoint(Endpoint endpoint) {
         this.endpoint = endpoint;
     }
@@ -84,10 +84,8 @@ public class RequestEvent implements Fallible, Routable {
         return endpoint;
     }
 
+    // todo contention, distribute query params and Path Variables into different fields ? 
     public PathVariables getPathVariables() {
-        if (pathVariables==null) { // todo contention, distribute query params and Path Variables into different fields ?
-            pathVariables = new PathVariables();
-        }
         return pathVariables;
     }
 
@@ -119,7 +117,7 @@ public class RequestEvent implements Fallible, Routable {
 
     @Override
     public boolean hasFailed() {
-        return failure == null;
+        return failure != null;
     }
     
     public void setChannel(Channel channel) 
@@ -135,7 +133,6 @@ public class RequestEvent implements Fallible, Routable {
     public void reset(Long connectionId, InvocationVerb verb, String path,
             ChannelBuffer content, Channel channel, boolean keepAlive)
     {
-
         this.connectionId = connectionId;
         this.verb = verb;
         this.path = path;
@@ -143,10 +140,17 @@ public class RequestEvent implements Fallible, Routable {
         this.channel = channel;
         this.isPersistentConnection = keepAlive;
         
-        this.pathVariables = null;
         this.endpoint = null;
         this.deserializedContent = null;
         
         this.failure = null;
+
+        this.pathVariables.reset();
+    }
+
+    public void reset(Long connectionId, Channel channel, Throwable cause)
+    {
+        reset(connectionId, null, null, null, channel, false);
+        setFailed(cause);
     }
 }

@@ -14,7 +14,7 @@ import org.neo4j.test.ImpermanentGraphDatabase;
  * entire stack, including the network layer.
  *   
  * High scores
- *   smack,        pipelined,     4 channels     :  518 564.6131 req/second (2012-04-20, JH)
+ *   smack,        pipelined,     4 channels     :  566 043.0758 req/second (2012-04-21, JH)
  *   smack,        pipelined,     2 channels     :  504 859.2704 req/second (2012-04-20, JH)
  *   smack,        pipelined,     single channel :  377 337.1318 req/second (2012-04-20, JH)
  *   jetty+jersey, pipelined,     single channel :   17 470.6057 req/second (2012-04-18, JH)
@@ -57,39 +57,33 @@ public class NetworkThroughput {
 
     private NetworkThroughputResult test() {
         NetworkThroughputResult result = new NetworkThroughputResult();
+        double totalSeconds = 0;
         try {
-//            Thread.sleep(1000 * 15);
+            Thread.sleep(1000 * 20);
             
-            int numRequests = 20000000;
+            long numRequests = 1755028000l;
+            //long numRequests = 10000000l;
             startServer();
             
             pipelineClient = new PipelinedHttpClient("localhost", 7473);
             
             // Simple HTTP calls
             
-            Date start = new Date();
-            //sendXRequests("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
-            Date end = new Date();
+            //totalSeconds = sendXRequests("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
             
-            double totalSeconds =  (end.getTime() - start.getTime()) / 1000.0d;
             result.simpleHttpCalls = ((double)numRequests)/totalSeconds;
             
             // Pipelined calls
             pipelineClient.responseHandler.responseCount.set(0);
             
             System.out.println("Warming up..");
-            sendXRequestsPipelined("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, 10000);
+            sendXRequestsPipelined("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, 100000);
             pipelineClient.responseHandler.responseCount.set(0);
             
             System.out.println("Running test..");
-            start = new Date();
-            //sendXRequestsPipelined("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
-            
+            //totalSeconds = sendXRequestsPipelined("http://localhost:7473" + PerformanceRoutes.NO_SERIALIZATION_AND_NO_DESERIALIZATION, numRequests);
             totalSeconds = sendXRequestsPipelinedMultiThreaded("http://localhost:7474/dummy/justreturn/200", numRequests, 4);
-            end = new Date();
-            //totalSeconds = (end.getTime() - start.getTime()) / 1000.0d;
             
-            //totalSeconds =  (end.getTime() - start.getTime()) / 1000.0d;
             System.out.println("Did " + numRequests + " http calls in " + totalSeconds + " seconds.");
             result.pipelinedCalls = ((double)numRequests)/totalSeconds;
             
@@ -103,10 +97,10 @@ public class NetworkThroughput {
     }
     
     private double sendXRequestsPipelinedMultiThreaded(String uri,
-            int numRequests, int numThreads) throws InterruptedException
+            long numRequests, int numThreads) throws InterruptedException
     {
         Thread [] runnables = new Thread[numThreads];
-        final int numRequestsPerThread = (int) numRequests / numThreads;
+        final long numRequestsPerThread = (long) numRequests / numThreads;
         for(int i=0;i<numThreads;i++) {
             runnables[i] = new Thread(new Runnable(){
                 
@@ -122,6 +116,11 @@ public class NetworkThroughput {
                     for(int i=0;i<numRequestsPerThread;i+=20) {
                         //pipelineClient.handle(HttpMethod.GET, target, "");
                         client.sendRaw(20);
+                        try {
+                            Thread.sleep(10);
+                        } catch(InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                     
                     try
@@ -148,23 +147,27 @@ public class NetworkThroughput {
         return (end.getTime() - start.getTime()) / 1000.0d;
     }
 
-    private void sendXRequests(String uri, int numRequests) throws InterruptedException {
+    private double sendXRequests(String uri, int numRequests) throws InterruptedException {
         URI target = URI.create(uri);
+        Date start = new Date();
         for(int i=0;i<numRequests;i+=1) {
             //pipelineClient.handle(HttpMethod.GET, target, "");
             pipelineClient.sendRaw(1);
             pipelineClient.waitForXResponses(i);
         }
+        Date end = new Date();
+        return (end.getTime() - start.getTime()) / 1000.0d;
     }
     
-    private void sendXRequestsPipelined(String uri, int numRequests) throws InterruptedException {
-        URI target = URI.create(uri);
+    private double sendXRequestsPipelined(String uri, long numRequests) throws InterruptedException {
+        Date start = new Date();
         for(int i=0;i<numRequests;i+=20) {
             //pipelineClient.handle(HttpMethod.GET, target, "");
             pipelineClient.sendRaw(20);
         }
-        
         pipelineClient.waitForXResponses(numRequests);
+        Date end = new Date();
+        return (end.getTime() - start.getTime()) / 1000.0d;
     }
     
     private void startServer() {

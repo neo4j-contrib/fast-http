@@ -1,0 +1,68 @@
+package org.neo4j.smack.http;
+
+public class HttpHeaderNames {
+
+    public static final HttpHeaderName ACCEPT = new HttpHeaderName("Accept");
+    public static final HttpHeaderName ACCEPT_CHARSET = new HttpHeaderName("Accept-Charset");
+    public static final HttpHeaderName ACCEPT_ENCODING= new HttpHeaderName("Accept-Encoding");
+    public static final HttpHeaderName ACCEPT_LANGUAGE = new HttpHeaderName("Accept-Language");
+    public static final HttpHeaderName ACCEPT_RANGES= new HttpHeaderName("Accept-Ranges");
+    public static final HttpHeaderName ACCEPT_PATCH= new HttpHeaderName("Accept-Patch");
+    public static final HttpHeaderName AGE = new HttpHeaderName("Age");
+    public static final HttpHeaderName ALLOW = new HttpHeaderName("Allow");
+    public static final HttpHeaderName AUTHORIZATION = new HttpHeaderName("Authorization");
+    public static final HttpHeaderName CACHE_CONTROL = new HttpHeaderName("Cache-Control");
+    public static final HttpHeaderName CONNECTION = new HttpHeaderName("Connection");
+    public static final HttpHeaderName CONTENT_BASE = new HttpHeaderName("Content-Base");
+    public static final HttpHeaderName CONTENT_ENCODING = new HttpHeaderName("Content-Encoding");
+    public static final HttpHeaderName CONTENT_LANGUAGE= new HttpHeaderName("Content-Language");
+    public static final HttpHeaderName CONTENT_LENGTH = new HttpHeaderName("Content-Length");
+    public static final HttpHeaderName CONTENT_LOCATION = new HttpHeaderName("Content-Location");
+    public static final HttpHeaderName CONTENT_TRANSFER_ENCODING = new HttpHeaderName("Content-Transfer-Encoding");
+    public static final HttpHeaderName CONTENT_MD5 = new HttpHeaderName("Content-MD5");
+    public static final HttpHeaderName CONTENT_RANGE = new HttpHeaderName("Content-Range");
+    public static final HttpHeaderName CONTENT_TYPE= new HttpHeaderName("Content-Type");
+    public static final HttpHeaderName COOKIE = new HttpHeaderName("Cookie");
+    public static final HttpHeaderName DATE = new HttpHeaderName("Date");
+    public static final HttpHeaderName ETAG = new HttpHeaderName("ETag");
+    public static final HttpHeaderName EXPECT = new HttpHeaderName("Expect");
+    public static final HttpHeaderName EXPIRES = new HttpHeaderName("Expires");
+    public static final HttpHeaderName FROM = new HttpHeaderName("From");
+    public static final HttpHeaderName HOST = new HttpHeaderName("Host");
+    public static final HttpHeaderName IF_MATCH = new HttpHeaderName("If-Match");
+    public static final HttpHeaderName IF_MODIFIED_SINCE = new HttpHeaderName("If-Modified-Since");
+    public static final HttpHeaderName IF_NONE_MATCH = new HttpHeaderName("If-None-Match");
+    public static final HttpHeaderName IF_RANGE= new HttpHeaderName("If-Range");
+    public static final HttpHeaderName IF_UNMODIFIED_SINCE = new HttpHeaderName("If-Unmodified-Since");
+    public static final HttpHeaderName LAST_MODIFIED = new HttpHeaderName("Last-Modified");
+    public static final HttpHeaderName LOCATION = new HttpHeaderName("Location");
+    public static final HttpHeaderName MAX_FORWARDS = new HttpHeaderName("Max-Forwards");
+    public static final HttpHeaderName ORIGIN = new HttpHeaderName("Origin");
+    public static final HttpHeaderName PRAGMA = new HttpHeaderName("Pragma");
+    public static final HttpHeaderName PROXY_AUTHENTICATE = new HttpHeaderName("Proxy-Authenticate");
+    public static final HttpHeaderName PROXY_AUTHORIZATION = new HttpHeaderName("Proxy-Authorization");
+    public static final HttpHeaderName RANGE = new HttpHeaderName("Range");
+    public static final HttpHeaderName REFERER = new HttpHeaderName("Referer");
+    public static final HttpHeaderName RETRY_AFTER = new HttpHeaderName("Retry-After");
+    public static final HttpHeaderName SEC_WEBSOCKET_KEY1 = new HttpHeaderName("Sec-WebSocket-Key1");
+    public static final HttpHeaderName SEC_WEBSOCKET_KEY2 = new HttpHeaderName("Sec-WebSocket-Key2");
+    public static final HttpHeaderName SEC_WEBSOCKET_LOCATION = new HttpHeaderName("Sec-WebSocket-Location");
+    public static final HttpHeaderName SEC_WEBSOCKET_ORIGIN = new HttpHeaderName("Sec-WebSocket-Origin");
+    public static final HttpHeaderName SEC_WEBSOCKET_PROTOCOL = new HttpHeaderName("Sec-WebSocket-Protocol");
+    public static final HttpHeaderName SERVER = new HttpHeaderName("Server");
+    public static final HttpHeaderName SET_COOKIE = new HttpHeaderName("Set-Cookie");
+    public static final HttpHeaderName SET_COOKIE2 = new HttpHeaderName("Set-Cookie2");
+    public static final HttpHeaderName TE = new HttpHeaderName("TE");
+    public static final HttpHeaderName TRAILER = new HttpHeaderName("Trailer");
+    public static final HttpHeaderName TRANSFER_ENCODING = new HttpHeaderName("Transfer-Encoding");
+    public static final HttpHeaderName UPGRADE = new HttpHeaderName("Upgrade");
+    public static final HttpHeaderName USER_AGENT = new HttpHeaderName("User-Agent");
+    public static final HttpHeaderName VARY = new HttpHeaderName("Vary");
+    public static final HttpHeaderName VIA = new HttpHeaderName("Via");
+    public static final HttpHeaderName WARNING = new HttpHeaderName("Warning");
+    public static final HttpHeaderName WEBSOCKET_LOCATION = new HttpHeaderName("WebSocket-Location");
+    public static final HttpHeaderName WEBSOCKET_ORIGIN = new HttpHeaderName("WebSocket-Origin");
+    public static final HttpHeaderName WEBSOCKET_PROTOCOL = new HttpHeaderName("WebSocket-Protocol");
+    public static final HttpHeaderName WWW_AUTHENTICATE = new HttpHeaderName("WWW-Authenticate");
+    
+}

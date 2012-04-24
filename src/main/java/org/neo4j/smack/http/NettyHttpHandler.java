@@ -20,8 +20,6 @@
 package org.neo4j.smack.http;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,15 +32,11 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.handler.codec.frame.TooLongFrameException;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.jboss.netty.util.CharsetUtil;
-import org.neo4j.smack.WorkInputGate;
-import org.neo4j.smack.event.RequestEvent;
+import org.neo4j.smack.WorkPublisher;
 
 public class NettyHttpHandler extends SimpleChannelHandler {
 
@@ -50,7 +44,10 @@ public class NettyHttpHandler extends SimpleChannelHandler {
     
     private AtomicLong connectionId;
 
-    public NettyHttpHandler(WorkInputGate workBuffer, AtomicLong connectionIdGenerator) {
+    private WorkPublisher workBuffer;
+
+    public NettyHttpHandler(WorkPublisher workBuffer, AtomicLong connectionIdGenerator) {
+        this.workBuffer = workBuffer;
         this.httpDecoder = new HttpDecoder(workBuffer);
         this.connectionId = connectionIdGenerator;
     }
@@ -58,50 +55,29 @@ public class NettyHttpHandler extends SimpleChannelHandler {
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
             throws Exception {
-//        HttpRequest httpRequest = (HttpRequest) e.getMessage();
-//        Long connectionId = (Long)ctx.getAttachment();
-//        InvocationVerb verb = InvocationVerb.valueOf(httpRequest.getMethod().getName().toUpperCase());
-//        
-//        workBuffer.addWork(connectionId, verb, httpRequest.getUri(), httpRequest.getContent(), ctx.getChannel(), isKeepAlive(httpRequest));
         httpDecoder.messageReceived(ctx, e);
-    }
-
-    // TODO: This should go in router
-    private void addParamsAndPath(HttpRequest httpRequest, RequestEvent event) {
-        final String uri = httpRequest.getUri();
-        if (uri.contains("?")) {
-            final QueryStringDecoder decoder = new QueryStringDecoder(uri);
-            //event.getPathVariables().add(decoder.getParameters());
-            //event.setPath(decoder.getPath());
-        } else {
-           //event.setPath(uri);
-        }
-    }
-
-    // TODO: Create a failure RequestEvent from this, output
-    // should not be done from here, it needs to be done from the
-    // database worker thread assigned to this connection, because
-    // otherwise responses may be sent out of order to the client.
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
-            throws Exception {
-        Channel ch = e.getChannel();
-        Throwable cause = e.getCause();
-        if (cause instanceof TooLongFrameException) {
-            sendError(ctx, BAD_REQUEST);
-            return;
-        }
-
-        cause.printStackTrace();
-        if (ch.isConnected()) {
-            sendError(ctx, INTERNAL_SERVER_ERROR);
-        }
     }
     
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
         ctx.setAttachment(connectionId.incrementAndGet());
         System.out.println("Assigned connection: " + connectionId.get());
+    }
+
+    // TODO: I think this catches both upstream and downstream
+    // exceptions. Only upstream exceptions should get added to
+    // the work buffer like this, down stream exceptions need
+    // to be handled differently, otherwise we will append
+    // an error for a requst that failed back to the beginning of
+    // the list of jobs.
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+            throws Exception {
+        Channel ch = e.getChannel();
+        Throwable cause = e.getCause();
+        
+        Long connectionId = (Long)ctx.getAttachment();
+        workBuffer.addFailure(connectionId, ch, cause);
     }
     
     private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {

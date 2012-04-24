@@ -26,15 +26,15 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.neo4j.smack.WorkInputGate;
+import org.neo4j.smack.WorkPublisher;
 
 public class NettyHttpPipelineFactory implements ChannelPipelineFactory {
 
-    private WorkInputGate workConsumer;
+    private WorkPublisher workConsumer;
     private ChannelGroup openChannels;
     private AtomicLong connectionIdGenerator;
 
-    public NettyHttpPipelineFactory(WorkInputGate workBuffer, ChannelGroup openChannels) {
+    public NettyHttpPipelineFactory(WorkPublisher workBuffer, ChannelGroup openChannels) {
         this.workConsumer = workBuffer;
         this.openChannels = openChannels;
         this.connectionIdGenerator = new AtomicLong();
@@ -51,8 +51,11 @@ public class NettyHttpPipelineFactory implements ChannelPipelineFactory {
         // pipeline.addLast("ssl", new SslHandler(engine));
 
         pipeline.addLast("channeltracker",new NettyChannelTrackingHandler(openChannels));
+
+        // TODO: Replace with our own response encoder
         pipeline.addLast("encoder",       new HttpResponseEncoder());
         //pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
+        
         pipeline.addLast("handler",       new NettyHttpHandler(workConsumer, connectionIdGenerator));
         return pipeline;
     }

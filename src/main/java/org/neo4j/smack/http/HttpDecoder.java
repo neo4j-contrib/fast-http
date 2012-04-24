@@ -1,9 +1,9 @@
 package org.neo4j.smack.http;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
@@ -14,11 +14,11 @@ import org.jboss.netty.handler.codec.http.DefaultHttpChunkTrailer;
 import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpChunkTrailer;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
-import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
-import org.neo4j.smack.WorkInputGate;
+import org.neo4j.smack.MutableString;
+import org.neo4j.smack.WorkPublisher;
+import org.neo4j.smack.http.HttpHeaderContainer.HttpHeaderValues;
 import org.neo4j.smack.routing.InvocationVerb;
 
 /**
@@ -30,6 +30,10 @@ import org.neo4j.smack.routing.InvocationVerb;
  * 
  * This is *very* much in dev right now, for instance chunking is epically
  * broken. Don't use for production.
+ * 
+ * TODO: This class is one of the largest creators of garbage in Smack, along
+ * with the output implementations. It currently generates a vast amount of
+ * throwaway String objects. Look this over and see if we can make it entirely garbage free.
  */
 public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
 
@@ -48,47 +52,37 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         READ_CHUNK_FOOTER;
     }
     
-    private final int maxInitialLineLength;
-    private final int maxHeaderSize;
-    private final int maxChunkSize;
-    
-    // Request state
-    
-    private long chunkSize;
-    private int headerSize;
-    
-    private class DecodedHttpMessage {
+    class DecodedHttpMessage {
 
         private boolean chunked;
         private Long contentLength;
-        private HashMap<String, String> headers = new HashMap<String, String>();
+        private HttpHeaderContainer headers = new HttpHeaderContainer();
         private HttpVersion protocolVersion;
         private InvocationVerb verb;
         private String path;
 
-        String getHeader(String name)
+        HttpHeaderContainer getHeaderContainer() {
+            return headers;
+        }
+        
+        MutableString getHeader(HttpHeaderName name)
         {
-            return headers.get(name);
+            return headers.getHeader(name);
         }
 
-        List<String> getHeaders(String name)
+        HttpHeaderValues getHeaders(HttpHeaderName name)
         {
-            throw new NotImplementedException();
+            return headers.getHeaders(name);
         }
 
         HttpVersion getProtocolVersion()
         {
             return protocolVersion;
         }
-
-        void addHeader(String name, Object value)
-        {
-            headers.put(name, String.valueOf(value));
-        }
         
-        void removeHeader(String name)
+        void removeHeader(HttpHeaderName name)
         {
-            headers.remove(name);
+            headers.removeHeader(name);
         }
 
         void clearHeaders()
@@ -113,15 +107,15 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
 
         boolean isKeepAlive()
         {
-            String connection = getHeader(Names.CONNECTION);
-            if (Values.CLOSE.equalsIgnoreCase(connection)) {
+            MutableString connection = getHeader(HttpHeaderNames.CONNECTION);
+            if (CommonHeaderValues.CLOSE.equalsIgnoreCase(connection)) {
                 return false;
             }
 
             if (protocolVersion.isKeepAliveDefault()) {
-                return !Values.CLOSE.equalsIgnoreCase(connection);
+                return !CommonHeaderValues.CLOSE.equalsIgnoreCase(connection);
             } else {
-                return Values.KEEP_ALIVE.equalsIgnoreCase(connection);
+                return CommonHeaderValues.KEEP_ALIVE.equalsIgnoreCase(connection);
             }
         }
 
@@ -143,24 +137,43 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
             this.path = path;
         }
     }
+    
+    protected final DecodedHttpMessage message = new DecodedHttpMessage();
+    
+    private final int maxInitialLineLength;
+    private final int maxChunkSize;
+    
+    private final HttpHeaderDecoder headerDecoder;
+    
+    private final StringBuilder readHeaderStringBuilder = new StringBuilder(64);
+    private final StringBuilder readLineStringBuilder = new StringBuilder(64);
+    
+    // Request state
+    
+    private long chunkSize;
+    private int headerSize;
 
-    private WorkInputGate workBuffer;
+    private WorkPublisher workBuffer;
 
     private ChannelBuffer content;
     
-    private DecodedHttpMessage message = new DecodedHttpMessage();
     private boolean isDecodingRequest = true;
 
-    HttpDecoder(WorkInputGate workBuffer)
+    // TODO: Remove this.
+    private int maxHeaderSize = 8192;
+
+    HttpDecoder(WorkPublisher workBuffer)
     {
-        this(workBuffer, 4096, 8192, 8192);
+        this(workBuffer, 4096, 8192, 8192, new HashSet<HttpHeaderName>(){
+            
+        });
     }
 
     /**
      * Creates a new instance with the specified parameters.
      */
-    protected HttpDecoder(WorkInputGate workBuffer, 
-            int maxInitialLineLength, int maxHeaderSize, int maxChunkSize) {
+    protected HttpDecoder(WorkPublisher workBuffer, 
+            int maxInitialLineLength, int maxHeaderSize, int maxChunkSize, Set<HttpHeaderName> headersToCareAbout) {
 
         super(State.SKIP_CONTROL_CHARS, true);
 
@@ -169,20 +182,16 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
                     "maxInitialLineLength must be a positive integer: " +
                     maxInitialLineLength);
         }
-        if (maxHeaderSize <= 0) {
-            throw new IllegalArgumentException(
-                    "maxHeaderSize must be a positive integer: " +
-                    maxHeaderSize);
-        }
         if (maxChunkSize < 0) {
             throw new IllegalArgumentException(
                     "maxChunkSize must be a positive integer: " +
                     maxChunkSize);
         }
         this.maxInitialLineLength = maxInitialLineLength;
-        this.maxHeaderSize = maxHeaderSize;
         this.maxChunkSize = maxChunkSize;
         this.workBuffer = workBuffer;
+        
+        this.headerDecoder = new HttpHeaderDecoder(headersToCareAbout, maxHeaderSize);
     }
 
     /*
@@ -225,7 +234,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
                 // No content is expected.
                 // Remove the headers which are not supposed to be present not
                 // to confuse subsequent handlers.
-                message.removeHeader(HttpHeaders.Names.TRANSFER_ENCODING);
+                message.removeHeader(HttpHeaderNames.TRANSFER_ENCODING);
                 return message;
             } else {
                 long contentLength = message.getContentLength(-1);
@@ -398,17 +407,19 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         }
 
         // In most cases, there will be one or zero 'Expect' header.
-        String value = message.getHeader(Names.EXPECT);
+        MutableString value = message.getHeader(HttpHeaderNames.EXPECT);
         if (value == null) {
             return false;
         }
-        if (Values.CONTINUE.equalsIgnoreCase(value)) {
+        if (CommonHeaderValues.CONTINUE.equalsIgnoreCase(value)) {
             return true;
         }
 
         // Multiple 'Expect' headers.  Search through them.
-        for (String v: message.getHeaders(Names.EXPECT)) {
-            if (Values.CONTINUE.equalsIgnoreCase(v)) {
+        HttpHeaderValues values = message.getHeaders(HttpHeaderNames.EXPECT);
+        MutableString current = values.get(0);
+        for( int i=0, l=values.size() ; i<l ; current=values.get(++i)) {
+            if (CommonHeaderValues.CONTINUE.equalsIgnoreCase(current)) {
                 return true;
             }
         }
@@ -467,35 +478,10 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         }
     }
 
-    // TODO: Make garbage free
-    private State readHeaders(ChannelBuffer buffer) throws TooLongFrameException {
-        headerSize = 0;
-        String line = readHeader(buffer);
-        String name = null;
-        String value = null;
-        if (line.length() != 0) {
-            message.clearHeaders();
-            do {
-                char firstChar = line.charAt(0);
-                if (name != null && (firstChar == ' ' || firstChar == '\t')) {
-                    value = value + ' ' + line.trim();
-                } else {
-                    if (name != null) {
-                        message.addHeader(name, value);
-                    }
-                    String[] header = splitHeader(line);
-                    name = header[0];
-                    value = header[1];
-                }
-
-                line = readHeader(buffer);
-            } while (line.length() != 0);
-
-            // Add the last header.
-            if (name != null) {
-                message.addHeader(name, value);
-            }
-        }
+    // TODO: This currently allocates a huge amount of Strings, make it reuse char arrays 
+    // or something instead.
+    protected State readHeaders(ChannelBuffer buffer) throws TooLongFrameException {
+        headerDecoder.decode(buffer, message.getHeaderContainer());
 
         State nextState;
 
@@ -555,9 +541,8 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         return HttpChunk.LAST_CHUNK;
     }
 
-    // TODO: Make garbage free
     private String readHeader(ChannelBuffer buffer) throws TooLongFrameException {
-        StringBuilder sb = new StringBuilder(64);
+        readHeaderStringBuilder.setLength(0);
         int headerSize = this.headerSize;
 
         loop:
@@ -578,7 +563,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
             }
 
             // Abort decoding if the header part is too large.
-            if (headerSize >= maxHeaderSize) {
+            if (headerSize >= maxHeaderSize ) {
                 // TODO: Respond with Bad Request and discard the traffic
                 //    or close the connection.
                 //       No need to notify the upstream handlers - just log.
@@ -589,11 +574,11 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
 
             }
 
-            sb.append(nextByte);
+            readHeaderStringBuilder.append(nextByte);
         }
 
         this.headerSize = headerSize;
-        return sb.toString();
+        return readHeaderStringBuilder.toString();
     }
 
     private int getChunkSize(String hex) {
@@ -612,18 +597,18 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
     // TODO: Make this garbage free (map bytes directly to appropriate enums etc. rather
     // than creating a string and then parsing that).
     private String readLine(ChannelBuffer buffer, int maxLineLength) throws TooLongFrameException {
-        StringBuilder sb = new StringBuilder(64);
+        readLineStringBuilder.setLength(0);
         int lineLength = 0;
         while (true) {
             byte nextByte = buffer.readByte();
             if (nextByte == HttpTokens.CR) {
                 nextByte = buffer.readByte();
                 if (nextByte == HttpTokens.LF) {
-                    return sb.toString();
+                    return readLineStringBuilder.toString();
                 }
             }
             else if (nextByte == HttpTokens.LF) {
-                return sb.toString();
+                return readLineStringBuilder.toString();
             }
             else {
                 if (lineLength >= maxLineLength) {
@@ -636,7 +621,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
                             " bytes.");
                 }
                 lineLength ++;
-                sb.append((char) nextByte);
+                readLineStringBuilder.append((char) nextByte);
             }
         }
     }

@@ -53,15 +53,16 @@ public class DatabaseWorkDivider implements WorkHandler<RequestEvent> {
 
     @Override
     public void onEvent(RequestEvent event) {
+        
         // TODO: Move the txMode and txId assignment to it's own handler?
         WorkTransactionMode txMode = WorkTransactionMode.NO_TRANSACTION;
         
-        if(event.getEndpoint().isTransactional()) {
+        if(event.getEndpoint() != null && event.getEndpoint().isTransactional()) {
             txMode = WorkTransactionMode.OPEN_TRANSACTION;
         }
 
-        // Did client supply a transaction id?
         Long txId = event.getPathVariables().getParamAsLong("tx_id");
+        
         if (txId == null) 
         {
             // Nope, generate one

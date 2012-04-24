@@ -31,13 +31,20 @@ import com.sun.jersey.server.impl.uri.PathTemplate;
 public class Router extends RoutingDefinition {
 
     private RouteEntry [] routes;
-    private static final Logger logger=Logger.getLogger(Router.class);
+    private static final Logger logger = Logger.getLogger(Router.class);
+    
     private static Endpoint notFoundEndpoint = new NotFoundEndpoint();
+    
+    private final ResettableQueryStringDecoder queryStringDecoder = new ResettableQueryStringDecoder();
     
     public Endpoint route(Routable routable)
     {
+        
         String path = routable.getPath();
-        if (path.endsWith("/")) path = path.substring(0,path.length()-1);
+        
+        queryStringDecoder.resetWith(path);
+        routable.getPathVariables().add(queryStringDecoder.getParameters());
+        
         for(RouteEntry route : routes) // todo parallelize routing ?? (overhead ?)
         {
             MatchResult matchResult = route.pattern.match(path);
