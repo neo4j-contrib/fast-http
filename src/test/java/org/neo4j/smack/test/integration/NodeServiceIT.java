@@ -1,54 +1,28 @@
-package org.neo4j.smack;
+package org.neo4j.smack.test.integration;
 
 import static org.neo4j.helpers.collection.MapUtil.map;
 
 import javax.ws.rs.core.Response;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.kernel.AbstractGraphDatabase;
-import org.neo4j.smack.api.DatabaseService;
-import org.neo4j.test.ImpermanentGraphDatabase;
+import org.neo4j.smack.REST;
+import org.neo4j.smack.test.util.AbstractRestFunctionalTestBase;
 
 /**
  * @author mh
  * @since 14.11.11
  */
-public class RestServiceTest {
-    public static final String HOST = "localhost";
-    public static final int PORT = 7473;
-    public static final String BASE_URI = "http://" + HOST + ":" + PORT + "/";
-    public static final int ROOT_NODE_ID = 0;
+public class NodeServiceIT extends AbstractRestFunctionalTestBase {
     
-    public static SmackServer server;
-    
-    private static AbstractGraphDatabase gds;
-
-    @BeforeClass
-    public static void setUp() throws Exception {
-        gds = new ImpermanentGraphDatabase();
-        final Transaction tx = gds.beginTx();
-        gds.getReferenceNode().setProperty("name", "test");
-        tx.success();
-        tx.finish();
-        server = new SmackServer(HOST, PORT, new Database(gds));
-        final DatabaseService dataApi = new DatabaseService("");
-        server.addRoute("", dataApi);
-        server.start();
-        REST.init(BASE_URI,"",gds);
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        server.stop();
-        gds.shutdown();
+    @Before
+    public void setUp() throws Exception {
+        REST.init(getBaseUri(),"",graphdb());
     }
 
     @Test
     public void testGetDbInfo() throws Exception {
-        REST.from("/").get().ok().expectUri("reference_node", "node/0");
+        REST.from("").get().ok().expectUri("reference_node", "node/0");
     }
 
     @Test
@@ -78,12 +52,12 @@ public class RestServiceTest {
 
     @Test
     public void testGetNode() throws Exception {
-        final String rootNodeUri = "node/" + ROOT_NODE_ID;
+        final String rootNodeUri = "node/0";
         REST.from(rootNodeUri).get().ok().expectUri("self", rootNodeUri);
     }
 
     @Test
     public void testGetNonExistingNode() throws Exception {
-        REST.from("node/" + 9999).get().notFound();
+        REST.from("/node/" + 9999).get().notFound();
     }
 }

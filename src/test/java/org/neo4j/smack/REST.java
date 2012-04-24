@@ -32,7 +32,7 @@ import com.sun.jersey.api.client.WebResource;
 public class REST {
     private final static JsonFactory jsonFactory = new JsonFactory(new ObjectMapper());
     static Client client = Client.create();
-    static String URI = RestServiceTest.BASE_URI;
+    static String URI;
     private WebResource.Builder resource;
     private int status;
     private URI location;
@@ -92,7 +92,7 @@ public class REST {
     }
 
     private void readEntityIfPossible(ClientResponse response) {
-        if (status != Response.Status.NO_CONTENT.getStatusCode()) {
+        if (status != Response.Status.NO_CONTENT.getStatusCode() && response.getLength() > 0) {
             this.entity = readEntity(response, Object.class);
         }
     }
@@ -172,13 +172,17 @@ public class REST {
     }
 
     private Object getPath(String path) {
-        final String[] parts = path.split("[./]");
-        Map map = (Map) entity;
-        for (int i = 0; i < parts.length - 1; i++) {
-            String part = parts[i];
-            map = (Map) map.get(part);
+        try {
+            final String[] parts = path.split("[./]");
+            Map map = (Map) entity;
+            for (int i = 0; i < parts.length - 1; i++) {
+                String part = parts[i];
+                map = (Map) map.get(part);
+            }
+            return map.get(parts[parts.length - 1]);
+        } catch(NullPointerException e) {
+            throw new RuntimeException("Expected response to the following path of keys: " + path);
         }
-        return map.get(parts[parts.length - 1]);
     }
 
     public REST assertStatus(Response.Status expectedStatus) {

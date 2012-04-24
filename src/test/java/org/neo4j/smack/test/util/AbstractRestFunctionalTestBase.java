@@ -1,5 +1,14 @@
 package org.neo4j.smack.test.util;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+
+import javax.ws.rs.core.Response.Status;
+
 import org.codehaus.jackson.JsonParseException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -11,14 +20,6 @@ import org.neo4j.test.GraphDescription;
 import org.neo4j.test.GraphHolder;
 import org.neo4j.test.TestData;
 import org.neo4j.visualization.asciidoc.AsciidocHelper;
-
-import javax.ws.rs.core.Response.Status;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
 
 public class AbstractRestFunctionalTestBase extends SharedSmackServerTestBase implements GraphHolder {
     protected static final String NODES = "http://localhost:7473/db/data/node/";
@@ -111,15 +112,22 @@ public class AbstractRestFunctionalTestBase extends SharedSmackServerTestBase im
     {
         return "http://localhost:7473/db/data/";
     }
+    
+    protected String getBaseUri()
+    {
+        return "http://localhost:7473";
+    }
 
     protected String getNodeUri( Node node )
     {
         return getDataUri() + "node/" + node.getId();
     }
+    
     protected String getRelationshipUri( Relationship node )
     {
         return getDataUri() + "relationship/" + node.getId();
     }
+    
     protected String getNodeIndexUri( String indexName, String key, String value )
     {
         return postNodeIndexUri( indexName ) + "/" + key + "/" + value;
