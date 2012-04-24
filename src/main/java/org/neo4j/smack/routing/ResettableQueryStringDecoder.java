@@ -70,6 +70,8 @@ public class ResettableQueryStringDecoder {
 
             this.uri = uri;
             this.charset = charset;
+            this.params = null;
+            this.path = null;
         }
 
         private Map<String, List<String>> decodeParams(String s) {
@@ -112,7 +114,7 @@ public class ResettableQueryStringDecoder {
             return params;
         }
 
-        private static String decodeComponent(String s, Charset charset) {
+        private String decodeComponent(String s, Charset charset) {
             if (s == null) {
                 return "";
             }
@@ -124,7 +126,7 @@ public class ResettableQueryStringDecoder {
             }
         }
 
-        private static void addParam(Map<String, List<String>> params, String name, String value) {
+        private void addParam(Map<String, List<String>> params, String name, String value) {
             List<String> values = params.get(name);
             if (values == null) {
                 values = new ArrayList<String>(1);  // Often there's only 1 value.

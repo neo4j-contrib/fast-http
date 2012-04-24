@@ -13,14 +13,6 @@ public class HttpHeaderDecoder {
 //      can continue on the next line
 //      which is insane
 //    Some-other-header: 12
-
-    private enum State {
-        SKIP_INITIAL_WHITESPACE,
-        READ_HEADER_NAME,
-        SKIP_SPACE_AFTER_HEADER_NAME,
-        READ_VALUE,
-        SKIP_UNTIL_NEXT_HEADER_STARTS, STORE_HEADER
-    }
     
     private final HttpHeaderName [] headersToCareAbout;
     private final int maxHeaderSize;
@@ -29,8 +21,6 @@ public class HttpHeaderDecoder {
     
     private HttpHeaderName headerName;
     private int headerSize;
-
-    private State state = State.SKIP_INITIAL_WHITESPACE;
     
     public HttpHeaderDecoder(Set<HttpHeaderName> headersToCareAbout, int maxHeaderSize) {
 
@@ -47,7 +37,6 @@ public class HttpHeaderDecoder {
     public void decode(ChannelBuffer buf, HttpHeaderContainer output) throws TooLongFrameException {
         int currentIndex,
             lineStopIndex;
-        char nextByte = 0;
         
         headerName = null;
         headerSize = 0;
@@ -166,13 +155,12 @@ public class HttpHeaderDecoder {
         value.reset();
         char nextByte;
         
-        valueLoop:
-        while(currentIndex < lineStopIndex)  {
+        while(currentIndex < lineStopIndex)  
+        {
             nextByte = (char)buf.getByte(currentIndex++);
-            
-            
             value.append(nextByte);
         }
+        
         return currentIndex;
     }
 
@@ -232,7 +220,8 @@ public class HttpHeaderDecoder {
             nextByte = (char) buf.readByte();
             headerSize ++;
 
-            switch (nextByte) {
+            switch (nextByte) 
+            {
             case HttpTokens.CR:
                 nextByte = (char) buf.readByte();
                 headerSize ++;

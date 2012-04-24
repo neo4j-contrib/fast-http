@@ -158,7 +158,9 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
 
     public HttpDecoder(WorkPublisher workBuffer)
     {
-        this(workBuffer, 4096, 8192, 8192, new HashSet<HttpHeaderName>(){{
+        this(workBuffer, 4096, 8192, 8192, new HashSet<HttpHeaderName>(){
+            private static final long serialVersionUID = 1L;
+        {
             add(HttpHeaderNames.CONTENT_LENGTH);
             add(HttpHeaderNames.CONNECTION);
         }});

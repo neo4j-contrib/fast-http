@@ -25,6 +25,8 @@ public class TestHttpHeaderDecoder {
         buf.writeByte(HttpTokens.LF);
         
         HttpHeaderDecoder decoder = new HttpHeaderDecoder(new HashSet<HttpHeaderName>() {
+            private static final long serialVersionUID = 1L;
+
             {
                 add(HttpHeaderNames.CONTENT_LENGTH);
             }
@@ -51,8 +53,12 @@ public class TestHttpHeaderDecoder {
         buf.writeBytes("Content-Length: 4".getBytes("ASCII"));
         buf.writeByte(HttpTokens.CR);
         buf.writeByte(HttpTokens.LF);
+        buf.writeByte(HttpTokens.CR);
+        buf.writeByte(HttpTokens.LF);
         
         HttpHeaderDecoder decoder = new HttpHeaderDecoder(new HashSet<HttpHeaderName>() {
+            private static final long serialVersionUID = 1L;
+
             {
                 add(HttpHeaderNames.CONTENT_LENGTH);
                 add(HttpHeaderNames.ACCEPT);
@@ -75,14 +81,18 @@ public class TestHttpHeaderDecoder {
         ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
         
         buf.writeBytes("Content-Length: this".getBytes("ASCII"));
-        buf.writeBytes("  is a multiline string".getBytes("ASCII"));
+        buf.writeBytes(" is a multiline string".getBytes("ASCII"));
         buf.writeByte(HttpTokens.CR);
         buf.writeByte(HttpTokens.LF);
         buf.writeBytes("Accept : stuff".getBytes("ASCII"));
         buf.writeByte(HttpTokens.CR);
         buf.writeByte(HttpTokens.LF);
+        buf.writeByte(HttpTokens.CR);
+        buf.writeByte(HttpTokens.LF);
         
         HttpHeaderDecoder decoder = new HttpHeaderDecoder(new HashSet<HttpHeaderName>() {
+            private static final long serialVersionUID = 1L;
+
             {
                 add(HttpHeaderNames.CONTENT_LENGTH);
                 add(HttpHeaderNames.ACCEPT);
@@ -105,8 +115,12 @@ public class TestHttpHeaderDecoder {
         
         buf.writeBytes("Accept : stuff".getBytes("ASCII"));
         buf.writeByte(HttpTokens.LF);
+        buf.writeByte(HttpTokens.CR);
+        buf.writeByte(HttpTokens.LF);
         
         HttpHeaderDecoder decoder = new HttpHeaderDecoder(new HashSet<HttpHeaderName>() {
+            private static final long serialVersionUID = 1L;
+
             {
                 add(HttpHeaderNames.CONTENT_LENGTH);
                 add(HttpHeaderNames.ACCEPT);

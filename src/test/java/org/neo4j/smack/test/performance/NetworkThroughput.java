@@ -94,7 +94,7 @@ public class NetworkThroughput {
             long numRequests, int numThreads) throws InterruptedException
     {
         Thread [] runnables = new Thread[numThreads];
-        final long numRequestsPerThread = (long) numRequests / numThreads;
+        final long numRequestsPerThread = numRequests / numThreads;
         for(int i=0;i<numThreads;i++) {
             runnables[i] = new Thread(new LoadGeneratingRunnable(i == 0, numRequestsPerThread, numThreads));
         }

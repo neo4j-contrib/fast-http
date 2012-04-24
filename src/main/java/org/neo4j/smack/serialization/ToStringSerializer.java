@@ -20,17 +20,18 @@
 package org.neo4j.smack.serialization;
 
 
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
-import java.util.Map;
+
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 public class ToStringSerializer implements Serializer {
     StringBuilder buffer = new StringBuilder();
 
     @Override
-    public void putEnum(Enum en) {
+    public void putEnum(Enum<?> en) {
         
     }
 

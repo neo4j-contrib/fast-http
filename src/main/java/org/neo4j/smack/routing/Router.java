@@ -77,8 +77,8 @@ public class Router extends RoutingDefinition {
             // todo what happens if multiple paths have differnt verbs?
         }
         
-        for(RouteEntry route : routeMap.values()) 
-            System.out.println(route);
+//        for(RouteEntry route : routeMap.values()) 
+//            System.out.println(route);
         
         routes = routeMap.values().toArray(new RouteEntry[routeMap.size()]);
     }

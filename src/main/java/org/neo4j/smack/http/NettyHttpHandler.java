@@ -19,23 +19,14 @@
  */
 package org.neo4j.smack.http;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelHandler;
-import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.util.CharsetUtil;
 import org.neo4j.smack.WorkPublisher;
 
 public class NettyHttpHandler extends SimpleChannelHandler {
@@ -78,16 +69,6 @@ public class NettyHttpHandler extends SimpleChannelHandler {
         
         Long connectionId = (Long)ctx.getAttachment();
         workBuffer.addFailure(connectionId, ch, cause);
-    }
-    
-    private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
-        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
-        response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
-        response.setContent(ChannelBuffers.copiedBuffer("Failure: " + status.toString() + "\r\n", CharsetUtil.UTF_8));
-
-        // Close the connection as soon as the error message is sent.
-        ctx.getChannel().write(response)
-                .addListener(ChannelFutureListener.CLOSE);
     }
     
 }

@@ -20,15 +20,16 @@
 package org.neo4j.smack.serialization;
 
 
+import java.util.Map;
+
+import javax.ws.rs.core.MediaType;
+
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-import javax.ws.rs.core.MediaType;
-import java.util.Map;
-
 public interface Serializer {
 
-    void putEnum(Enum en) throws SerializationException;
+    void putEnum(Enum<?> en) throws SerializationException;
 
     void putString(String string) throws SerializationException;
 

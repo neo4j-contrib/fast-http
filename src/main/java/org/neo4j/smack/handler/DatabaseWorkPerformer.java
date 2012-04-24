@@ -1,8 +1,6 @@
 package org.neo4j.smack.handler;
 
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.kernel.AbstractGraphDatabase;
 import org.neo4j.smack.Database;
 import org.neo4j.smack.TransactionRegistry;
 import org.neo4j.smack.event.DatabaseWork;
@@ -82,12 +80,12 @@ public class DatabaseWorkPerformer implements WorkHandler<DatabaseWork> {
         }
     }
  
-    private void dumpDb(final AbstractGraphDatabase gds) {
-        for (Node node : gds.getAllNodes()) {
-            System.out.println("node = " + node);
-            for (String prop : node.getPropertyKeys()) {
-                System.out.println(prop + ": "+node.getProperty(prop));
-            }
-        }
-    }
+//    private void dumpDb(final AbstractGraphDatabase gds) {
+//        for (Node node : gds.getAllNodes()) {
+//            System.out.println("node = " + node);
+//            for (String prop : node.getPropertyKeys()) {
+//                System.out.println(prop + ": "+node.getProperty(prop));
+//            }
+//        }
+//    }
 }

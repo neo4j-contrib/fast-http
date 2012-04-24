@@ -20,16 +20,17 @@
 package org.neo4j.smack.serialization;
 
 
+import java.io.IOException;
+import java.util.Map;
+
+import javax.ws.rs.core.MediaType;
+
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.util.Map;
 
 public class JsonSerializer implements Serializer {
 
@@ -46,7 +47,7 @@ public class JsonSerializer implements Serializer {
     }
 
     @Override
-    public void putEnum(Enum en) throws SerializationException {
+    public void putEnum(Enum<?> en) throws SerializationException {
 
     }
 
