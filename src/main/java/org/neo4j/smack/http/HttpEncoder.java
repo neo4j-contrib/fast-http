@@ -3,6 +3,7 @@ package org.neo4j.smack.http;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
+// TODO: Write a garbage free encoder :)
 public class HttpEncoder {
 
     public void encode(ChannelHandlerContext ctx, Channel channel, Object msg) {

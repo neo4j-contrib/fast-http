@@ -21,6 +21,7 @@ package org.neo4j.smack.handler;
 
 import org.neo4j.smack.event.RequestEvent;
 import org.neo4j.smack.routing.Router;
+import org.neo4j.smack.serialization.Deserializer;
 import org.neo4j.smack.serialization.SerializationFactory;
 
 import com.lmax.disruptor.WorkHandler;
@@ -38,11 +39,11 @@ public class RoutingHandler implements WorkHandler<RequestEvent> {
             throws Exception {
         if(!event.hasFailed()) {
             event.setEndpoint(router.route(event));
-            // TODO: Jackson is the primary source of garbage creation, fix.
-            // At peak performance, this will get invoked 600 000 times per second,
-            // any garbage generated will destroy us.
-            //Deserializer d = serializationFactory.getDeserializer(event.getContent());
-            //event.setDeserializedContent(event.getEndpoint().getDeserializationStrategy().deserialize(d));
+            if(event.getContent().readableBytes() > 0) 
+            {
+                Deserializer d = serializationFactory.getDeserializer(event.getContent());
+                event.setDeserializedContent(event.getEndpoint().getDeserializationStrategy().deserialize(d));
+            }
         }
     }
 }

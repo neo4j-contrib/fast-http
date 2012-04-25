@@ -27,7 +27,7 @@ public class ValueOrNullDeserializationStrategy implements DeserializationStrate
 
     @Override
     public Object deserialize(final Deserializer in) throws DeserializationException {
-        return in.readObjectOrNull();
+        return in.readObject();
     }
 
 }

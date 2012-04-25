@@ -1,4 +1,4 @@
-package org.neo4j.smack.test.integration;
+package org.neo4j.smack.integration.api;
 /**
  * Copyright (c) 2002-2011 "Neo Technology,"
  * Network Engine for Objects in Lund AB [http://neotechnology.com]

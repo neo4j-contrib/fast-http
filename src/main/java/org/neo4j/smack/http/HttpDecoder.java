@@ -32,7 +32,7 @@ import org.neo4j.smack.routing.InvocationVerb;
  * broken. Don't use for production.
  * 
  * TODO: Add chunked input support
- * TODO: Replace the readTrailingHeaders method with HttpHeaderDecoder to make it garbage free
+ * TODO: Replace the readTrailingHeaders method with HttpHeaderDecoder to make header parsing garbage free
  * TODO: Look into ReplayingHeaderDecoder, I think it buffers data and then does not reuse the buffers
  */
 public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {

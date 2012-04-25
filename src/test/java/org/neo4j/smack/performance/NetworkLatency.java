@@ -1,4 +1,4 @@
-package org.neo4j.smack.test.performance;
+package org.neo4j.smack.performance;
 
 import java.util.Date;
 

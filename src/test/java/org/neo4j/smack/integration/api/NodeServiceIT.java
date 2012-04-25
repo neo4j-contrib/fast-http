@@ -1,4 +1,4 @@
-package org.neo4j.smack.test.integration;
+package org.neo4j.smack.integration.api;
 
 import static org.neo4j.helpers.collection.MapUtil.map;
 
@@ -6,8 +6,8 @@ import javax.ws.rs.core.Response;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.smack.REST;
 import org.neo4j.smack.test.util.AbstractRestFunctionalTestBase;
+import org.neo4j.smack.test.util.REST;
 
 /**
  * @author mh

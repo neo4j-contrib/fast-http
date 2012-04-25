@@ -82,16 +82,6 @@ public class JsonDeserializer implements Deserializer {
     public Object readObject() throws DeserializationException {
         try {
             return parser.readValueAs(Object.class);
-        } catch (JsonParseException e) {
-            throw new DeserializationException("Invalid JSON format, expected object.", e);
-        } catch (IOException e) {
-            throw new DeserializationException("Unable to read expected object value.", e);
-        }
-    }
-    @Override
-    public Object readObjectOrNull() throws DeserializationException {
-        try {
-            return parser.readValueAs(Object.class);
         } catch(EOFException e) {
             return null;
         } catch (JsonParseException e) {

@@ -29,11 +29,10 @@ public interface Deserializer {
 
     long readInt() throws DeserializationException;
 
+    Object readObject() throws DeserializationException;
+
     <T> T readEnum(IdentifiableEnumDeserializer<T> deserializer) throws DeserializationException;
 
     Map<String, Object> readMap() throws DeserializationException;
-
-    Object readObject() throws DeserializationException;
-
-    Object readObjectOrNull() throws DeserializationException;
+    
 }
