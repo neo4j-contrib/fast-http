@@ -158,12 +158,12 @@ public class NettyChannelBackedOutput implements Output {
             response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, 0);
         } else
         {
-            if (serializationStrategy.isStreaming())
-            {
-                response.setChunked(true);
-                throw new RuntimeException("IMPLEMENT ME!");
-            } else
-            {
+//            if (serializationStrategy.isStreaming())
+//            {
+//                response.setChunked(true);
+//                throw new RuntimeException("IMPLEMENT ME!");
+//            } else
+//            {
                 final DynamicChannelBuffer content = new DynamicChannelBuffer(
                         1000);
                 Serializer serializer = serializationFactory
@@ -172,7 +172,7 @@ public class NettyChannelBackedOutput implements Output {
                 response.setHeader(HttpHeaders.Names.CONTENT_TYPE, serializer
                         .getContentType().toString());
                 response.setContent(content);
-            }
+//            }
         }
 
         ChannelFuture future = channel.write(response);

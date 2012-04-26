@@ -24,21 +24,38 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-
 public interface Serializer {
 
-    void putEnum(Enum<?> en) throws SerializationException;
+    void putEnum(Enum<?> en);
 
-    void putString(String string) throws SerializationException;
+    // TODO: Look into using SerializedString here for performance
+    void putString(String string);
 
-    void putMap(Map<String,Object> data) throws SerializationException;
-    void putNode(Node node) throws SerializationException;
-    void putRelationship(Relationship rel) throws SerializationException;
+    void putBoolean(boolean value);
 
-    void putRaw(String value) throws SerializationException;
+    void putInteger(int value);
+
+    void putDouble(double value);
+
+    void putFloat(float value);
+
+    void putLong(long value);
+
+    void putMap(Map<String,Object> data);
+
+    void startList();
+
+    void endList();
+
+    void startMap();
+
+    // TODO: Look into using SerializedString here for performance
+    void putMapPropertyName(String string);
+
+    void endMap();
 
     MediaType getContentType();
+    
+    void flush();
 }
 

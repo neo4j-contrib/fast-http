@@ -16,12 +16,10 @@ import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.neo4j.server.rest.web.OperationFailureException;
 import org.neo4j.server.rest.web.PropertyValueException;
 import org.neo4j.smack.annotation.DeserializeWith;
-import org.neo4j.smack.annotation.SerializeWith;
 import org.neo4j.smack.annotation.Transactional;
 import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.Output;
 import org.neo4j.smack.serialization.strategy.PropertyMapDeserializationStrategy;
-import org.neo4j.smack.serialization.strategy.RepresentationSerializationStrategy;
 import org.neo4j.smack.serialization.strategy.ValueDeserializationStrategy;
 import org.neo4j.smack.serialization.strategy.ValueOrNullDeserializationStrategy;
 
@@ -39,7 +37,7 @@ public class NodeService extends RestService {
     }
 
     @GET
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getRoot(Invocation invocation, Output result) {
         result.ok(actionsFor(invocation).root());
     }
@@ -48,7 +46,7 @@ public class NodeService extends RestService {
     @Transactional
     @Path(PATH_NODES)
     @DeserializeWith(ValueOrNullDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void createNode(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException {
         Map<String, Object> payload = invocation.getContent();
         if (payload==null) payload = Collections.emptyMap();
@@ -60,7 +58,7 @@ public class NodeService extends RestService {
 
     @GET
     @Path(PATH_NODE)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getNode(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException {
         final Long nodeId = getNodeId(invocation);
         result.ok(actionsFor(invocation).getNode(nodeId));
@@ -84,7 +82,7 @@ public class NodeService extends RestService {
 
     @GET
     @Path(PATH_NODE_PROPERTIES)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(PropertyMapSerializationStrategy.class)
     public void getAllNodeProperties(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException {
         result.ok(actionsFor(invocation).getAllNodeProperties(getNodeId(invocation)));
     }

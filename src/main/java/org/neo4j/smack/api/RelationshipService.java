@@ -20,11 +20,9 @@ import org.neo4j.server.rest.web.NoSuchPropertyException;
 import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.neo4j.server.rest.web.OperationFailureException;
 import org.neo4j.smack.annotation.DeserializeWith;
-import org.neo4j.smack.annotation.SerializeWith;
 import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.Output;
 import org.neo4j.smack.serialization.strategy.PropertyMapDeserializationStrategy;
-import org.neo4j.smack.serialization.strategy.RepresentationSerializationStrategy;
 import org.neo4j.smack.serialization.strategy.ValueDeserializationStrategy;
 
 /**
@@ -50,7 +48,7 @@ public class RelationshipService extends RestService {
     @Path(PATH_NODE_RELATIONSHIPS)
     @SuppressWarnings("unchecked")
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void createRelationship(Invocation invocation, Output result)
             throws BadInputException, URISyntaxException,
             NodeNotFoundException, OperationFailureException,
@@ -91,7 +89,7 @@ public class RelationshipService extends RestService {
 
     @GET
     @Path(PATH_NODE_RELATIONSHIPS_W_DIR)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getNodeRelationships(Invocation invocation, Output result)
             throws Exception
     {
@@ -104,7 +102,7 @@ public class RelationshipService extends RestService {
 
     @GET
     @Path(PATH_NODE_RELATIONSHIPS_W_DIR_N_TYPES)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getNodeRelationshipsWithDirAndTypes(Invocation invocation,
             Output result) throws Exception
     {
@@ -118,7 +116,7 @@ public class RelationshipService extends RestService {
 
     @GET
     @Path(PATH_RELATIONSHIP_PROPERTIES)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getAllRelationshipProperties(Invocation invocation,
             Output result) throws Exception
     {
@@ -135,7 +133,7 @@ public class RelationshipService extends RestService {
 
     @GET
     @Path(PATH_RELATIONSHIP_PROPERTY)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getRelationshipProperty(Invocation invocation, Output result)
             throws Exception
     {

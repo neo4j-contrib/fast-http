@@ -12,7 +12,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.neo4j.smack.serialization.JsonDeserializer;
 
-public class TestJsonDeserializerTest {
+public class TestJsonDeserializer {
 
     @Test
     public void testReadingMap() throws Exception {

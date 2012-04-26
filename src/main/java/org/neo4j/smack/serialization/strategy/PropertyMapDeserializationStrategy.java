@@ -25,11 +25,11 @@ import org.neo4j.smack.serialization.DeserializationException;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.Deserializer;
 
-public class PropertyMapDeserializationStrategy implements DeserializationStrategy<Map<String, Object>> {
-
+public class PropertyMapDeserializationStrategy implements DeserializationStrategy<Map<String, Object>> 
+{
     @Override
-    public Map<String, Object> deserialize(final Deserializer in) throws DeserializationException {
+    public Map<String, Object> deserialize(final Deserializer in) throws DeserializationException 
+    {
         return in.readMap();
     }
-
 }

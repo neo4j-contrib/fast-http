@@ -24,7 +24,8 @@ import org.neo4j.smack.event.Invocation;
  * @author mh
  * @since 11.12.11
  */
-public class RestService {
+public class RestService 
+{
     private static final LeaseManager leaseManager = new LeaseManager(new RealClock());
     public static final String NODE_ID_NAME = "nodeId";
     protected static final String PATH_NODES = "node";

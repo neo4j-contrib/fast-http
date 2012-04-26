@@ -37,17 +37,5 @@ public class TxLocationSerializationStrategy implements DeserializationStrategy<
     public Long deserialize(Deserializer in) throws DeserializationException {
         return in.readLong();
     }
-
-    @Override
-    public boolean isStreaming()
-    {
-        return false;
-    }
-
-    @Override
-    public int estimatedSerializedSizeInBytes(Long value)
-    {
-        return 15;
-    }
     
 }

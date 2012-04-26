@@ -12,11 +12,9 @@ import org.neo4j.server.rest.repr.BadInputException;
 import org.neo4j.server.rest.repr.ListRepresentation;
 import org.neo4j.server.rest.web.DatabaseActions;
 import org.neo4j.smack.annotation.DeserializeWith;
-import org.neo4j.smack.annotation.SerializeWith;
 import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.Output;
 import org.neo4j.smack.serialization.strategy.PropertyMapDeserializationStrategy;
-import org.neo4j.smack.serialization.strategy.RepresentationSerializationStrategy;
 
 /**
  * @author mh
@@ -41,7 +39,7 @@ public class TraversalService extends RestService {
     @POST
     @Path(PATH_NODE_TRAVERSE)
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void traverse(Invocation invocation, Output result) throws Exception
     {
         final TraverserReturnType returnType = getReturnType(invocation);
@@ -63,7 +61,7 @@ public class TraversalService extends RestService {
     @GET
     @Path(PATH_TO_PAGED_TRAVERSERS)
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void pagedTraverse(Invocation invocation, Output result)
             throws Exception
     {
@@ -77,7 +75,7 @@ public class TraversalService extends RestService {
     @POST
     @Path(PATH_TO_CREATE_PAGED_TRAVERSERS)
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void createPagedTraverser(Invocation invocation, Output result)
             throws Exception
     {
@@ -99,7 +97,7 @@ public class TraversalService extends RestService {
     @POST
     @Path(PATH_NODE_PATH)
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void singlePath(Invocation invocation, Output result)
             throws Exception
     { // @PathParam("getNodeId(invocation)") long startNode, String body
@@ -112,7 +110,7 @@ public class TraversalService extends RestService {
     @POST
     @Path(PATH_NODE_PATHS)
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void allPaths(Invocation invocation, Output result) throws Exception
     { // @PathParam("getNodeId(invocation)") long startNode, String body
         final Map<String, Object> description = readMap(invocation);

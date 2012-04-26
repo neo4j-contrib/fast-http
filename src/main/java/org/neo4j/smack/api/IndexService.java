@@ -12,11 +12,9 @@ import javax.ws.rs.core.MediaType;
 import org.neo4j.server.rest.repr.IndexedEntityRepresentation;
 import org.neo4j.server.rest.web.DatabaseActions;
 import org.neo4j.smack.annotation.DeserializeWith;
-import org.neo4j.smack.annotation.SerializeWith;
 import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.Output;
 import org.neo4j.smack.serialization.strategy.PropertyMapDeserializationStrategy;
-import org.neo4j.smack.serialization.strategy.RepresentationSerializationStrategy;
 
 /**
  * @author mh
@@ -82,7 +80,7 @@ public class IndexService extends RestService {
     @Path(PATH_NODE_INDEX)
     @Consumes(MediaType.APPLICATION_JSON)
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void jsonCreateNodeIndex(Invocation invocation, Output result)
             throws Exception
     {
@@ -108,7 +106,7 @@ public class IndexService extends RestService {
     @Path(PATH_RELATIONSHIP_INDEX)
     @Consumes(MediaType.APPLICATION_JSON)
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void jsonCreateRelationshipIndex(Invocation invocation, Output result)
             throws Exception
     {
@@ -118,7 +116,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_NAMED_NODE_INDEX)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getIndexedNodesByQuery(Invocation invocation, Output result)
             throws Exception
     {
@@ -133,7 +131,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_AUTO_NODE_INDEX)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getAutoIndexedNodesByQuery(Invocation invocation, Output result)
             throws Exception
     {
@@ -163,7 +161,7 @@ public class IndexService extends RestService {
     @POST
     @Path(PATH_NAMED_NODE_INDEX)
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void addToNodeIndex(Invocation invocation, Output result)
             throws Exception
     {
@@ -179,7 +177,7 @@ public class IndexService extends RestService {
     @POST
     @Path(PATH_NAMED_RELATIONSHIP_INDEX)
     @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void addToRelationshipIndex(Invocation invocation, Output result)
             throws Exception
     {
@@ -194,7 +192,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_NODE_INDEX_ID)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getNodeFromIndexUri(Invocation invocation, Output result)
             throws Exception
     {
@@ -205,7 +203,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_RELATIONSHIP_INDEX_ID)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getRelationshipFromIndexUri(Invocation invocation, Output result)
             throws Exception
     {
@@ -216,7 +214,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_NODE_INDEX_GET)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getIndexedNodes(Invocation invocation, Output result)
             throws Exception
     {
@@ -233,7 +231,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_AUTO_NODE_INDEX_GET)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getAutoIndexedNodes(Invocation invocation, Output result)
             throws Exception
     {
@@ -243,7 +241,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_NODE_INDEX_QUERY_WITH_KEY)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getIndexedNodesByQueryWithKey(Invocation invocation,
             Output result) throws Exception
     {
@@ -254,7 +252,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_RELATIONSHIP_INDEX_GET)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getIndexedRelationships(Invocation invocation, Output result)
             throws Exception
     {
@@ -265,7 +263,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_AUTO_RELATIONSHIP_INDEX_GET)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getAutoIndexedRelationships(Invocation invocation, Output result)
             throws Exception
     {
@@ -275,7 +273,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_AUTO_RELATIONSHIP_INDEX)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getAutoIndexedRelationshipsByQuery(Invocation invocation,
             Output result) throws Exception
     {
@@ -285,7 +283,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_NAMED_RELATIONSHIP_INDEX)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getNameIndexedRelationshipsByQuery(Invocation invocation,
             Output result) throws Exception
     {
@@ -300,7 +298,7 @@ public class IndexService extends RestService {
 
     @GET
     @Path(PATH_RELATIONSHIP_INDEX_QUERY_WITH_KEY)
-    @SerializeWith(RepresentationSerializationStrategy.class)
+    //@SerializeWith(RepresentationSerializationStrategy.class)
     public void getIndexedRelationshipsByQuery(Invocation invocation,
             Output result) throws Exception
     {

@@ -23,10 +23,11 @@ import org.neo4j.smack.serialization.DeserializationException;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.Deserializer;
 
-public class NodeLocationSerializationStrategy implements DeserializationStrategy<Long> {
-
+public class NodeLocationSerializationStrategy implements DeserializationStrategy<Long> 
+{
     @Override
-    public Long deserialize(Deserializer out) throws DeserializationException {
+    public Long deserialize(Deserializer out) throws DeserializationException 
+    {
         return out.readLong();
     }
 }
