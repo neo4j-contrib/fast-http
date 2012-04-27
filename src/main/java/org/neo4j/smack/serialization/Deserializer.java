@@ -21,18 +21,19 @@ package org.neo4j.smack.serialization;
 
 import java.util.Map;
 
+// TODO: Refactor this to allow streaming deserialization
 public interface Deserializer {
 
-    long readLong() throws DeserializationException;
+    long readLong();
 
-    String readString() throws DeserializationException;
+    String readString();
 
-    long readInt() throws DeserializationException;
+    long readInt();
 
-    Object readObject() throws DeserializationException;
+    Object readObject();
 
-    <T> T readEnum(IdentifiableEnumDeserializer<T> deserializer) throws DeserializationException;
+    <T> T readEnum(IdentifiableEnumDeserializer<T> deserializer);
 
-    Map<String, Object> readMap() throws DeserializationException;
+    Map<String, Object> readMap();
     
 }

@@ -30,6 +30,5 @@ public class NodeSerializationStrategy implements SerializationStrategy<Node> {
         out.endMap();
         
         out.endMap();
-        out.flush();
     }
 }

@@ -17,32 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.smack.event;
+package org.neo4j.smack.handler;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.smack.TransactionRegistry;
-import org.neo4j.smack.routing.PathVariables;
+import org.neo4j.smack.WorkTransactionPreparer;
+import org.neo4j.smack.event.RequestEvent;
 
-public interface Invocation {
-    
-    public PathVariables getPathVariables();
+import com.lmax.disruptor.WorkHandler;
 
-    public <T> T getContent();
-    
-    public <T> T getContent(Class<T> type);
 
-    public GraphDatabaseService getDB();
-    
-    public TransactionRegistry getTxRegistry();
-    
-    public long getTxId();
-    
-    public String getPath();
+public class TransactionPreparationHandler implements WorkHandler<RequestEvent> {
 
-    // Path variable management
-    
-    public long getLongParameter(String nodeIdName, long defaultValue);
+    private long txIds = 0l;
 
-    public String getStringParameter(String nodePropertyKeyName);
-    
+    private WorkTransactionPreparer txPrepare = new WorkTransactionPreparer();
+
+    @Override
+    public void onEvent(RequestEvent event) 
+    {
+        if(!event.hasFailed()) 
+        {
+            txPrepare.prepare(event);
+        }
+    }
+
 }

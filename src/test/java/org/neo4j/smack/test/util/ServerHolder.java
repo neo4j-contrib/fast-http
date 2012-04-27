@@ -2,14 +2,14 @@ package org.neo4j.smack.test.util;
 
 import java.io.IOException;
 
-import org.neo4j.smack.SmackServer;
+import org.neo4j.smack.Neo4jServer;
 
 public class ServerHolder extends Thread
 {
     private static AssertionError allocation;
-    private static SmackServer server;
+    private static Neo4jServer server;
 
-    static synchronized SmackServer allocate() throws IOException
+    static synchronized Neo4jServer allocate() throws IOException
     {
         if ( allocation != null ) throw allocation;
         if ( server == null ) server = startServer();
@@ -17,7 +17,7 @@ public class ServerHolder extends Thread
         return server;
     }
 
-    static synchronized void release( SmackServer server )
+    static synchronized void release( Neo4jServer server )
     {
         if ( server == null ) return;
         if ( server != ServerHolder.server )
@@ -32,9 +32,9 @@ public class ServerHolder extends Thread
         shutdown();
     }
 
-    private static SmackServer startServer() throws IOException
+    private static Neo4jServer startServer() throws IOException
     {
-        SmackServer server = ServerHelper.createServer();
+        Neo4jServer server = ServerHelper.createServer();
         server.start();
         return server;
     }

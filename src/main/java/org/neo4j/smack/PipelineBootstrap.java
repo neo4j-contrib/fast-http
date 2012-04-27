@@ -5,8 +5,6 @@ package org.neo4j.smack;
  * @since 27.11.11
  */
 
-import static java.util.Arrays.asList;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -34,15 +32,14 @@ public class PipelineBootstrap<E> {
     
     private ExecutorService workers;
     
-    private final List<WorkHandler<E>> handlers;
+    private final List<WorkHandler<E>> handlers = new ArrayList<WorkHandler<E>>();
     
     private final EventFactory<E> eventFactory;
 
     private String nameForThreads;
 
-    public PipelineBootstrap(String nameForThreads, final EventFactory<E> eventFactory, final ExceptionHandler exceptionHandler, WorkHandler<E>... handlers) {
+    public PipelineBootstrap(String nameForThreads, final EventFactory<E> eventFactory, final ExceptionHandler exceptionHandler) {
         this.nameForThreads = nameForThreads;
-        this.handlers=asList(handlers);
         this.eventFactory = eventFactory;
         this.exceptionHandler = exceptionHandler;
     }
@@ -91,6 +88,11 @@ public class PipelineBootstrap<E> {
 
     public RingBuffer<E> getRingBuffer() {
         return ringBuffer;
+    }
+
+    public void addHandler(WorkHandler<E> handler)
+    {
+        handlers.add(handler);
     }
 
 }

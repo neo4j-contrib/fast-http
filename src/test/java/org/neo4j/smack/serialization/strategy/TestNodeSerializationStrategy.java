@@ -34,8 +34,6 @@ public class TestNodeSerializationStrategy {
                 "\"self\":\"/db/data/node/0\"," +
                 "\"extensions\":{}" +
             "}"));
-        
-        
     }
     
     @Test

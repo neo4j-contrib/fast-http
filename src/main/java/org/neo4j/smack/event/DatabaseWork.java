@@ -1,7 +1,7 @@
 package org.neo4j.smack.event;
 
 import org.jboss.netty.channel.Channel;
-import org.neo4j.smack.Database;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.smack.TransactionRegistry;
 import org.neo4j.smack.handler.ExceptionOutputWriter;
 import org.neo4j.smack.routing.Endpoint;
@@ -100,9 +100,15 @@ public class DatabaseWork implements Fallible {
     {
         return invocation;
     }
+    
+    @Override
+    public String toString() 
+    {
+        return "DatabaseWork[" + endpoint + ", txMode:" + txMode + ", failure:" + failure + "]";
+    }
 
     public void reset(Channel channel, boolean isPersistentConnection, long txId, WorkTransactionMode txMode,
-            Database database, TransactionRegistry txs, Throwable failureCause)
+            GraphDatabaseService database, TransactionRegistry txs, Throwable failureCause)
     {
         reset(null, channel, isPersistentConnection, null, txId, txMode, null, null, database, txs);
         setFailed(failureCause);
@@ -111,12 +117,12 @@ public class DatabaseWork implements Fallible {
     public void reset(Endpoint endpoint, Channel outputChannel,
             boolean isPersistentConnection, String path,
             long txId, WorkTransactionMode txMode, PathVariables pathVariables, Object content,
-            Database database, TransactionRegistry txRegistry)
+            GraphDatabaseService database, TransactionRegistry txRegistry)
     {
         this.channel = outputChannel;
         this.endpoint = endpoint;
 
-        this.txMode = txMode;
+        this.txMode = txMode == null ? WorkTransactionMode.NO_TRANSACTION : txMode;
         this.failure = null;
 
         invocation.reset(path, txId, pathVariables, content, database, txRegistry);

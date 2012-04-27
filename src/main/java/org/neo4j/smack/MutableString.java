@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 /**
  * A mutable String implementation. Uses more memory than
- * native java strings and are slower, but can be reused.
+ * native java strings and is slower, but can be recycled.
  * 
  * In high-throughput applications, this can be very useful
  * as the performance impact of GC is high, and we can pool
@@ -85,6 +85,24 @@ public class MutableString {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Return the backing char array for this mutable string.
+     * Modifications to this will be reflected in the mutable string.
+     * 
+     * Please note that this may be much larger than the actual
+     * string stored. Use getLength() to find out where the string 
+     * ends.
+     */
+    public char [] getChars()
+    {
+        return chars;
+    }
+
+    public int getLength()
+    {
+        return length;
     }
     
     @Override

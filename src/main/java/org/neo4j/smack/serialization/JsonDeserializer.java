@@ -31,7 +31,7 @@ public class JsonDeserializer implements Deserializer {
 
     private JsonParser parser;
 
-    public JsonDeserializer(JsonFactory factory, InputStream stream) throws DeserializationException {
+    public JsonDeserializer(JsonFactory factory, InputStream stream) {
         try {
             this.parser = factory.createJsonParser(stream);
         } catch (JsonParseException e) {
@@ -43,7 +43,7 @@ public class JsonDeserializer implements Deserializer {
     }
     
     @Override
-    public long readLong() throws DeserializationException {
+    public long readLong() {
         try {
             return parser.getLongValue();
         } catch (Exception e) {
@@ -52,7 +52,7 @@ public class JsonDeserializer implements Deserializer {
     }
 
     @Override
-    public long readInt() throws DeserializationException {
+    public long readInt() {
         try {
             return parser.getIntValue();
         } catch (Exception e) {
@@ -61,13 +61,13 @@ public class JsonDeserializer implements Deserializer {
     }
 
     @Override
-    public <T> T readEnum(IdentifiableEnumDeserializer<T> deserializer) throws DeserializationException {
+    public <T> T readEnum(IdentifiableEnumDeserializer<T> deserializer) {
         String str = readString();
         return deserializer.getForName(str);
     }
 
     @Override
-    public String readString() throws DeserializationException {
+    public String readString() {
         try {
             parser.nextValue();
             return parser.getText();
@@ -79,7 +79,7 @@ public class JsonDeserializer implements Deserializer {
     }
 
     @Override
-    public Object readObject() throws DeserializationException {
+    public Object readObject() {
         try {
             return parser.readValueAs(Object.class);
         } catch(EOFException e) {
@@ -93,7 +93,7 @@ public class JsonDeserializer implements Deserializer {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, Object> readMap() throws DeserializationException {
+    public Map<String, Object> readMap() {
         try {
             return parser.readValueAs(Map.class);
         } catch (JsonParseException e) {

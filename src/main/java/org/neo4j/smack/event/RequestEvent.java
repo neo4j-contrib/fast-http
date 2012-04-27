@@ -32,7 +32,7 @@ import com.lmax.disruptor.EventFactory;
  * Note: There are lots of these instances, keep it as slim as possible to 
  * keep memory usage down.
  */
-public class RequestEvent implements Fallible, Routable {
+public class RequestEvent implements Fallible, Routable, TransactionWork {
    
     public static EventFactory<RequestEvent> FACTORY = new EventFactory<RequestEvent>() {
         public RequestEvent newInstance() {
@@ -60,7 +60,14 @@ public class RequestEvent implements Fallible, Routable {
 
     private Long connectionId;
 
-    public void setVerb(InvocationVerb verb) {
+    private long txId;
+
+    private WorkTransactionMode txMode;
+    
+    
+
+    public void setVerb(InvocationVerb verb) 
+    {
         this.verb = verb;
     }
 
@@ -89,7 +96,7 @@ public class RequestEvent implements Fallible, Routable {
         return pathVariables;
     }
 
-    public ChannelBuffer getContent() {
+    public ChannelBuffer getInputBuffer() {
         return content;
     }
 
@@ -119,12 +126,48 @@ public class RequestEvent implements Fallible, Routable {
     public boolean hasFailed() {
         return failure != null;
     }
+
+    @Override
+    public void setTransactionId(Long txId)
+    {
+        this.txId = txId;
+    }
+
+    @Override
+    public long getTransactionId()
+    {
+        if(txId == -1l) 
+        {
+            txId = pathVariables.getLongParameter("tx_id", -1l);
+        }
+        return txId;
+    }
+
+    @Override
+    public boolean isTransactional()
+    {
+        return endpoint != null ? endpoint.isTransactional() : false;
+    }
+
+    @Override
+    public void setTransactionMode(WorkTransactionMode txMode)
+    {
+        this.txMode = txMode;
+    }
+
+    @Override
+    public WorkTransactionMode getTransactionMode()
+    {
+        return txMode;
+    }
+    
     
     public void setChannel(Channel channel) 
     {
         this.channel = channel;
     }
 
+    
     public long getConnectionId()
     {
         return connectionId;
@@ -142,6 +185,8 @@ public class RequestEvent implements Fallible, Routable {
         
         this.endpoint = null;
         this.deserializedContent = null;
+        this.txId = -1l;
+        this.txMode = null;
         
         this.failure = null;
 

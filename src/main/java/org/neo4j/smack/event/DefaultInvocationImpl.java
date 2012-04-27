@@ -19,7 +19,7 @@
  */
 package org.neo4j.smack.event;
 
-import org.neo4j.smack.Database;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.smack.TransactionRegistry;
 import org.neo4j.smack.routing.PathVariables;
 
@@ -32,7 +32,7 @@ public class DefaultInvocationImpl implements Invocation {
     private PathVariables pathVariables;
     private Object content;
     
-    private Database database;
+    private GraphDatabaseService database;
     private TransactionRegistry txRegistry;
     private long txId = -1l;
     private String path;
@@ -49,14 +49,14 @@ public class DefaultInvocationImpl implements Invocation {
     }
     
     @Override
-    public <T> T getDeserializedContent(Class<T> type) {
+    public <T> T getContent(Class<T> type) {
         if (content==null) return null;
         if (type.isInstance(content)) return type.cast(content);
         throw new ClassCastException("Expected "+type+" found "+content.getClass());
     }
     
     @Override
-    public Database getDatabase() {
+    public GraphDatabaseService getDB() {
         return database;
     }
     
@@ -75,7 +75,19 @@ public class DefaultInvocationImpl implements Invocation {
         return path;
     }
 
-    protected void reset(String path, long txId, PathVariables pathVariables, Object content, Database database, TransactionRegistry txRegistry)
+    @Override
+    public long getLongParameter(String name, long defaultValue)
+    {
+        return pathVariables.getLongParameter(name, defaultValue);
+    }
+
+    @Override
+    public String getStringParameter(String name)
+    {
+        return pathVariables.getStringParameter(name);
+    }
+
+    protected void reset(String path, long txId, PathVariables pathVariables, Object content, GraphDatabaseService database, TransactionRegistry txRegistry)
     {   
         this.path = path;
         this.pathVariables = pathVariables;

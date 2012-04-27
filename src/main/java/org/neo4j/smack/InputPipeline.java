@@ -3,18 +3,16 @@ package org.neo4j.smack;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.neo4j.smack.event.RequestEvent;
-import org.neo4j.smack.handler.DatabaseWorkDivider;
-import org.neo4j.smack.handler.RoutingHandler;
 import org.neo4j.smack.routing.InvocationVerb;
 
 import com.lmax.disruptor.ExceptionHandler;
+import com.lmax.disruptor.WorkHandler;
 
 public class InputPipeline extends PipelineBootstrap<RequestEvent> implements WorkPublisher {
 
-    @SuppressWarnings("unchecked")
-    public InputPipeline(ExceptionHandler exceptionHandler, RoutingHandler routingHandler, DatabaseWorkDivider workDivider)
+    public InputPipeline(ExceptionHandler exceptionHandler)
     {
-        super("RequestEventHandler", RequestEvent.FACTORY, exceptionHandler, routingHandler, workDivider);
+        super("RequestEventHandler", RequestEvent.FACTORY, exceptionHandler);
     }
 
     @Override
@@ -38,6 +36,11 @@ public class InputPipeline extends PipelineBootstrap<RequestEvent> implements Wo
         event.reset(connectionId, channel, cause);
 
         ringBuffer.publish(sequenceNo);
+    }
+
+    public void addHandler(WorkHandler<RequestEvent> handler)
+    {
+        super.addHandler(handler);
     }
 
 }

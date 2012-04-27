@@ -4,14 +4,14 @@ import java.io.IOException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.neo4j.smack.SmackServer;
+import org.neo4j.smack.Neo4jServer;
 
 
 public class SharedSmackServerTestBase {
 
-    private static SmackServer server;
+    private static Neo4jServer server;
     
-    protected static final SmackServer server()
+    protected static final Neo4jServer server()
     {
         return server;
     }

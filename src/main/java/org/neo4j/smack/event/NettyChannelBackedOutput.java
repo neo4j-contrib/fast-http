@@ -158,21 +158,22 @@ public class NettyChannelBackedOutput implements Output {
             response.addHeader(HttpHeaders.Names.CONTENT_LENGTH, 0);
         } else
         {
-//            if (serializationStrategy.isStreaming())
-//            {
-//                response.setChunked(true);
-//                throw new RuntimeException("IMPLEMENT ME!");
-//            } else
-//            {
-                final DynamicChannelBuffer content = new DynamicChannelBuffer(
-                        1000);
-                Serializer serializer = serializationFactory
-                        .getSerializer(content);
-                serializationStrategy.serialize(data, serializer);
-                response.setHeader(HttpHeaders.Names.CONTENT_TYPE, serializer
-                        .getContentType().toString());
-                response.setContent(content);
-//            }
+            // TODO: Hack to get tests green, refactor
+            // add support for streaming output, and look into how we could
+            // make this garbage free (eg. reuse output buffers). To do that,
+            // we probably need to patch netty. It brings this buffer all the
+            // way down to it's deepest dungeons, and then eventually copies it into
+            // kernel space. We need to know when that has happened and reuse the buffer.
+            // Perhaps introduce a ring buffer to rotate used buffers back up here?
+            final DynamicChannelBuffer content = new DynamicChannelBuffer(
+                    1000);
+            Serializer serializer = serializationFactory.getSerializer(content);
+            serializationStrategy.serialize(data, serializer);
+            serializer.flush();
+            
+            response.setHeader(HttpHeaders.Names.CONTENT_TYPE, serializer.getContentType().toString());
+            response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, content.writerIndex());
+            response.setContent(content);
         }
 
         ChannelFuture future = channel.write(response);

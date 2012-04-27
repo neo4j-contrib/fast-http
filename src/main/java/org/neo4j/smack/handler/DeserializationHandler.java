@@ -33,7 +33,7 @@ public class DeserializationHandler implements WorkHandler<RequestEvent> {
     public void onEvent(final RequestEvent event)
             throws Exception {
         if(!event.hasFailed()) {
-            Deserializer d = serializationFactory.getDeserializer(event.getContent());
+            Deserializer d = serializationFactory.getDeserializer(event.getInputBuffer());
             event.setDeserializedContent(event.getEndpoint().getDeserializationStrategy().deserialize(d));
         }
     }

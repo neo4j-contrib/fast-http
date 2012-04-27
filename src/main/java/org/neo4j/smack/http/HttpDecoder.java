@@ -17,6 +17,7 @@ import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.neo4j.smack.MutableString;
+import org.neo4j.smack.MutableStringConverter;
 import org.neo4j.smack.WorkPublisher;
 import org.neo4j.smack.http.HttpHeaderContainer.HttpHeaderValues;
 import org.neo4j.smack.routing.InvocationVerb;
@@ -34,6 +35,8 @@ import org.neo4j.smack.routing.InvocationVerb;
  * TODO: Add chunked input support
  * TODO: Replace the readTrailingHeaders method with HttpHeaderDecoder to make header parsing garbage free
  * TODO: Look into ReplayingHeaderDecoder, I think it buffers data and then does not reuse the buffers
+ * TODO: This parses raw user input, and is currently set up in a way where broken input will put the parser
+ *       in a broken state, making further requests fail. Fix.
  */
 public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
 
@@ -55,11 +58,12 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
     class DecodedHttpMessage {
 
         private boolean chunked;
-        private Long contentLength;
         private HttpHeaderContainer headers = new HttpHeaderContainer();
         private HttpVersion protocolVersion;
         private InvocationVerb verb;
         private String path;
+
+        private ChannelBuffer content;
 
         HttpHeaderContainer getHeaderContainer() {
             return headers;
@@ -87,7 +91,17 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
 
         long getContentLength(long defaultValue)
         {
-            return contentLength != null ? contentLength : defaultValue;
+            MutableString value = headers.getHeader(HttpHeaderNames.CONTENT_LENGTH);
+            if(value != null) 
+            {
+                try {
+                    return MutableStringConverter.toLongValue(value);
+                } catch(NumberFormatException e) {
+                    return defaultValue;
+                }
+            } else {
+                return defaultValue;
+            }
         }
 
         boolean isChunked()
@@ -124,6 +138,16 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
             return path;
         }
 
+        public void setContent(ChannelBuffer content)
+        {
+            this.content = content;
+        }
+
+        public ChannelBuffer getContent()
+        {
+            return content;
+        }
+
         void reset(HttpVersion protocolVersion, InvocationVerb verb,
                 String path)
         {
@@ -131,6 +155,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
             this.verb = verb;
             this.path = path;
             this.headers.clear();
+            this.content = null;
         }
     }
     
@@ -151,8 +176,6 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
     private int headerSize;
 
     private WorkPublisher workBuffer;
-
-    private ChannelBuffer content;
     
     private boolean isDecodingRequest = true;
 
@@ -234,7 +257,7 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
             } else {
                 long contentLength = message.getContentLength(-1);
                 if (contentLength == 0 || contentLength == -1 && isDecodingRequest ) {
-                    content = ChannelBuffers.EMPTY_BUFFER;
+                    message.setContent(ChannelBuffers.EMPTY_BUFFER);
                     return reset(ctx, channel);
                 }
 
@@ -266,11 +289,11 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
             return null;
         }
         case READ_VARIABLE_LENGTH_CONTENT: {
-            if (content == null) {
-                content = ChannelBuffers.dynamicBuffer(channel.getConfig().getBufferFactory());
+            if (message.getContent() == null) {
+                message.setContent(ChannelBuffers.dynamicBuffer(channel.getConfig().getBufferFactory()));
             }
             //this will cause a replay error until the channel is closed where this will read what's left in the buffer
-            content.writeBytes(buffer.readBytes(buffer.readableBytes()));
+            message.getContent().writeBytes(buffer.readBytes(buffer.readableBytes()));
             return reset(ctx, channel);
         }
         case READ_VARIABLE_LENGTH_CONTENT_AS_CHUNKS: {
@@ -445,8 +468,8 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         
         Long connectionId = (Long)ctx.getAttachment();
         
-        workBuffer.addWork(connectionId, message.getVerb(), message.getPath(), content, channel, message.isKeepAlive());
-
+        workBuffer.addWork(connectionId, message.getVerb(), message.getPath(), message.getContent(), channel, message.isKeepAlive());
+        
         checkpoint(State.SKIP_CONTROL_CHARS);
         return null;
     }
@@ -466,8 +489,10 @@ public class HttpDecoder extends ReplayingDecoder<HttpDecoder.State> {
         long length = message.getContentLength(-1);
         assert length <= Integer.MAX_VALUE;
 
+        ChannelBuffer content = message.getContent();
+        
         if (content == null) {
-            content = buffer.readBytes((int) length);
+            message.setContent(buffer.readBytes((int) length));
         } else {
             content.writeBytes(buffer.readBytes((int) length));
         }

@@ -4,8 +4,7 @@ import java.util.Date;
 
 import javax.ws.rs.core.MediaType;
 
-import org.neo4j.smack.Database;
-import org.neo4j.smack.SmackServer;
+import org.neo4j.smack.Smack;
 import org.neo4j.smack.test.util.FixedRequestClient;
 import org.neo4j.smack.test.util.PerformanceRoutes;
 import org.neo4j.test.ImpermanentGraphDatabase;
@@ -29,7 +28,7 @@ import com.sun.jersey.api.client.WebResource.Builder;
  */
 public class NetworkLatency {
 
-    private SmackServer server;
+    private Smack server;
     private FixedRequestClient pipelineClient;
     
     public static void main(String [] args) {
@@ -80,7 +79,7 @@ public class NetworkLatency {
     }
     
     private void startServer() {
-        server = new SmackServer("localhost", 7473, new Database(new ImpermanentGraphDatabase()));
+        server = new Smack("localhost", 7473, new ImpermanentGraphDatabase());
         server.addRoute("",new PerformanceRoutes());
         server.start();
     }

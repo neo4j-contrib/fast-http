@@ -21,43 +21,38 @@ public class NodeServiceIT extends AbstractRestFunctionalTestBase {
     }
 
     @Test
-    public void testGetDbInfo() throws Exception {
-        REST.from("").get().ok().expectUri("reference_node", "node/0");
-    }
-
-    @Test
     public void testCreateNodeWithProperties() throws Exception {
-        REST.to("node").post(map("name","John","age",10)).created().location("/node/\\d+").expect("data/name", "John").expect("data.age", 10).compareNodeProperties("age", "name");
+        REST.to("/db/data/node").post(map("name","John","age",10)).created().location("/db/data/node/\\d+").expect("data/name", "John").expect("data.age", 10).compareNodeProperties("age", "name");
     }
     
     @Test
     public void testCreateNode() throws Exception {
-        REST.to("node").post().created().location("/node/\\d+").expect("data", map()).compareNodeProperties("!name");
+        REST.to("/db/data/node").post().created().location("/db/data/node/\\d+").expect("data", map()).compareNodeProperties("!name");
     }
 
     @Test
     public void testCreateNodeWithInvalidProperty() throws Exception {
-        REST.to("node").post(map("name",null)).assertStatus(Response.Status.BAD_REQUEST);
+        REST.to("/db/data/node").post(map("name",null)).assertStatus(Response.Status.BAD_REQUEST);
     }
 
     @Test
     public void testSetNodeProperty() throws Exception {
-        REST.to("node/0/properties/foo").put("bar").noContent().checkNodeProperty(0, "foo", "bar");
+        REST.to("/db/data/node/0/properties/foo").put("bar").noContent().checkNodeProperty(0, "foo", "bar");
     }
 
     @Test
     public void testReplaceNodeProperties() throws Exception {
-        REST.to("node/0/properties").put(map("foo","bar")).noContent().checkNodeProperty(0, "foo", "bar").checkNodeProperty(0, "!name", null);
+        REST.to("/db/data/node/0/properties").put(map("foo","bar")).noContent().checkNodeProperty(0, "foo", "bar").checkNodeProperty(0, "!name", null);
     }
 
     @Test
     public void testGetNode() throws Exception {
-        final String rootNodeUri = "node/0";
-        REST.from(rootNodeUri).get().ok().expectUri("self", rootNodeUri);
+        final String rootNodeUri = "/db/data/node/0";
+        REST.from(rootNodeUri).get().ok().expect("self", rootNodeUri);
     }
 
     @Test
     public void testGetNonExistingNode() throws Exception {
-        REST.from("/node/" + 9999).get().notFound();
+        REST.from("/db/data/node/" + 9999).get().notFound();
     }
 }

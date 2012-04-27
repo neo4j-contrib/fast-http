@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -42,12 +43,25 @@ public class TestHttpDecoder {
     
     class RequestMatcher 
     {
-        public RequestMatcher(Long connectionId, InvocationVerb verb, String path) 
+        
+        public Long connectionId;
+        public InvocationVerb verb;
+        public String path;
+        public byte [] content;
+        public Channel channel;
+        public boolean keepAlive;
+        
+        public RequestMatcher(InvocationVerb verb, String path) 
         {
-            this(connectionId, verb, path, null, null, true);
+            this(verb, path, new byte[]{}, null, true);
         }
         
-        public RequestMatcher(Long connectionId, InvocationVerb verb, String path, ChannelBuffer content, Channel channel, boolean keepAlive)
+        public RequestMatcher(InvocationVerb verb, String path, String message) throws UnsupportedEncodingException 
+        {
+            this(verb, path, message.getBytes("UTF-8"), null, true);
+        }
+        
+        public RequestMatcher(InvocationVerb verb, String path, byte[] content, Channel channel, boolean keepAlive)
         {
             this.connectionId = connectionId;
             this.verb = verb;
@@ -57,20 +71,14 @@ public class TestHttpDecoder {
             this.keepAlive = keepAlive;
         }
         
-        public boolean matches(Request work) 
+        public void assertMatches(Request work) 
         {
-            if(work.connectionId == connectionId && work.verb == verb && work.path.equals(path) && work.keepAlive == keepAlive) {
-                return true;
-            }
-            return false;
+            assertThat(work.verb, is(verb));
+            assertThat(work.path, is(path));
+            assertThat(work.keepAlive, is(keepAlive));
+            
+            assertThat(work.content.readableBytes(),is(content.length));
         }
-        
-        public Long connectionId;
-        public InvocationVerb verb;
-        public String path;
-        public ChannelBuffer content;
-        public Channel channel;
-        public boolean keepAlive;
     }
     
     class DummyInputGate implements WorkPublisher 
@@ -113,7 +121,35 @@ public class TestHttpDecoder {
         buf.writeByte(HttpTokens.CR);
         buf.writeByte(HttpTokens.LF);
         
-        testDecoding(buf, new RequestMatcher(0l, InvocationVerb.GET, "/"));
+        testDecoding(buf, new RequestMatcher(InvocationVerb.GET, "/"));
+    }
+    
+    
+    @Test
+    public void shouldDecodeMessageWithBody() throws Exception 
+    {   
+        ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
+        
+        String message = "{\"hello\":\"world!\"}";
+        byte[] messageBytes = message.getBytes("UTF-8");
+        
+        buf.writeBytes("GET / HTTP/1.1".getBytes("ASCII"));
+        buf.writeByte(HttpTokens.CR);
+        buf.writeByte(HttpTokens.LF);
+        
+        buf.writeBytes(("Content-Length: " + messageBytes.length).getBytes("ASCII"));
+        buf.writeByte(HttpTokens.CR);
+        buf.writeByte(HttpTokens.LF);
+
+        buf.writeByte(HttpTokens.CR);
+        buf.writeByte(HttpTokens.LF);
+        
+        buf.writeBytes(messageBytes);
+
+        buf.writeByte(HttpTokens.CR);
+        buf.writeByte(HttpTokens.LF);
+        
+        testDecoding(buf, new RequestMatcher(InvocationVerb.GET, "/", message));
     }
 
     private void testDecoding(ChannelBuffer buf, RequestMatcher ... requestMatchers) throws Exception
@@ -141,5 +177,9 @@ public class TestHttpDecoder {
         // Check result
         
         assertThat("Should yield "+requestMatchers.length+" input requests", inputGate.requests.size(), is(requestMatchers.length));
+        
+        for(int i=0;i<requestMatchers.length;i++) {
+            requestMatchers[i].assertMatches(inputGate.requests.get(i));
+        }
     }
 }

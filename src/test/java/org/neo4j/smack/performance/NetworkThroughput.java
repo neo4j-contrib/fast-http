@@ -2,8 +2,7 @@ package org.neo4j.smack.performance;
 
 import java.util.Date;
 
-import org.neo4j.smack.Database;
-import org.neo4j.smack.SmackServer;
+import org.neo4j.smack.Smack;
 import org.neo4j.smack.test.util.FixedRequestClient;
 import org.neo4j.smack.test.util.PerformanceRoutes;
 import org.neo4j.test.ImpermanentGraphDatabase;
@@ -23,7 +22,7 @@ import org.neo4j.test.ImpermanentGraphDatabase;
  */
 public class NetworkThroughput {
     
-    private SmackServer server;
+    private Smack server;
     
     /**
      * Gives throughput numbers over the network.
@@ -140,7 +139,7 @@ public class NetworkThroughput {
     }
     
     private void startServer() {
-        server = new SmackServer("localhost", 7473, new Database(new ImpermanentGraphDatabase()));
+        server = new Smack("localhost", 7473, new ImpermanentGraphDatabase());
         server.addRoute("",new PerformanceRoutes());
         server.start();
     }

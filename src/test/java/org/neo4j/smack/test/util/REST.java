@@ -59,6 +59,9 @@ public class REST {
     }
 
     private static String mergeUri(String base, String path) {
+        if(path.startsWith("/")) {
+            path = path.substring(1);
+        }
         return (base + "/" + path).replaceAll("([^:]/)/", "$1");
     }
 

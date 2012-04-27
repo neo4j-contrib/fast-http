@@ -1,7 +1,5 @@
 package org.neo4j.smack.api;
 
-import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.Map;
 
 import javax.ws.rs.DELETE;
@@ -10,108 +8,158 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
-import org.neo4j.server.rest.repr.NodeRepresentation;
-import org.neo4j.server.rest.web.NoSuchPropertyException;
-import org.neo4j.server.rest.web.NodeNotFoundException;
-import org.neo4j.server.rest.web.OperationFailureException;
-import org.neo4j.server.rest.web.PropertyValueException;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.smack.InvalidPropertyException;
 import org.neo4j.smack.annotation.DeserializeWith;
+import org.neo4j.smack.annotation.SerializeWith;
 import org.neo4j.smack.annotation.Transactional;
 import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.Output;
-import org.neo4j.smack.serialization.strategy.PropertyMapDeserializationStrategy;
-import org.neo4j.smack.serialization.strategy.ValueDeserializationStrategy;
-import org.neo4j.smack.serialization.strategy.ValueOrNullDeserializationStrategy;
+import org.neo4j.smack.routing.UrlReverseLookerUpper;
+import org.neo4j.smack.serialization.strategy.NodeSerializationStrategy;
+import org.neo4j.smack.serialization.strategy.PropertyContainerDeserializationStrategy;
+import org.neo4j.smack.serialization.strategy.PropertyContainerSerializationStrategy;
+import org.neo4j.smack.serialization.strategy.PropertyValueDeserializationStrategy;
+import org.neo4j.smack.serialization.strategy.PropertyValueSerializationStrategy;
 
-/**
- * @author mh
- * @since 05.12.11
- */
-public class NodeService extends RestService {
-
+public class NodeService 
+{
+    private static final UrlReverseLookerUpper url = new UrlReverseLookerUpper();
+    
+    private static final String NODE_ID_NAME = "node_id";
+    private static final String NODE_PROPERTY_KEY_NAME = "key";
+    
+    private static final String PATH_NODES = "node";
+    private static final String PATH_NODE  = PATH_NODES + "/{" + NODE_ID_NAME + "}";
     private static final String PATH_NODE_PROPERTIES = PATH_NODE + "/properties";
-    private static final String PATH_NODE_PROPERTY = PATH_NODE_PROPERTIES + "/{key}";
-
-    public NodeService(String dataPath) {
-        super(dataPath);
-    }
-
-    @GET
-    //@SerializeWith(RepresentationSerializationStrategy.class)
-    public void getRoot(Invocation invocation, Output result) {
-        result.ok(actionsFor(invocation).root());
-    }
+    private static final String PATH_NODE_PROPERTY = PATH_NODE_PROPERTIES + "/{" + NODE_PROPERTY_KEY_NAME + "}";
 
     @POST
     @Transactional
     @Path(PATH_NODES)
-    @DeserializeWith(ValueOrNullDeserializationStrategy.class)
-    //@SerializeWith(RepresentationSerializationStrategy.class)
-    public void createNode(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException {
-        Map<String, Object> payload = invocation.getContent();
-        if (payload==null) payload = Collections.emptyMap();
-        final NodeRepresentation node = actionsFor(invocation).createNode(payload);
-        final String location = createOutputFormat(invocation).format(node.selfUri());
-        result.createdAt(location, node);
+    @DeserializeWith(PropertyContainerDeserializationStrategy.class)
+    @SerializeWith(NodeSerializationStrategy.class)
+    public void createNode(Invocation invocation, Output result) 
+    {
+        Node node = invocation.getDB().createNode();
+        
+        setProperties(node, invocation.<Map<String,Object>>getContent());
+        
+        result.createdAt(url.reverse(node), node);
     }
-
 
     @GET
     @Path(PATH_NODE)
-    //@SerializeWith(RepresentationSerializationStrategy.class)
-    public void getNode(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException {
-        final Long nodeId = getNodeId(invocation);
-        result.ok(actionsFor(invocation).getNode(nodeId));
+    @SerializeWith(NodeSerializationStrategy.class)
+    public void getNode(Invocation invocation, Output result)
+    {
+        System.out.println(getNodeId(invocation));
+        result.ok( invocation.getDB().getNodeById(getNodeId(invocation)) );
     }
 
     @DELETE
+    @Transactional
     @Path(PATH_NODE)
-    public void deleteNode(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException {
-        actionsFor(invocation).deleteNode(getNodeId(invocation));
+    public void deleteNode(Invocation invocation, Output result)
+    {
+        invocation.getDB().getNodeById(getNodeId(invocation)).delete();
         result.ok();
     }
 
-    @SuppressWarnings("unchecked")
     @PUT
+    @Transactional
     @Path(PATH_NODE_PROPERTIES)
-    @DeserializeWith(PropertyMapDeserializationStrategy.class)
-    public void setAllNodeProperties(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException {
-        actionsFor(invocation).setAllNodeProperties(getNodeId(invocation), invocation.getDeserializedContent(Map.class));
+    @DeserializeWith(PropertyContainerDeserializationStrategy.class)
+    public void setAllNodeProperties(Invocation invocation, Output result) 
+    {
+        Node node = invocation.getDB().getNodeById(getNodeId(invocation));
+        
+        removeAllProperties(node);
+        setProperties(node, invocation.<Map<String,Object>>getContent());
+        
         result.okNoContent();
     }
 
     @GET
     @Path(PATH_NODE_PROPERTIES)
-    //@SerializeWith(PropertyMapSerializationStrategy.class)
-    public void getAllNodeProperties(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException {
-        result.ok(actionsFor(invocation).getAllNodeProperties(getNodeId(invocation)));
+    @SerializeWith(PropertyContainerSerializationStrategy.class)
+    public void getAllNodeProperties(Invocation invocation, Output result) 
+    {
+        result.ok(invocation.getDB().getNodeById(getNodeId(invocation)));
     }
 
     @PUT
+    @Transactional
     @Path(PATH_NODE_PROPERTY)
-    @DeserializeWith(ValueDeserializationStrategy.class)
-    public void setNodeProperty(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException {
-        actionsFor(invocation).setNodeProperty(getNodeId(invocation), getKey(invocation), invocation.getContent());
+    @DeserializeWith(PropertyValueDeserializationStrategy.class)
+    public void setNodeProperty(Invocation invocation, Output result)
+    {
+        Node node = invocation.getDB().getNodeById(getNodeId(invocation));
+        
+        node.setProperty(invocation.getStringParameter(NODE_PROPERTY_KEY_NAME), invocation.getContent());
+        
         result.okNoContent();
     }
 
     @GET
     @Path(PATH_NODE_PROPERTY)
-    public void getNodeProperty(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException, NoSuchPropertyException {
-        result.ok(actionsFor(invocation).getNodeProperty(getNodeId(invocation), getKey(invocation)));
+    @SerializeWith(PropertyValueSerializationStrategy.class)
+    public void getNodeProperty(Invocation invocation, Output result)
+    {
+        Node node = invocation.getDB().getNodeById(getNodeId(invocation));
+        result.ok(node.getProperty(invocation.getStringParameter(NODE_PROPERTY_KEY_NAME)));
     }
 
     @DELETE
+    @Transactional
     @Path(PATH_NODE_PROPERTY)
-    public void deleteNodeProperty(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException, NoSuchPropertyException {
-        actionsFor(invocation).removeNodeProperty(getNodeId(invocation), getKey(invocation));
+    public void deleteNodeProperty(Invocation invocation, Output result)
+    {
+        Node node = invocation.getDB().getNodeById(getNodeId(invocation));
+        node.removeProperty(invocation.getStringParameter(NODE_PROPERTY_KEY_NAME));
         result.ok();
     }
 
     @DELETE
+    @Transactional
     @Path(PATH_NODE_PROPERTIES)
-    public void deleteAllNodeProperties(Invocation invocation, Output result) throws PropertyValueException, URISyntaxException, NodeNotFoundException, OperationFailureException, NoSuchPropertyException {
-        actionsFor(invocation).removeAllNodeProperties(getNodeId(invocation));
+    public void deleteAllNodeProperties(Invocation invocation, Output result)
+    {
+        Node node = invocation.getDB().getNodeById(getNodeId(invocation));
+        removeAllProperties(node);
         result.ok();
+    }
+
+    private long getNodeId(Invocation invocation)
+    {
+        return invocation.getLongParameter(NODE_ID_NAME, -1l);
+    }
+
+    private void setProperties(PropertyContainer entity, Map<String, Object> content)
+    {
+        for(Map.Entry<String,Object> entry : content.entrySet()) 
+        {
+            setProperty(entity, entry.getKey(), entry.getValue());
+        }
+    }
+
+    private void setProperty(PropertyContainer entity, String key, Object value)
+    {
+        try 
+        {
+            entity.setProperty(key, value);
+        } catch(IllegalArgumentException e) 
+        {
+            throw new InvalidPropertyException(e.getMessage());
+        }
+    }
+
+    private void removeAllProperties(Node node)
+    {
+        for(String key: node.getPropertyKeys()) 
+        {
+            node.removeProperty(key);
+        }
     }
 }

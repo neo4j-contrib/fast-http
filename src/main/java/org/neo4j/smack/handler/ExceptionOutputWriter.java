@@ -17,6 +17,7 @@ import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.neo4j.server.rest.web.OperationFailureException;
 import org.neo4j.server.rest.web.PropertyValueException;
 import org.neo4j.server.rest.web.RelationshipNotFoundException;
+import org.neo4j.smack.InvalidPropertyException;
 import org.neo4j.smack.event.NettyChannelBackedOutput;
 import org.neo4j.smack.routing.ResourceNotFoundException;
 import org.neo4j.smack.serialization.SerializationStrategy;
@@ -36,20 +37,22 @@ public class ExceptionOutputWriter {
         private static final long serialVersionUID = -5937199711856466595L;
 
         {
-            put(ResourceNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-            put(NodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-            put(RelationNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-            put(ArrayStoreException.class, HttpResponseStatus.BAD_REQUEST);
-            put(BadInputException.class, HttpResponseStatus.BAD_REQUEST);
-            put(OperationFailureException.class, HttpResponseStatus.INTERNAL_SERVER_ERROR);
-            put(NoSuchPropertyException.class, HttpResponseStatus.NOT_FOUND);
+            put(ResourceNotFoundException.class,     HttpResponseStatus.NOT_FOUND);
+            put(NodeNotFoundException.class,         HttpResponseStatus.NOT_FOUND);
+            put(RelationNotFoundException.class,     HttpResponseStatus.NOT_FOUND);
+            put(ArrayStoreException.class,           HttpResponseStatus.BAD_REQUEST);
+            put(BadInputException.class,             HttpResponseStatus.BAD_REQUEST);
+            put(OperationFailureException.class,     HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            put(NoSuchPropertyException.class,       HttpResponseStatus.NOT_FOUND);
             put(RelationshipNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-            put(ClassCastException.class, HttpResponseStatus.BAD_REQUEST);
-            put(StartNodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-            put(EndNodeNotFoundException.class, HttpResponseStatus.NOT_FOUND);
-            put(PropertyValueException.class, HttpResponseStatus.BAD_REQUEST);
+            put(ClassCastException.class,            HttpResponseStatus.BAD_REQUEST);
+            put(StartNodeNotFoundException.class,    HttpResponseStatus.NOT_FOUND);
+            put(EndNodeNotFoundException.class,      HttpResponseStatus.NOT_FOUND);
+            put(PropertyValueException.class,        HttpResponseStatus.BAD_REQUEST);
             put(UnsupportedOperationException.class, HttpResponseStatus.METHOD_NOT_ALLOWED);
-            put(NotFoundException.class, HttpResponseStatus.NOT_FOUND);
+            put(NotFoundException.class,             HttpResponseStatus.NOT_FOUND);
+            put(InvalidPropertyException.class,      HttpResponseStatus.BAD_REQUEST);
+            
         }
     });
 

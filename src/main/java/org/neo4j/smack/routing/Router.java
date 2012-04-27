@@ -45,7 +45,11 @@ public class Router extends RoutingDefinition {
         queryStringDecoder.resetWith(path);
         routable.getPathVariables().add(queryStringDecoder.getParameters());
         
-        for(RouteEntry route : routes) // todo parallelize routing ?? (overhead ?)
+        // TODO: parallelize routing ?? (overhead ?)
+        // Potentially desert the regex approach and go 
+        // with something that builds a tree structure with the path
+        // segments of the enpoint paths, traversing it to find endpoint?
+        for(RouteEntry route : routes) 
         {
             MatchResult matchResult = route.pattern.match(path);
             if(matchResult != null)
@@ -77,6 +81,7 @@ public class Router extends RoutingDefinition {
             // todo what happens if multiple paths have differnt verbs?
         }
         
+        // Debug print routing table
 //        for(RouteEntry route : routeMap.values()) 
 //            System.out.println(route);
         

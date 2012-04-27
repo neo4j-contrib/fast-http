@@ -98,7 +98,7 @@ public class AbstractRestFunctionalTestBase extends SharedSmackServerTestBase im
     @Override
     public GraphDatabaseService graphdb()
     {
-        return server().getDatabase().graph;
+        return server().getSmackServer().getDatabase();
     }
 
     @Before

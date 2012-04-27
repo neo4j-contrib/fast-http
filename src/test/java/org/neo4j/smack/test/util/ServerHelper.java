@@ -2,9 +2,8 @@ package org.neo4j.smack.test.util;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.smack.Database;
-import org.neo4j.smack.SmackServer;
-import org.neo4j.smack.api.DatabaseService;
+import org.neo4j.smack.Neo4jServer;
+import org.neo4j.smack.Smack;
 import org.neo4j.test.ImpermanentGraphDatabase;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -13,26 +12,24 @@ public class ServerHelper {
     public static final String HOST = "localhost";
     public static final int PORT = 7473;
 
-    public static SmackServer createServer() {
-        SmackServer server = new SmackServer(HOST, PORT, new Database(new ImpermanentGraphDatabase()));
-        server.addRoute("",new DatabaseService(""));
-        return server;
+    public static Neo4jServer createServer() {
+        return new Neo4jServer(HOST, PORT, new ImpermanentGraphDatabase());
     }
     
-    public static void cleanTheDatabase(final SmackServer server) {
-        new Transactor( server.getDatabase().graph, new UnitOfWork()
+    public static void cleanTheDatabase(final Neo4jServer server) {
+        new Transactor( server.getSmackServer().getDatabase(), new UnitOfWork()
         {
             @Override
             public void doWork()
             {
-                deleteAllNodesAndRelationships( server );
+                deleteAllNodesAndRelationships( server.getSmackServer() );
 
-                deleteAllIndexes( server );
+                deleteAllIndexes( server.getSmackServer() );
             }
 
-            private void deleteAllNodesAndRelationships( final SmackServer server )
+            private void deleteAllNodesAndRelationships( final Smack server )
             {
-                Iterable<Node> allNodes = GlobalGraphOperations.at( server.getDatabase().graph ).getAllNodes();
+                Iterable<Node> allNodes = GlobalGraphOperations.at( server.getDatabase() ).getAllNodes();
                 for ( Node n : allNodes )
                 {
                     Iterable<Relationship> relationships = n.getRelationships();
@@ -55,13 +52,13 @@ public class ServerHelper {
                 }
             }
 
-            private void deleteAllIndexes( final SmackServer server )
+            private void deleteAllIndexes( final Smack server )
             {
-                for ( String indexName : server.getDatabase().graph.index()
+                for ( String indexName : server.getDatabase().index()
                         .nodeIndexNames() )
                 {
                     try{
-                        server.getDatabase().graph.index()
+                        server.getDatabase().index()
                                 .forNodes( indexName )
                                 .delete();
                     } catch(UnsupportedOperationException e) {
@@ -69,11 +66,11 @@ public class ServerHelper {
                     }
                 }
 
-                for ( String indexName : server.getDatabase().graph.index()
+                for ( String indexName : server.getDatabase().index()
                         .relationshipIndexNames() )
                 {
                     try {
-                        server.getDatabase().graph.index()
+                        server.getDatabase().index()
                                 .forRelationships( indexName )
                                 .delete();
                     } catch(UnsupportedOperationException e) {

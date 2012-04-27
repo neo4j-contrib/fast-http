@@ -1,20 +1,24 @@
 package org.neo4j.smack.handler;
 
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.smack.Database;
 import org.neo4j.smack.TransactionRegistry;
 import org.neo4j.smack.event.DatabaseWork;
 
 import com.lmax.disruptor.WorkHandler;
 
+/**
+ * Calls work.perform() from within 
+ * an appropriate transactional context.
+ */
 public class DatabaseWorkPerformer implements WorkHandler<DatabaseWork> {
     
-    private Database database;
+    private GraphDatabaseService database;
     private TransactionRegistry txs;
     
     private long currentTxId = -1l;
     
-    public DatabaseWorkPerformer(Database database, TransactionRegistry txs) {
+    public DatabaseWorkPerformer(GraphDatabaseService database, TransactionRegistry txs) {
         this.database = database;
         this.txs = txs;
     }
@@ -22,7 +26,8 @@ public class DatabaseWorkPerformer implements WorkHandler<DatabaseWork> {
     @Override
     public void onEvent(DatabaseWork work) throws Exception 
     {
-        try {
+        try 
+        {
             switch(work.getTransactionMode()) 
             {
             case OPEN_TRANSACTION:
@@ -44,7 +49,7 @@ public class DatabaseWorkPerformer implements WorkHandler<DatabaseWork> {
                 try 
                 {
                     txs.suspendCurrentTransaction();
-                    tx = database.graph.beginTx();
+                    tx = database.beginTx();
                 } catch(Throwable e) 
                 {
                     work.setFailed(e);

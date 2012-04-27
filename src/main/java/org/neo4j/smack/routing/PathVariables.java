@@ -37,11 +37,14 @@ public class PathVariables {
         }
     }
 
-    public Long getParamAsLong(String key) {
-        if (getParam(key)==null) {
-            return null;
-        }
-        return Long.valueOf(getParam(key));
+    public long getLongParameter(String key, long defaultValue) {
+        String param = getParam(key);
+        return param == null ? defaultValue : Long.valueOf(param);
+    }
+
+    public String getStringParameter(String key)
+    {
+        return getParam(key);
     }
 
     public String getParam(String key) {

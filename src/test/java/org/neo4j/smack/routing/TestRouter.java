@@ -1,6 +1,7 @@
 package org.neo4j.smack.routing;
 
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -110,9 +111,30 @@ public class TestRouter  {
         r.compileRoutes();
         
         Endpoint found = r.route(new Routling(InvocationVerb.GET, "/db/data"));
-        assertNotNull(found);
+        assertThat(found, is(e));
         
         Endpoint endpoint = r.route(new Routling(InvocationVerb.GET, "/db/da"));
+        assertThat(endpoint, instanceOf(NotFoundEndpoint.class)); 
+    }
+
+    @Test
+    public void shouldRoutePathsWithParamsProperly() {
+       Endpoint e = new SimpleEndpoint() {
+
+            @Override
+            public void invoke(Invocation ctx,
+                    Output response) throws Exception { }
+
+        };
+        
+        Router r = new Router();
+        r.addRoute("/db/data/{prop}", e);
+        r.compileRoutes();
+        
+        Endpoint found = r.route(new Routling(InvocationVerb.GET, "/db/data/somestuff"));
+        assertThat(found, is(e));
+        
+        Endpoint endpoint = r.route(new Routling(InvocationVerb.GET, "/db/data/somestuff/whaa"));
         assertThat(endpoint, instanceOf(NotFoundEndpoint.class)); 
     }
     

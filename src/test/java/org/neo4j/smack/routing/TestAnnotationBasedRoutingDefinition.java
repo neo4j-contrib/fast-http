@@ -13,7 +13,11 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
 import org.junit.Test;
+import org.neo4j.smack.annotation.DeserializeWith;
+import org.neo4j.smack.annotation.SerializeWith;
 import org.neo4j.smack.annotation.Transactional;
+import org.neo4j.smack.serialization.strategy.NodeSerializationStrategy;
+import org.neo4j.smack.serialization.strategy.PropertyContainerDeserializationStrategy;
 
 public class TestAnnotationBasedRoutingDefinition {
 
@@ -68,21 +72,45 @@ public class TestAnnotationBasedRoutingDefinition {
     }
 
     @Test
-    public void shouldPickUpArbitraryMethodAnnotations() {
+    public void shouldPickUpTransactionalAnnotation() {
         Object annotatedObject = new Object() {
 
-            @SuppressWarnings("unused")
-            @Transactional
             @GET
+            @Transactional
+            @SuppressWarnings("unused")
             public void someRandomMethod() { }
+            
+            @GET
+            @SuppressWarnings("unused")
+            public void someOtherMethod() { }
             
         };
         
         AnnotationBasedRoutingDefinition rd = new AnnotationBasedRoutingDefinition(annotatedObject);
         
-        Endpoint p = rd.getRouteDefinitionEntries().get(0).getEndpoint();
+        Endpoint transactional = rd.getRouteDefinitionEntries().get(0).getEndpoint();
+        Endpoint nontransactional = rd.getRouteDefinitionEntries().get(1).getEndpoint();
         
-        assertThat(p.isTransactional(), is(true));
+        assertThat(transactional.isTransactional(), is(true));
+        assertThat(nontransactional.isTransactional(), is(false));
         
+    }
+
+    @Test
+    public void shouldPickUpAppropriateSerializationAndDeserializationStrategies() {
+        Object annotatedObject = new Object() {
+            @GET
+            @Path("/hello/world")
+            @SuppressWarnings("unused")
+            @SerializeWith(NodeSerializationStrategy.class)
+            @DeserializeWith(PropertyContainerDeserializationStrategy.class)
+            public void a() { }
+        };
+        
+        AnnotationBasedRoutingDefinition rd = new AnnotationBasedRoutingDefinition(annotatedObject);
+        RouteDefinitionEntry route = rd.getRouteDefinitionEntries().get(0);
+        
+        assertThat(route.getEndpoint().getSerializationStrategy(), is(NodeSerializationStrategy.class));
+        assertThat(route.getEndpoint().getDeserializationStrategy(), is(PropertyContainerDeserializationStrategy.class));
     }
 }

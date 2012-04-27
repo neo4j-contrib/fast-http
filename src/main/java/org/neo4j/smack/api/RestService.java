@@ -10,14 +10,12 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
-import org.neo4j.kernel.impl.transaction.xaframework.ForceMode;
 import org.neo4j.server.rest.paging.LeaseManager;
 import org.neo4j.server.rest.paging.RealClock;
 import org.neo4j.server.rest.repr.BadInputException;
 import org.neo4j.server.rest.repr.ExtensionInjector;
 import org.neo4j.server.rest.repr.OutputFormat;
 import org.neo4j.server.rest.repr.RepresentationFormatRepository;
-import org.neo4j.server.rest.web.DatabaseActions;
 import org.neo4j.smack.event.Invocation;
 
 /**
@@ -46,10 +44,6 @@ public class RestService
         this.dataPath = dataPath;
     }
 
-    protected DatabaseActions actionsFor(Invocation invocation) {
-        return new DatabaseActions(new org.neo4j.server.database.Database(invocation.getDatabase().getGraphDB()), leaseManager, ForceMode.forced);
-    }
-
     long extractId(Object uri) throws BadInputException {
         try {
             return Long.parseLong(uri.toString().substring(uri.toString().lastIndexOf("/") + 1));
@@ -73,7 +67,7 @@ public class RestService
     }
 
     protected Long getLongParameter(Invocation invocation, String key) {
-        return invocation.getPathVariables().getParamAsLong(key);
+        return invocation.getLongParameter(key, -1l);
     }
     protected Long getLongParameter(Invocation invocation, String key, Long defaultValue) {
         final Long value = getLongParameter(invocation, key);
@@ -95,7 +89,7 @@ public class RestService
 
     @SuppressWarnings("unchecked")
     protected Map<String,Object> readMap(Invocation invocation) {
-        return invocation.getDeserializedContent(Map.class);
+        return invocation.getContent(Map.class);
     }
 
     @SuppressWarnings("serial")

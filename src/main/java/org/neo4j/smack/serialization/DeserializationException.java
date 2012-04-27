@@ -20,7 +20,7 @@
 package org.neo4j.smack.serialization;
 
 
-public class DeserializationException extends Exception {
+public class DeserializationException extends RuntimeException {
 
     /**
      * 
