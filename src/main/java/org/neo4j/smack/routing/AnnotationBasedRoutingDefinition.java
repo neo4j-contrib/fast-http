@@ -19,6 +19,7 @@
  */
 package org.neo4j.smack.routing;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.ws.rs.DELETE;
@@ -64,7 +65,14 @@ public class AnnotationBasedRoutingDefinition extends RoutingDefinition {
 
         public void invoke(Invocation request, Output result) throws Exception
         {
-            method.invoke(underlyingObject, request, result);
+            try {
+                method.invoke(underlyingObject, request, result);
+            } catch(InvocationTargetException e) {
+                if(e.getCause() != null && e.getCause() instanceof Exception) {
+                    throw (Exception)e.getCause();
+                }
+                throw e;
+            }
         }
 
         @Override

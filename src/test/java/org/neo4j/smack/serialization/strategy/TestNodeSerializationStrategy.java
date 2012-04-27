@@ -28,6 +28,7 @@ public class TestNodeSerializationStrategy {
         
         NodeSerializationStrategy strategy = new NodeSerializationStrategy();
         strategy.serialize(mockNode, serializer);
+        serializer.flush();
         
         assertThat(new String(buffer.toByteArray()),is("{" +
                 "\"data\":{}," +
@@ -58,6 +59,7 @@ public class TestNodeSerializationStrategy {
         
         NodeSerializationStrategy strategy = new NodeSerializationStrategy();
         strategy.serialize(mockNode, serializer);
+        serializer.flush();
         
         assertThat(new String(buffer.toByteArray()),is(
                 "{" +

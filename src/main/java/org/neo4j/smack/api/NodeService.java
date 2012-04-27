@@ -53,7 +53,6 @@ public class NodeService
     @SerializeWith(NodeSerializationStrategy.class)
     public void getNode(Invocation invocation, Output result)
     {
-        System.out.println(getNodeId(invocation));
         result.ok( invocation.getDB().getNodeById(getNodeId(invocation)) );
     }
 

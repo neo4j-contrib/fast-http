@@ -72,13 +72,15 @@ public class TransactionRegistry {
         }
     }
 
-    public void suspendCurrentTransaction() throws SystemException 
+    public void suspendCurrentTransaction() 
     {
         if(currentTxId != -1l) 
         {
             try 
             {
                 tm.suspend();
+            } catch(SystemException e) {
+                throw new RuntimeException(e);
             } finally 
             {
                 currentTxId = -1l;
@@ -88,6 +90,8 @@ public class TransactionRegistry {
     
     public void createTransaction(long id) 
     {
+        suspendCurrentTransaction();
+        
         org.neo4j.graphdb.Transaction neo4jTx = db.beginTx();
         try {
             Transaction tx = tm.suspend();

@@ -31,6 +31,8 @@ public class AbstractRestFunctionalTestBase extends SharedSmackServerTestBase im
     public @Rule
     TestData<RESTDocsGenerator> gen = TestData.producedThrough( RESTDocsGenerator.PRODUCER );
 
+    protected REST rest;
+
     protected String doCypherRestCall( String endpoint, String script, Status status, Pair<String, String>... params ) {
         data.get();
         String parameterString = createParameterString( params );
@@ -106,6 +108,7 @@ public class AbstractRestFunctionalTestBase extends SharedSmackServerTestBase im
     {
         cleanDatabase();
         gen.get().setGraph( graphdb() );
+        rest = new REST(getBaseUri(), graphdb());
     }
 
     protected String getDataUri()

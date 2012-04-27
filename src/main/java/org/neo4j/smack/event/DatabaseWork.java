@@ -2,6 +2,7 @@ package org.neo4j.smack.event;
 
 import org.jboss.netty.channel.Channel;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.smack.ThreadTransactionManagement;
 import org.neo4j.smack.TransactionRegistry;
 import org.neo4j.smack.handler.ExceptionOutputWriter;
 import org.neo4j.smack.routing.Endpoint;
@@ -45,6 +46,8 @@ public class DatabaseWork implements Fallible {
 
     private Throwable failure;
 
+    private ThreadTransactionManagement txManage;
+
     public DatabaseWork(SerializationFactory serializationFactory)
     {
         this.invocation = new DefaultInvocationImpl();
@@ -56,22 +59,23 @@ public class DatabaseWork implements Fallible {
         try
         {
             if(!hasFailed()) {
+                txManage.beforeWork(txMode, invocation.getTxId());
                 endpoint.invoke(invocation, output);
+                txManage.afterWork(txMode, invocation.getTxId());
+                output.flush();
             } else {
                 throw failure;
             }
         } catch (Throwable e)
         {
+            txManage.onWorkFailure(txMode, invocation.getTxId());
             if (output.started())
             {
                 channel.close();
-                throw new RuntimeException(
-                        "FATAL: Failure occured while I was writing data to the client, killed the connection.",
-                        e);
             } else
             {
                 exceptionOutputWriter.write(output, e);
-                throw new RuntimeException("Work failed, was able to send error reply to client.", e);
+                output.flush();
             }
         }
     }
@@ -108,25 +112,25 @@ public class DatabaseWork implements Fallible {
     }
 
     public void reset(Channel channel, boolean isPersistentConnection, long txId, WorkTransactionMode txMode,
-            GraphDatabaseService database, TransactionRegistry txs, Throwable failureCause)
+            GraphDatabaseService database, TransactionRegistry txs, ThreadTransactionManagement txManage, Throwable failureCause)
     {
-        reset(null, channel, isPersistentConnection, null, txId, txMode, null, null, database, txs);
+        reset(null, channel, isPersistentConnection, null, txId, txMode, null, null, database, txs, txManage);
         setFailed(failureCause);
     }
     
     public void reset(Endpoint endpoint, Channel outputChannel,
             boolean isPersistentConnection, String path,
             long txId, WorkTransactionMode txMode, PathVariables pathVariables, Object content,
-            GraphDatabaseService database, TransactionRegistry txRegistry)
+            GraphDatabaseService database, TransactionRegistry txRegistry, ThreadTransactionManagement txManage)
     {
         this.channel = outputChannel;
         this.endpoint = endpoint;
 
         this.txMode = txMode == null ? WorkTransactionMode.NO_TRANSACTION : txMode;
         this.failure = null;
+        this.txManage = txManage;
 
         invocation.reset(path, txId, pathVariables, content, database, txRegistry);
-        output.reset(outputChannel, endpoint != null ? endpoint.getSerializationStrategy() : null,
-                isPersistentConnection);
+        output.reset(outputChannel, endpoint != null ? endpoint.getSerializationStrategy() : null, isPersistentConnection);
     }
 }

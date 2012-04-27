@@ -32,6 +32,7 @@ import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.neo4j.smack.ThreadTransactionManagement;
 import org.neo4j.smack.serialization.SerializationFactory;
 import org.neo4j.smack.serialization.SerializationStrategy;
 import org.neo4j.smack.serialization.Serializer;
@@ -48,6 +49,16 @@ public class NettyChannelBackedOutput implements Output {
     private Channel channel;
     private SerializationStrategy<Object> defaultSerializationStrategy;
     private boolean isPersistentConnection;
+
+    private ThreadTransactionManagement txManage;
+
+    private HttpResponseStatus status;
+
+    private Object data;
+
+    private String location;
+
+    private SerializationStrategy serializationStrategy;
 
     public NettyChannelBackedOutput(SerializationFactory serializationFactory)
     {
@@ -113,31 +124,26 @@ public class NettyChannelBackedOutput implements Output {
         return outputStarted;
     }
 
-    @SuppressWarnings("unchecked")
-    protected void reset(Channel channel,
-            SerializationStrategy<?> serializationStrategy,
-            boolean isPersistentConnection)
-    {
-        this.channel = channel;
-        this.defaultSerializationStrategy = (SerializationStrategy<Object>) serializationStrategy;
-        this.isPersistentConnection = isPersistentConnection;
-
-        outputStarted = false;
-    }
-
     public void send(HttpResponseStatus status, Object data, String location)
     {
         send(status, data, location, defaultSerializationStrategy);
     }
 
-    // TODO: Make this garbage free
-    @SuppressWarnings("unchecked")
     public void send(
             HttpResponseStatus status,
             Object data,
             String location,
             @SuppressWarnings("rawtypes") SerializationStrategy serializationStrategy)
     {
+        this.status = status;
+        this.data = data;
+        this.location = location;
+        this.serializationStrategy = serializationStrategy;
+    }
+
+    // TODO: Make this garbage free
+    @SuppressWarnings("unchecked")
+    protected void flush() {
         if (outputStarted)
         {
             throw new RuntimeException(
@@ -190,6 +196,22 @@ public class NettyChannelBackedOutput implements Output {
                         "Waiting for channel to be done to close it failed.", e);
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void reset(Channel channel,
+            SerializationStrategy<?> serializationStrategy,
+            boolean isPersistentConnection)
+    {
+        this.channel = channel;
+        this.defaultSerializationStrategy = (SerializationStrategy<Object>) serializationStrategy;
+        this.isPersistentConnection = isPersistentConnection;
+
+        this.outputStarted = false;
+        this.status = null;
+        this.data = null;
+        this.location = null;
+        this.serializationStrategy = null;
     }
     
     //private void writeResponse(Serializer serializer)

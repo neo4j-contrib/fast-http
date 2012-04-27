@@ -22,6 +22,7 @@ package org.neo4j.smack.handler;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.smack.DatabaseWorkerThread;
+import org.neo4j.smack.ThreadTransactionManagement;
 import org.neo4j.smack.TransactionRegistry;
 import org.neo4j.smack.event.RequestEvent;
 
@@ -64,7 +65,9 @@ public class DatabaseWorkDivider implements WorkHandler<RequestEvent> {
 
     private void start() {
         for (int i = 0; i < NUM_DATABASE_WORK_EXECUTORS; i++) {
-            DatabaseWorkerThread worker = new DatabaseWorkerThread(database, new TransactionRegistry(database), exceptionHandler);
+            TransactionRegistry txs = new TransactionRegistry(database);
+            ThreadTransactionManagement txManage = new ThreadTransactionManagement(txs);
+            DatabaseWorkerThread worker = new DatabaseWorkerThread(database, txs, txManage, exceptionHandler);
             workers[i] = worker;
             worker.start();
         }

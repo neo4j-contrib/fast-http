@@ -16,6 +16,11 @@ import com.lmax.disruptor.SequenceBarrier;
 import com.lmax.disruptor.Sequencer;
 import com.lmax.disruptor.WorkProcessor;
 
+
+// TODO: Refactor
+// this is actually not a worker thread, it launches a
+// worker thread and facilitates communication with that
+// thread via a ring buffer. 
 public class DatabaseWorkerThread 
 {
 
@@ -27,14 +32,18 @@ public class DatabaseWorkerThread
 
     private static final int BUFFER_SIZE = 512;
 
-    protected RingBuffer<DatabaseWork> workBuffer;
+    private RingBuffer<DatabaseWork> workBuffer;
+    
     private WorkProcessor<DatabaseWork> processor;
     private Thread thread;
 
-    public DatabaseWorkerThread(GraphDatabaseService database, TransactionRegistry txs,
+    private final ThreadTransactionManagement txManage;
+
+    public DatabaseWorkerThread(GraphDatabaseService database, TransactionRegistry txs, ThreadTransactionManagement txManage,
             ExceptionHandler exceptionHandler)
     {
         this.txs = txs;
+        this.txManage = txManage;
         this.database = database;
 
         this.workBuffer = new RingBuffer<DatabaseWork>(DatabaseWork.FACTORY,
@@ -47,7 +56,8 @@ public class DatabaseWorkerThread
 
         SequenceBarrier serializationBarrier = workBuffer.newBarrier();
         processor = new WorkProcessor<DatabaseWork>(workBuffer,
-                serializationBarrier, new DatabaseWorkPerformer(database, txs),
+                serializationBarrier, 
+                new DatabaseWorkPerformer(),
                 exceptionHandler,
                 new AtomicLong(Sequencer.INITIAL_CURSOR_VALUE));
         workBuffer.setGatingSequences(processor.getSequence());
@@ -86,7 +96,8 @@ public class DatabaseWorkerThread
                     event.getPathVariables(), 
                     event.getDeserializedContent(),
                     database, 
-                    txs);
+                    txs,
+                    txManage);
         } else {
             work.reset(
                     event.getChannel(), 
@@ -94,7 +105,8 @@ public class DatabaseWorkerThread
                     event.getTransactionId(),
                     event.getTransactionMode(), 
                     database, 
-                    txs, 
+                    txs,
+                    txManage, 
                     event.getFailureCause());
         }
 
