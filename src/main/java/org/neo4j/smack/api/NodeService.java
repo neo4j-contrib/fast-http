@@ -10,7 +10,6 @@ import javax.ws.rs.Path;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
-import org.neo4j.smack.InvalidPropertyException;
 import org.neo4j.smack.annotation.DeserializeWith;
 import org.neo4j.smack.annotation.SerializeWith;
 import org.neo4j.smack.annotation.Transactional;
@@ -140,18 +139,7 @@ public class NodeService
     {
         for(Map.Entry<String,Object> entry : content.entrySet()) 
         {
-            setProperty(entity, entry.getKey(), entry.getValue());
-        }
-    }
-
-    private void setProperty(PropertyContainer entity, String key, Object value)
-    {
-        try 
-        {
-            entity.setProperty(key, value);
-        } catch(IllegalArgumentException e) 
-        {
-            throw new InvalidPropertyException(e.getMessage());
+            entity.setProperty(entry.getKey(), entry.getValue());
         }
     }
 

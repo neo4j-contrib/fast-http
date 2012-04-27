@@ -25,10 +25,8 @@ import org.neo4j.smack.event.RequestEvent;
 import com.lmax.disruptor.WorkHandler;
 
 
-public class TransactionPreparationHandler implements WorkHandler<RequestEvent> {
-
-    private long txIds = 0l;
-
+public class TransactionPreparationHandler implements WorkHandler<RequestEvent> 
+{
     private WorkTransactionPreparer txPrepare = new WorkTransactionPreparer();
 
     @Override

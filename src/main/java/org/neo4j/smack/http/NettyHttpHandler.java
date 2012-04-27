@@ -52,7 +52,6 @@ public class NettyHttpHandler extends SimpleChannelHandler {
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
         ctx.setAttachment(connectionId.incrementAndGet());
-        System.out.println("Assigned connection: " + connectionId.get());
     }
 
     // TODO: I think this catches both upstream and downstream

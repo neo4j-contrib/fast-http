@@ -37,7 +37,7 @@ public class TransactionRegistry {
     private TransactionManager tm;
     private GraphDatabaseService db;
     
-    private boolean threadHasTransactionAssociated = false;
+    private long currentTxId = -1l;
     
     private Map<Long, Transaction> txIdToTxMap = new HashMap<Long, Transaction>();
     
@@ -55,23 +55,35 @@ public class TransactionRegistry {
                 .getTxManager();
     }
 
-    public void associateWithCurrentThread(long txId)
+    public void selectCurrentTransaction(long txId)
             throws InvalidTransactionException, IllegalStateException,
             SystemException 
     {
-        Transaction tx = txIdToTxMap.get(txId);
-        if (tx == null) {
-            throw new InvalidTransactionException("No transaction with id "
-                    + txId + " found.");
+        if(currentTxId != txId) 
+        {
+            suspendCurrentTransaction();
+            Transaction tx = txIdToTxMap.get(txId);
+            if (tx == null) {
+                throw new InvalidTransactionException("No transaction with id "
+                        + txId + " found.");
+            }
+            tm.resume(tx);
+            currentTxId = txId;
         }
-        tm.resume(tx);
-        threadHasTransactionAssociated = true;
     }
 
     public void suspendCurrentTransaction() throws SystemException 
     {
-        if(threadHasTransactionAssociated)
-            tm.suspend();
+        if(currentTxId != -1l) 
+        {
+            try 
+            {
+                tm.suspend();
+            } finally 
+            {
+                currentTxId = -1l;
+            }
+        }
     }
     
     public void createTransaction(long id) 
@@ -86,29 +98,39 @@ public class TransactionRegistry {
         }
     }
 
-    public void commit(long txId) throws IllegalStateException,
+    public void commitCurrentTransaction() throws IllegalStateException,
             SecurityException, HeuristicMixedException,
             HeuristicRollbackException, RollbackException, SystemException,
             InvalidTransactionException 
     {
-        try {
-            tm.commit();
-            threadHasTransactionAssociated = false;
-        } finally {
-            txIdToTxMap.remove(txId);
+        if(currentTxId != -1l) 
+        {
+            try {
+                tm.commit();
+            } finally {
+                txIdToTxMap.remove(currentTxId);
+                currentTxId = -1l;
+            }
+        } else {
+            throw new InvalidTransactionException("Can't commit, no transaction selected.");
         }
     }
 
-    public void rollback(long txId) throws IllegalStateException,
+    public void rollbackCurrentTransaction() throws IllegalStateException,
             SecurityException, HeuristicMixedException,
             HeuristicRollbackException, RollbackException, SystemException,
             InvalidTransactionException 
     {
-        try {
-            tm.rollback();
-            threadHasTransactionAssociated = false;
-        } finally {
-            txIdToTxMap.remove(txId);
+        if(currentTxId != -1l) 
+        {
+            try {
+                tm.rollback();
+            } finally {
+                txIdToTxMap.remove(currentTxId);
+                currentTxId = -1l;
+            }
+        } else {
+            throw new InvalidTransactionException("Can't roll back, no transaction selected.");
         }
 
     }

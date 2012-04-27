@@ -12,5 +12,10 @@ public class UrlReverseLookerUpper {
     {
         return "/db/data/node/" + node.getId();
     }
+
+    public String reverseTransaction(Long txId)
+    {
+        return "/db/data/tx/" + txId;
+    }
     
 }

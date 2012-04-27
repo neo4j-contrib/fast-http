@@ -17,7 +17,6 @@ import org.neo4j.server.rest.web.NodeNotFoundException;
 import org.neo4j.server.rest.web.OperationFailureException;
 import org.neo4j.server.rest.web.PropertyValueException;
 import org.neo4j.server.rest.web.RelationshipNotFoundException;
-import org.neo4j.smack.InvalidPropertyException;
 import org.neo4j.smack.event.NettyChannelBackedOutput;
 import org.neo4j.smack.routing.ResourceNotFoundException;
 import org.neo4j.smack.serialization.SerializationStrategy;
@@ -51,7 +50,7 @@ public class ExceptionOutputWriter {
             put(PropertyValueException.class,        HttpResponseStatus.BAD_REQUEST);
             put(UnsupportedOperationException.class, HttpResponseStatus.METHOD_NOT_ALLOWED);
             put(NotFoundException.class,             HttpResponseStatus.NOT_FOUND);
-            put(InvalidPropertyException.class,      HttpResponseStatus.BAD_REQUEST);
+            put(IllegalArgumentException.class,      HttpResponseStatus.BAD_REQUEST);
             
         }
     });

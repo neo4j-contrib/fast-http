@@ -16,8 +16,6 @@ public class DatabaseWorkPerformer implements WorkHandler<DatabaseWork> {
     private GraphDatabaseService database;
     private TransactionRegistry txs;
     
-    private long currentTxId = -1l;
-    
     public DatabaseWorkPerformer(GraphDatabaseService database, TransactionRegistry txs) {
         this.database = database;
         this.txs = txs;
@@ -32,12 +30,7 @@ public class DatabaseWorkPerformer implements WorkHandler<DatabaseWork> {
             {
             case OPEN_TRANSACTION:
                 try {
-                    if(work.getInvocation().getTxId() != currentTxId)
-                    {
-                        txs.suspendCurrentTransaction();
-                        txs.associateWithCurrentThread(work.getInvocation().getTxId());
-                        currentTxId = work.getInvocation().getTxId();
-                    }
+                    txs.selectCurrentTransaction(work.getInvocation().getTxId());
                 } catch(Throwable e) {
                     work.setFailed(e);
                 }

@@ -159,6 +159,11 @@ public class REST {
         return this;
     }
 
+    public String location()
+    {
+        return this.location.toString();
+    }
+
     public REST expect(Object value) {
         assertEquals("Result ", value, this.entity);
         return this;
@@ -262,5 +267,6 @@ public class REST {
         checkProperty(gds.getRelationshipById(id),prop,value);
         return this;
     }
+
 
 }

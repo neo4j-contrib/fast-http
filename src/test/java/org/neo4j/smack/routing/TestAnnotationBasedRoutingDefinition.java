@@ -73,26 +73,35 @@ public class TestAnnotationBasedRoutingDefinition {
 
     @Test
     public void shouldPickUpTransactionalAnnotation() {
-        Object annotatedObject = new Object() {
+        Object transactionalAnnotatedObject = new Object() {
 
-            @GET
+            @PUT
+            @Path("/{tx_id}/state")
             @Transactional
             @SuppressWarnings("unused")
             public void someRandomMethod() { }
             
-            @GET
+        };
+        
+        Object notTransactionalAnnotatedObject = new Object() {
+
+            @PUT
+            @Path("/{tx_id}/state")
             @SuppressWarnings("unused")
-            public void someOtherMethod() { }
+            public void someRandomMethod() { }
             
         };
         
-        AnnotationBasedRoutingDefinition rd = new AnnotationBasedRoutingDefinition(annotatedObject);
+        AnnotationBasedRoutingDefinition transactionalDef = new AnnotationBasedRoutingDefinition(transactionalAnnotatedObject);
+        AnnotationBasedRoutingDefinition nonTransactionalDef = new AnnotationBasedRoutingDefinition(notTransactionalAnnotatedObject);
         
-        Endpoint transactional = rd.getRouteDefinitionEntries().get(0).getEndpoint();
-        Endpoint nontransactional = rd.getRouteDefinitionEntries().get(1).getEndpoint();
+        Endpoint transactional = transactionalDef.getRouteDefinitionEntries().get(0).getEndpoint();
+        Endpoint nontransactional = nonTransactionalDef.getRouteDefinitionEntries().get(0).getEndpoint();
         
         assertThat(transactional.isTransactional(), is(true));
         assertThat(nontransactional.isTransactional(), is(false));
+        
+        
         
     }
 

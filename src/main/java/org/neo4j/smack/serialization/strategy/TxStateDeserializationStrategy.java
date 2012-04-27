@@ -20,7 +20,6 @@
 package org.neo4j.smack.serialization.strategy;
 
 import org.neo4j.smack.domain.TransactionState;
-import org.neo4j.smack.serialization.DeserializationException;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.Deserializer;
 import org.neo4j.smack.serialization.IdentifiableEnumDeserializer;
@@ -29,17 +28,31 @@ public class TxStateDeserializationStrategy implements DeserializationStrategy<T
 
     public TxStateDeserializationStrategy() {}
     
-    public TransactionState deserialize(Deserializer in) throws DeserializationException {
+    public TransactionState deserialize(Deserializer in) {
         return in.readEnum(this);
     }
 
     @Override
-    public TransactionState getForId(int id) {
-        return TransactionState.getForId(id);
+    public TransactionState getForId(int id) 
+    {   
+        TransactionState state =  TransactionState.getForId(id);
+
+        if(state == null) 
+        {
+            throw new IllegalArgumentException("Invalid transaction state: '"+id+"'.");
+        }
+        return state;
     }
 
     @Override
     public TransactionState getForName(String name) {
-        return TransactionState.getForName(name);
+        
+        TransactionState state =  TransactionState.getForName(name);
+
+        if(state == null) 
+        {
+            throw new IllegalArgumentException("Invalid transaction state: '"+name+"'.");
+        }
+        return state;
     }
 }

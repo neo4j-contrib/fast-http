@@ -29,19 +29,12 @@ import org.neo4j.smack.annotation.Transactional;
 import org.neo4j.smack.domain.TransactionState;
 import org.neo4j.smack.event.Invocation;
 import org.neo4j.smack.event.Output;
+import org.neo4j.smack.routing.UrlReverseLookerUpper;
 import org.neo4j.smack.serialization.strategy.TxStateDeserializationStrategy;
 
 public class TransactionService {
-
-    private final TransactionServiceActions actions;
-
-    public TransactionService() {
-        this(new TransactionServiceActions());
-    }
     
-    public TransactionService(TransactionServiceActions actions) {
-        this.actions = actions;
-    }
+    private static final UrlReverseLookerUpper url = new UrlReverseLookerUpper();
     
     @POST
     @Path("")
@@ -49,20 +42,28 @@ public class TransactionService {
         TransactionRegistry txs = req.getTxRegistry();
         Long txId = req.getTxId();
         
-        actions.createTransaction(txs, txId);
+        txs.createTransaction(txId);
         
-        res.createdAt("/db/data/tx/" + txId);
+        res.createdAt(url.reverseTransaction(txId));
     }
     
     @PUT
     @Path("/{tx_id}/state")
-    @DeserializeWith(TxStateDeserializationStrategy.class)
     @Transactional
+    @DeserializeWith(TxStateDeserializationStrategy.class)
     public void setTransactionState(Invocation req, Output res) throws Exception {
-        TransactionRegistry database = req.getTxRegistry();
-        Long txId = req.getTxId();
+        TransactionRegistry txs = req.getTxRegistry();
         
-        actions.setTransactionState(database, txId, (TransactionState)req.getContent());
+        switch(req.<TransactionState>getContent()) {
+        case COMMITTED:
+            txs.commitCurrentTransaction();
+            break;
+        case ROLLED_BACK:
+            txs.rollbackCurrentTransaction();
+            break;
+        default:
+            throw new IllegalArgumentException("Only COMMITTED and ROLLED_BACK transaction states can be set.");
+        }
         
         res.ok();
     }
