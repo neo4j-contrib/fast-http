@@ -75,7 +75,7 @@ public class RestService
     }
 
     protected String getParameter(Invocation invocation, String key) {
-        return invocation.getPathVariables().getParam(key);
+        return invocation.getPathVariables().getParameter(key);
     }
 
     protected Long getId(Invocation invocation) {

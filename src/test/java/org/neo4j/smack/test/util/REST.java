@@ -186,6 +186,10 @@ public class REST {
         public void compareNodeProperties(String... props) {
             checkPropertyContainer(node(), props);
         }
+        
+        public void compareRelationshipProperties(String... props) {
+            checkPropertyContainer(relationship(), props);
+        }
 
         private void checkPropertyContainer(PropertyContainer container, String[] props) {
             Map data = data();
@@ -210,11 +214,13 @@ public class REST {
             return (Map) ((Map) entity).get("data");
         }
 
-        private Node node() {
+        private Node node() 
+        {
             return gds.getNodeById(id());
         }
 
-        private Long id() {
+        private Long id() 
+        {
             if (location!=null) {
                 return extractId(location.toString());
             }
@@ -248,8 +254,16 @@ public class REST {
             checkProperty(gds.getNodeById(id),prop,value);
             return this;
         }
-        public Request checkRelationship(long id, String prop, Object value) {
+        
+        public Request checkRelationshipProperty(long id, String prop, Object value) {
             checkProperty(gds.getRelationshipById(id),prop,value);
+            return this;
+        }
+        
+        public Request checkRelationshipProperty(String relationship, String prop,
+                String value)
+        {
+            checkRelationshipProperty(extractId(relationship), prop, value);
             return this;
         }
         

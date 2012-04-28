@@ -84,7 +84,13 @@ public class DefaultInvocationImpl implements Invocation {
     @Override
     public String getStringParameter(String name)
     {
-        return pathVariables.getStringParameter(name);
+        return pathVariables.getParameter(name);
+    }
+    
+    @Override
+    public String getStringParameter(String name, String defaultValue)
+    {
+        return pathVariables.getParameter(name, defaultValue);
     }
 
     protected void reset(String path, long txId, PathVariables pathVariables, Object content, GraphDatabaseService database, TransactionRegistry txRegistry)

@@ -77,6 +77,9 @@ public class DatabaseWork implements Fallible {
                 exceptionOutputWriter.write(output, e);
                 output.flush();
             }
+            
+            // TODO: Logging
+            e.printStackTrace();
         }
     }
 

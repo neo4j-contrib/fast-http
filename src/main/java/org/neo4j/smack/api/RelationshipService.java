@@ -1,68 +1,69 @@
 package org.neo4j.smack.api;
 
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
 
-/**
- * @author mh
- * @since 05.12.11
- */
-public class RelationshipService extends RestService {
-//    private static final String PATH_NODE_RELATIONSHIPS_W_DIR = PATH_NODE_RELATIONSHIPS
-//            + "/{direction}";
-//    private static final String PATH_NODE_RELATIONSHIPS_W_DIR_N_TYPES = PATH_NODE_RELATIONSHIPS_W_DIR
-//            + "/{types}";
-//    private static final String PATH_RELATIONSHIP_PROPERTIES = PATH_RELATIONSHIP
-//            + "/properties";
-//    private static final String PATH_RELATIONSHIP_PROPERTY = PATH_RELATIONSHIP_PROPERTIES
-//            + "/{key}";
-//
-    public RelationshipService(String dataPath)
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.smack.annotation.DeserializeWith;
+import org.neo4j.smack.annotation.SerializeWith;
+import org.neo4j.smack.annotation.Transactional;
+import org.neo4j.smack.event.Invocation;
+import org.neo4j.smack.event.Output;
+import org.neo4j.smack.routing.UrlReverseLookerUpper;
+import org.neo4j.smack.serialization.strategy.PropertyContainerDeserialization;
+import org.neo4j.smack.serialization.strategy.PropertyContainerDeserializationStrategy;
+import org.neo4j.smack.serialization.strategy.PropertyValueDeserializationStrategy;
+import org.neo4j.smack.serialization.strategy.RelationshipCreationDescription;
+import org.neo4j.smack.serialization.strategy.RelationshipCreationDeserializationStrategy;
+import org.neo4j.smack.serialization.strategy.RelationshipSerializationStrategy;
+
+public class RelationshipService extends BasePropertyContainerService
+{
+    
+    @POST
+    @Transactional
+    @Path(UrlReverseLookerUpper.PATH_NODE_RELATIONSHIPS)
+    @DeserializeWith(RelationshipCreationDeserializationStrategy.class)
+    @SerializeWith(RelationshipSerializationStrategy.class)
+    public void createRelationship(Invocation invocation, Output result)
     {
-        super(dataPath);
+        GraphDatabaseService db = invocation.getDB();
+        RelationshipCreationDescription relToCreate = invocation.getContent();
+        
+        Node from = db.getNodeById(getNodeId(invocation));
+        Node to   = db.getNodeById(relToCreate.getEndNodeId());
+        
+        Relationship rel = from.createRelationshipTo(to, relToCreate.getType());
+        setProperties(rel, relToCreate);
+        
+        result.createdAt(url.reverse(rel), rel);
     }
-//
-//    @POST
-//    @Path(PATH_NODE_RELATIONSHIPS)
-//    @SuppressWarnings("unchecked")
-//    @DeserializeWith(PropertyMapDeserializationStrategy.class)
-//    //@SerializeWith(RepresentationSerializationStrategy.class)
-//    public void createRelationship(Invocation invocation, Output result)
-//            throws BadInputException, URISyntaxException,
-//            NodeNotFoundException, OperationFailureException,
-//            NoSuchPropertyException, StartNodeNotFoundException,
-//            EndNodeNotFoundException
-//    {
-//        final Map<String, Object> data = invocation.getContent();
-//        final long endNodeId = extractId(data.get("to"));
-//        final String type = (String) data.get("type");
-//        final Map<String, Object> properties = (Map<String, Object>) data
-//                .get("data");
-//        final RelationshipRepresentation relationship = actionsFor(invocation)
-//                .createRelationship(getNodeId(invocation), endNodeId, type,
-//                        properties);
-//        final String location = createOutputFormat(invocation).format(
-//                relationship.selfUri());
-//        result.createdAt(location, relationship);
-//    }
-//
-//    @GET
-//    @Path(PATH_RELATIONSHIP)
-//    public void getRelationship(Invocation invocation, Output result)
-//            throws Exception
-//    {
-//        result.ok(actionsFor(invocation).getRelationship(
-//                getRelationshipId(invocation)));
-//    }
-//
-//    @DELETE
-//    @Path(PATH_RELATIONSHIP)
-//    public void deleteRelationship(Invocation invocation, Output result)
-//            throws Exception
-//    {
-//        actionsFor(invocation)
-//                .deleteRelationship(getRelationshipId(invocation));
-//        result.ok();
-//    }
-//
+
+    @GET
+    @Path(UrlReverseLookerUpper.PATH_RELATIONSHIP)
+    @SerializeWith(RelationshipSerializationStrategy.class)
+    public void getRelationship(Invocation invocation, Output result)
+            throws Exception
+    {
+        GraphDatabaseService db = invocation.getDB();
+        result.ok(db.getRelationshipById(getRelationshipId(invocation)));
+    }
+
+    @DELETE
+    @Transactional
+    @Path(UrlReverseLookerUpper.PATH_RELATIONSHIP)
+    public void deleteRelationship(Invocation invocation, Output result)
+            throws Exception
+    {
+        invocation.getDB().getRelationshipById(getRelationshipId(invocation)).delete();
+        result.ok();
+    }
+
 //    @GET
 //    @Path(PATH_NODE_RELATIONSHIPS_W_DIR)
 //    //@SerializeWith(RepresentationSerializationStrategy.class)
@@ -116,29 +117,32 @@ public class RelationshipService extends RestService {
 //        result.ok(actionsFor(invocation).getRelationshipProperty(
 //                getRelationshipId(invocation), getKey(invocation)));
 //    }
-//
-//    @PUT
-//    @Path(PATH_RELATIONSHIP_PROPERTIES)
-//    public void setAllRelationshipProperties(Invocation invocation,
-//            Output result) throws Exception
-//    {
-//        actionsFor(invocation).setAllRelationshipProperties(
-//                getRelationshipId(invocation), readMap(invocation));
-//        result.ok();
-//    }
-//
-//    @PUT
-//    @Path(PATH_RELATIONSHIP_PROPERTY)
-//    @DeserializeWith(ValueDeserializationStrategy.class)
-//    public void setRelationshipProperty(Invocation invocation, Output result)
-//            throws Exception
-//    {
-//        actionsFor(invocation).setRelationshipProperty(
-//                getRelationshipId(invocation), getKey(invocation),
-//                invocation.getContent());
-//        result.ok();
-//    }
-//
+
+    @PUT
+    @Transactional
+    @Path(UrlReverseLookerUpper.PATH_RELATIONSHIP_PROPERTIES)
+    @DeserializeWith(PropertyContainerDeserializationStrategy.class)
+    public void setAllRelationshipProperties(Invocation invocation,
+            Output result) throws Exception
+    {
+        Relationship rel = invocation.getDB().getRelationshipById(getRelationshipId(invocation));
+        removeAllProperties(rel);
+        setProperties(rel, invocation.<PropertyContainerDeserialization>getContent());
+        result.okNoContent();
+    }
+
+    @PUT
+    @Transactional
+    @Path(UrlReverseLookerUpper.PATH_RELATIONSHIP_PROPERTY)
+    @DeserializeWith(PropertyValueDeserializationStrategy.class)
+    public void setRelationshipProperty(Invocation invocation, Output result)
+            throws Exception
+    {
+        Relationship rel = invocation.getDB().getRelationshipById(getRelationshipId(invocation));
+        rel.setProperty(getPropertyKey(invocation), invocation.getContent());
+        result.okNoContent();
+    }
+
 //    @DELETE
 //    @Path(PATH_RELATIONSHIP_PROPERTIES)
 //    public void deleteAllRelationshipProperties(Invocation invocation,

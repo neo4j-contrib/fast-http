@@ -38,16 +38,17 @@ public class PathVariables {
     }
 
     public long getLongParameter(String key, long defaultValue) {
-        String param = getParam(key);
+        String param = getParameter(key);
         return param == null ? defaultValue : Long.valueOf(param);
     }
 
-    public String getStringParameter(String key)
+    public String getParameter(String key, String defaultValue)
     {
-        return getParam(key);
+        String param = getParameter(key);
+        return param == null ? defaultValue : param;
     }
 
-    public String getParam(String key) {
+    public String getParameter(String key) {
         return pathVariables.get(key);
     }
 

@@ -45,4 +45,6 @@ public interface Invocation {
 
     public String getStringParameter(String nodePropertyKeyName);
     
+    public String getStringParameter(String nodePropertyKeyName, String defaultValue);
+    
 }

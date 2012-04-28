@@ -5,15 +5,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.neo4j.smack.serialization.AbstractNonStreamingSerializationStrategy;
 import org.neo4j.smack.serialization.SerializationException;
+import org.neo4j.smack.serialization.SerializationStrategy;
 import org.neo4j.smack.serialization.Serializer;
 
 /**
  * @author mh
  * @since 27.11.11
  */
-public class ExceptionSerializationStrategy extends AbstractNonStreamingSerializationStrategy<Throwable> {
+public class ExceptionSerializationStrategy implements SerializationStrategy<Throwable> {
 
     @Override
     public void serialize(Throwable exception, Serializer out) throws SerializationException {

@@ -7,16 +7,23 @@ import org.neo4j.smack.serialization.DeserializationException;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.Deserializer;
 
-public class PropertyContainerDeserializationStrategy implements DeserializationStrategy<Map<String,Object>> 
+public class PropertyContainerDeserializationStrategy implements DeserializationStrategy<PropertyContainerDeserialization> 
 {
+    // TODO: Set up object pooling for PropertyContainerDeserialization
     @Override
-    public Map<String,Object> deserialize(Deserializer in) throws DeserializationException
+    public PropertyContainerDeserialization deserialize(Deserializer in) throws DeserializationException
     {
+        PropertyContainerDeserialization deserialized = new PropertyContainerDeserialization();
+        
+        Map<String,Object> properties;
         try {
-            return in.readMap();
+            properties = in.readMap();
         } catch(DeserializationException e) {
-            return Collections.<String,Object>emptyMap();
+            properties = Collections.<String,Object>emptyMap();
         }
+
+        deserialized.setProperties(properties.entrySet().iterator());
+        return deserialized;
     }
 
 }
