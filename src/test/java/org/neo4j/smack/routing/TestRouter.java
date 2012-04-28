@@ -6,8 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.neo4j.smack.event.Invocation;
-import org.neo4j.smack.event.Output;
+import org.neo4j.smack.pipeline.database.event.Invocation;
+import org.neo4j.smack.pipeline.database.event.Output;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.SerializationStrategy;
 

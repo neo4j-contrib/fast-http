@@ -29,11 +29,11 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
-import org.neo4j.smack.annotation.DeserializeWith;
-import org.neo4j.smack.annotation.SerializeWith;
-import org.neo4j.smack.annotation.Transactional;
-import org.neo4j.smack.event.Invocation;
-import org.neo4j.smack.event.Output;
+import org.neo4j.smack.pipeline.database.event.Invocation;
+import org.neo4j.smack.pipeline.database.event.Output;
+import org.neo4j.smack.routing.annotation.DeserializeWith;
+import org.neo4j.smack.routing.annotation.SerializeWith;
+import org.neo4j.smack.routing.annotation.Transactional;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.SerializationStrategy;
 

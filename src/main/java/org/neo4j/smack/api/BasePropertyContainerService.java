@@ -1,8 +1,7 @@
 package org.neo4j.smack.api;
 
 import org.neo4j.graphdb.PropertyContainer;
-import org.neo4j.smack.event.Invocation;
-import org.neo4j.smack.routing.UrlReverseLookerUpper;
+import org.neo4j.smack.pipeline.database.event.Invocation;
 import org.neo4j.smack.serialization.strategy.PropertyContainerDeserialization;
 
 public class BasePropertyContainerService 

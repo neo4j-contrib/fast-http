@@ -1,7 +1,7 @@
 package org.neo4j.smack.serialization.strategy;
 
 import org.neo4j.graphdb.Node;
-import org.neo4j.smack.routing.UrlReverseLookerUpper;
+import org.neo4j.smack.api.UrlReverseLookerUpper;
 import org.neo4j.smack.serialization.SerializationException;
 import org.neo4j.smack.serialization.SerializationStrategy;
 import org.neo4j.smack.serialization.Serializer;

@@ -3,9 +3,9 @@ package org.neo4j.smack.test.util;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import org.neo4j.smack.event.Invocation;
-import org.neo4j.smack.event.NettyChannelBackedOutput;
-import org.neo4j.smack.event.Output;
+import org.neo4j.smack.pipeline.database.event.Invocation;
+import org.neo4j.smack.pipeline.database.event.NettyChannelBackedOutput;
+import org.neo4j.smack.pipeline.database.event.Output;
 import org.neo4j.smack.routing.Endpoint;
 import org.neo4j.smack.routing.InvocationVerb;
 import org.neo4j.smack.routing.RoutingDefinition;

@@ -1,7 +1,7 @@
 package org.neo4j.smack.routing;
 
-import org.neo4j.smack.event.Invocation;
-import org.neo4j.smack.event.Output;
+import org.neo4j.smack.pipeline.database.event.Invocation;
+import org.neo4j.smack.pipeline.database.event.Output;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.SerializationStrategy;
 

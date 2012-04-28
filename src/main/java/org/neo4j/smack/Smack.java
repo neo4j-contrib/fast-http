@@ -9,14 +9,16 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.smack.event.RequestEvent;
-import org.neo4j.smack.handler.CombinedHandler;
-import org.neo4j.smack.handler.DatabaseWorkDivider;
-import org.neo4j.smack.handler.DefaultExceptionHandler;
-import org.neo4j.smack.handler.DeserializationHandler;
-import org.neo4j.smack.handler.RoutingHandler;
-import org.neo4j.smack.handler.TransactionPreparationHandler;
-import org.neo4j.smack.http.NettyHttpPipelineFactory;
+import org.neo4j.smack.pipeline.CombinedHandler;
+import org.neo4j.smack.pipeline.DaemonThreadFactory;
+import org.neo4j.smack.pipeline.DefaultExceptionHandler;
+import org.neo4j.smack.pipeline.core.CoreWorkPipeline;
+import org.neo4j.smack.pipeline.core.DatabaseWorkDivider;
+import org.neo4j.smack.pipeline.core.DeserializationHandler;
+import org.neo4j.smack.pipeline.core.RoutingHandler;
+import org.neo4j.smack.pipeline.core.TransactionPreparationHandler;
+import org.neo4j.smack.pipeline.core.event.CorePipelineEvent;
+import org.neo4j.smack.pipeline.http.NettyHttpPipelineFactory;
 import org.neo4j.smack.routing.Endpoint;
 import org.neo4j.smack.routing.Router;
 import org.neo4j.smack.routing.RoutingDefinition;
@@ -28,7 +30,7 @@ public class Smack {
     private Router router = new Router();
     private ServerBootstrap netty;
     
-    private InputPipeline inputPipeline;
+    private CoreWorkPipeline inputPipeline;
     
     private ServerSocketChannelFactory channelFactory;
     private ChannelGroup openChannels = new DefaultChannelGroup("SmackServer");
@@ -52,12 +54,12 @@ public class Smack {
         exceptionHandler = new DefaultExceptionHandler();
         workDivider = new DatabaseWorkDivider(database, exceptionHandler);
 
-        inputPipeline = new InputPipeline(exceptionHandler);
+        inputPipeline = new CoreWorkPipeline(exceptionHandler);
         
-        inputPipeline.addHandler(new CombinedHandler<RequestEvent>(
+        inputPipeline.addHandler(new CombinedHandler<CorePipelineEvent>(
                 new RoutingHandler(router), 
                 new DeserializationHandler()));
-        inputPipeline.addHandler(new CombinedHandler<RequestEvent>(
+        inputPipeline.addHandler(new CombinedHandler<CorePipelineEvent>(
                 new TransactionPreparationHandler(), 
                 workDivider));
         

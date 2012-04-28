@@ -25,6 +25,11 @@ import java.util.Map;
 
 import org.neo4j.smack.serialization.IdentifiableEnum;
 
+// TODO: Perhaps rethink this, rather than
+// having "domain" objects, this could be a deserialization,
+// something in between a domain object and a deserializer.
+// Doing that would be for the sole purpose of consistency,
+// since other deserialized complex entities are "deserializations".
 public enum TransactionState implements IdentifiableEnum {
     OPEN(0),
     COMMITTED(1),

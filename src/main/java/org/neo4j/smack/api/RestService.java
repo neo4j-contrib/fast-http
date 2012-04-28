@@ -16,7 +16,7 @@ import org.neo4j.server.rest.repr.BadInputException;
 import org.neo4j.server.rest.repr.ExtensionInjector;
 import org.neo4j.server.rest.repr.OutputFormat;
 import org.neo4j.server.rest.repr.RepresentationFormatRepository;
-import org.neo4j.smack.event.Invocation;
+import org.neo4j.smack.pipeline.database.event.Invocation;
 
 /**
  * @author mh

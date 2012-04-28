@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.neo4j.smack.http.HttpTokens;
+import org.neo4j.smack.pipeline.http.HttpTokens;
 
 // Modified verion of Nettys QueryStringDecoder,
 // lets you reuse the same decoder.

@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.neo4j.graphdb.DynamicRelationshipType;
-import org.neo4j.smack.routing.UrlReverseLookerUpper;
+import org.neo4j.smack.api.UrlReverseLookerUpper;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.Deserializer;
 

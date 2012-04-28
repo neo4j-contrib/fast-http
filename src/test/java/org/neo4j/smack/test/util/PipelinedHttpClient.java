@@ -31,7 +31,7 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 import org.jboss.netty.util.CharsetUtil;
-import org.neo4j.smack.http.NettyChannelTrackingHandler;
+import org.neo4j.smack.pipeline.http.NettyChannelTrackingHandler;
 
 /** 
  * Incomplete implementation of a HTTP client that does pipelining.

@@ -20,7 +20,7 @@
 package org.neo4j.smack.integration.api;
 
 import org.junit.Test;
-import org.neo4j.smack.event.RequestEvent;
+import org.neo4j.smack.pipeline.core.event.CorePipelineEvent;
 import org.neo4j.smack.routing.Endpoint;
 import org.neo4j.smack.test.util.AbstractRestFunctionalTestBase;
 import org.neo4j.smack.test.util.JaxRsResponse;

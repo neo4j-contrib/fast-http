@@ -19,6 +19,4 @@ public class SerializationStrategyTestBase {
         JsonDeserializer deserializer = new JsonDeserializer(jsonFactory, in);
         return strategy.deserialize(deserializer);
     }
-
-    
 }

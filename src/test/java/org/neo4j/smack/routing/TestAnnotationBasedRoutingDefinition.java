@@ -13,9 +13,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
 import org.junit.Test;
-import org.neo4j.smack.annotation.DeserializeWith;
-import org.neo4j.smack.annotation.SerializeWith;
-import org.neo4j.smack.annotation.Transactional;
+import org.neo4j.smack.routing.annotation.DeserializeWith;
+import org.neo4j.smack.routing.annotation.SerializeWith;
+import org.neo4j.smack.routing.annotation.Transactional;
 import org.neo4j.smack.serialization.strategy.NodeSerializationStrategy;
 import org.neo4j.smack.serialization.strategy.PropertyContainerDeserializationStrategy;
 
