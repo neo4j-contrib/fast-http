@@ -43,7 +43,9 @@ public class PropertyContainerDeserialization {
     }
     
     // TODO: In the future, we could expand this further,
-    // by returning 
+    // by returning some re-useable (eg. garbage-free) data
+    // structure that allows streaming large values directly
+    // from kernel-space backed Channel Buffers into the database.
     public Object propertyValue()
     {
         return currentProperty.getValue();
