@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.neo4j.smack.domain;
+package org.neo4j.smack.serialization.strategy;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -25,37 +25,32 @@ import java.util.Map;
 
 import org.neo4j.smack.serialization.IdentifiableEnum;
 
-// TODO: Perhaps rethink this, rather than
-// having "domain" objects, this could be a deserialization,
-// something in between a domain object and a deserializer.
-// Doing that would be for the sole purpose of consistency,
-// since other deserialized complex entities are "deserializations".
-public enum TransactionState implements IdentifiableEnum {
+public enum TransactionStateDeserialization implements IdentifiableEnum {
     OPEN(0),
     COMMITTED(1),
     ROLLED_BACK(2);
     
-    private static final Map<String, TransactionState> nameToValueMap = new HashMap<String, TransactionState>();
-    private static final Map<Integer, TransactionState> idToValueMap = new HashMap<Integer, TransactionState>();
+    private static final Map<String, TransactionStateDeserialization> nameToValueMap = new HashMap<String, TransactionStateDeserialization>();
+    private static final Map<Integer, TransactionStateDeserialization> idToValueMap = new HashMap<Integer, TransactionStateDeserialization>();
 
     static {
-        for (TransactionState value : EnumSet.allOf(TransactionState.class)) {
+        for (TransactionStateDeserialization value : EnumSet.allOf(TransactionStateDeserialization.class)) {
             nameToValueMap.put(value.name(), value);
             idToValueMap.put(value.getId(), value);
         }
     }
 
-    public static TransactionState getForId(int id) {
+    public static TransactionStateDeserialization getForId(int id) {
         return idToValueMap.get(id);
     }
     
-    public static TransactionState getForName(String name) {
+    public static TransactionStateDeserialization getForName(String name) {
         return nameToValueMap.get(name);
     }
     
     private final int id;
     
-    TransactionState(int id) {
+    TransactionStateDeserialization(int id) {
         this.id = id;
     }
     

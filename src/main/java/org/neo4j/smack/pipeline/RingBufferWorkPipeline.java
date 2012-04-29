@@ -11,7 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
-
 import com.lmax.disruptor.BusySpinWaitStrategy;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.ExceptionHandler;
@@ -39,10 +38,13 @@ public class RingBufferWorkPipeline<E> {
 
     private String nameForThreads;
 
-    public RingBufferWorkPipeline(String nameForThreads, final EventFactory<E> eventFactory, final ExceptionHandler exceptionHandler) {
+    private int bufferSize;
+
+    public RingBufferWorkPipeline(String nameForThreads, final EventFactory<E> eventFactory, final ExceptionHandler exceptionHandler, int bufferSize) {
         this.nameForThreads = nameForThreads;
         this.eventFactory = eventFactory;
         this.exceptionHandler = exceptionHandler;
+        this.bufferSize = bufferSize;
     }
 
     public void start() {
@@ -50,14 +52,14 @@ public class RingBufferWorkPipeline<E> {
         final int numEventProcessors = handlers.size();
         workers = Executors.newFixedThreadPool(numEventProcessors, new DaemonThreadFactory(nameForThreads));
 
-        final int bufferSize = 1024 * 4;
         ringBuffer = new RingBuffer<E>(
                 eventFactory,
                 new MultiThreadedClaimStrategy(bufferSize),
                 new BusySpinWaitStrategy());
 
         WorkProcessor<E> processor = null;
-        for (WorkHandler<E> handler : handlers) {
+        for (WorkHandler<E> handler : handlers) 
+        {
             processor = scheduleEventProcessor(processor, handler);
             processors.add(processor);
         }
@@ -65,7 +67,8 @@ public class RingBufferWorkPipeline<E> {
 
     }
 
-    private WorkProcessor<E> scheduleEventProcessor(WorkProcessor<E> predecessor, WorkHandler<E> handler) {
+    private WorkProcessor<E> scheduleEventProcessor(WorkProcessor<E> predecessor, WorkHandler<E> handler) 
+    {
         WorkProcessor<E> newProcessor = new WorkProcessor<E>(ringBuffer, barrierFor(predecessor), handler, exceptionHandler, newSequence());
         workers.submit(newProcessor);
         return newProcessor;

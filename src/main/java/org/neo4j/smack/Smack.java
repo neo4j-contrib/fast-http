@@ -9,15 +9,13 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ServerSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.smack.pipeline.CombinedHandler;
 import org.neo4j.smack.pipeline.DaemonThreadFactory;
 import org.neo4j.smack.pipeline.DefaultExceptionHandler;
 import org.neo4j.smack.pipeline.core.CoreWorkPipeline;
-import org.neo4j.smack.pipeline.core.DatabaseWorkDivider;
 import org.neo4j.smack.pipeline.core.DeserializationHandler;
 import org.neo4j.smack.pipeline.core.RoutingHandler;
 import org.neo4j.smack.pipeline.core.TransactionPreparationHandler;
-import org.neo4j.smack.pipeline.core.event.CorePipelineEvent;
+import org.neo4j.smack.pipeline.core.WorkDivisionHandler;
 import org.neo4j.smack.pipeline.http.NettyHttpPipelineFactory;
 import org.neo4j.smack.routing.Endpoint;
 import org.neo4j.smack.routing.Router;
@@ -35,7 +33,7 @@ public class Smack {
     private ServerSocketChannelFactory channelFactory;
     private ChannelGroup openChannels = new DefaultChannelGroup("SmackServer");
     private GraphDatabaseService database;
-    private DatabaseWorkDivider workDivider;
+    private WorkDivisionHandler workDivisionHandler;
     private DefaultExceptionHandler exceptionHandler;
 
     public Smack(String host, int port, GraphDatabaseService db) {
@@ -44,7 +42,6 @@ public class Smack {
         this.database = db;
     }
     
-    @SuppressWarnings("unchecked")
     public void start() {
         
         router.compileRoutes();
@@ -52,16 +49,13 @@ public class Smack {
         // MAIN PIPELINE
 
         exceptionHandler = new DefaultExceptionHandler();
-        workDivider = new DatabaseWorkDivider(database, exceptionHandler);
+        workDivisionHandler = new WorkDivisionHandler(database, exceptionHandler);
 
-        inputPipeline = new CoreWorkPipeline(exceptionHandler);
-        
-        inputPipeline.addHandler(new CombinedHandler<CorePipelineEvent>(
+        inputPipeline = new CoreWorkPipeline(exceptionHandler, 
                 new RoutingHandler(router), 
-                new DeserializationHandler()));
-        inputPipeline.addHandler(new CombinedHandler<CorePipelineEvent>(
+                new DeserializationHandler(), 
                 new TransactionPreparationHandler(), 
-                workDivider));
+                workDivisionHandler);
         
         inputPipeline.start();
 
@@ -84,7 +78,7 @@ public class Smack {
     public void stop() {
         if (openChannels!=null) openChannels.close().awaitUninterruptibly();
         if (channelFactory!=null) channelFactory.releaseExternalResources();
-        if (workDivider!=null) workDivider.stop();
+        if (workDivisionHandler!=null) workDivisionHandler.stop();
         if (inputPipeline!=null) inputPipeline.stop();
     }
     

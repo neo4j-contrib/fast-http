@@ -70,6 +70,10 @@ public class REST {
             return handle("POST", resource.post(ClientResponse.class));
         }
 
+        public Request put() {
+            return handle("PUT", resource.put(ClientResponse.class));
+        }
+
         public Request put(Object data) {
             return handle("PUT", resource.put(ClientResponse.class, formatJson(data)));
         }

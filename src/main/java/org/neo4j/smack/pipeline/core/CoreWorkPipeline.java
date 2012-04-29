@@ -2,18 +2,27 @@ package org.neo4j.smack.pipeline.core;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
+import org.neo4j.smack.pipeline.CombinedHandler;
 import org.neo4j.smack.pipeline.RingBufferWorkPipeline;
 import org.neo4j.smack.pipeline.core.event.CorePipelineEvent;
 import org.neo4j.smack.routing.InvocationVerb;
 
 import com.lmax.disruptor.ExceptionHandler;
-import com.lmax.disruptor.WorkHandler;
 
 public class CoreWorkPipeline extends RingBufferWorkPipeline<CorePipelineEvent> implements WorkPublisher {
 
-    public CoreWorkPipeline(ExceptionHandler exceptionHandler)
+    @SuppressWarnings("unchecked")
+    public CoreWorkPipeline(ExceptionHandler exceptionHandler,
+            RoutingHandler routingHandler, DeserializationHandler deserializationHandler,
+            TransactionPreparationHandler tranasctionPreparationHandler, WorkDivisionHandler workDivisionHandler)
     {
-        super("RequestEventHandler", CorePipelineEvent.FACTORY, exceptionHandler);
+        super("CoreWorkEventHandler", CorePipelineEvent.FACTORY, exceptionHandler, 1024 * 4);
+        addHandler(new CombinedHandler<CorePipelineEvent>(
+                routingHandler, 
+                deserializationHandler));
+        addHandler(new CombinedHandler<CorePipelineEvent>(
+                tranasctionPreparationHandler, 
+                workDivisionHandler));
     }
 
     @Override
@@ -37,11 +46,6 @@ public class CoreWorkPipeline extends RingBufferWorkPipeline<CorePipelineEvent> 
         event.reset(connectionId, channel, cause);
 
         ringBuffer.publish(sequenceNo);
-    }
-
-    public void addHandler(WorkHandler<CorePipelineEvent> handler)
-    {
-        super.addHandler(handler);
     }
 
 }

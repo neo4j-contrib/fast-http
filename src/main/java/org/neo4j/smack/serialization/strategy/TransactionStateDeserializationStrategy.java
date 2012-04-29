@@ -19,23 +19,22 @@
  */
 package org.neo4j.smack.serialization.strategy;
 
-import org.neo4j.smack.domain.TransactionState;
 import org.neo4j.smack.serialization.DeserializationStrategy;
 import org.neo4j.smack.serialization.Deserializer;
 import org.neo4j.smack.serialization.IdentifiableEnumDeserializer;
 
-public class TxStateDeserializationStrategy implements DeserializationStrategy<TransactionState>, IdentifiableEnumDeserializer<TransactionState> {
+public class TransactionStateDeserializationStrategy implements DeserializationStrategy<TransactionStateDeserialization>, IdentifiableEnumDeserializer<TransactionStateDeserialization> {
 
-    public TxStateDeserializationStrategy() {}
+    public TransactionStateDeserializationStrategy() {}
     
-    public TransactionState deserialize(Deserializer in) {
+    public TransactionStateDeserialization deserialize(Deserializer in) {
         return in.readEnum(this);
     }
 
     @Override
-    public TransactionState getForId(int id) 
+    public TransactionStateDeserialization getForId(int id) 
     {   
-        TransactionState state =  TransactionState.getForId(id);
+        TransactionStateDeserialization state =  TransactionStateDeserialization.getForId(id);
 
         if(state == null) 
         {
@@ -45,9 +44,9 @@ public class TxStateDeserializationStrategy implements DeserializationStrategy<T
     }
 
     @Override
-    public TransactionState getForName(String name) {
+    public TransactionStateDeserialization getForName(String name) {
         
-        TransactionState state =  TransactionState.getForName(name);
+        TransactionStateDeserialization state =  TransactionStateDeserialization.getForName(name);
 
         if(state == null) 
         {

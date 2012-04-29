@@ -34,9 +34,9 @@ import com.lmax.disruptor.WorkHandler;
  * assigns that work to a worker based on the connection ID (same connection
  * always goes to the same worker).
  */
-public class DatabaseWorkDivider implements WorkHandler<CorePipelineEvent> {
+public class WorkDivisionHandler implements WorkHandler<CorePipelineEvent> {
 
-    private final static Logger logger = Logger.getLogger(DatabaseWorkDivider.class);
+    private final static Logger logger = Logger.getLogger(WorkDivisionHandler.class);
 
     private static final int NUM_DATABASE_WORK_EXECUTORS = 4;
 
@@ -44,7 +44,7 @@ public class DatabaseWorkDivider implements WorkHandler<CorePipelineEvent> {
     private final DatabaseWorkPipeline[] workers = new DatabaseWorkPipeline[NUM_DATABASE_WORK_EXECUTORS];
     private final ExceptionHandler exceptionHandler;
 
-    public DatabaseWorkDivider(GraphDatabaseService database, ExceptionHandler exceptionHandler) {
+    public WorkDivisionHandler(GraphDatabaseService database, ExceptionHandler exceptionHandler) {
         this.database = database;
         this.exceptionHandler = exceptionHandler;
         start();
